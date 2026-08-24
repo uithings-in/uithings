@@ -6,7 +6,7 @@ function notFound(req, res) {
 }
 
 function errorHandler(err, req, res, next) {
-  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  const statusCode = err.status || (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
   res.status(statusCode).json({
     success: false,
     message: err.message || "Internal server error",
