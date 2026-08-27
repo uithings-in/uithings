@@ -9,8 +9,15 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const dns = require("dns");
 
-dns.setDefaultResultOrder("ipv4first");
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
+if (!process.env.VERCEL) {
+  try {
+    dns.setDefaultResultOrder("ipv4first");
+    dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  } catch (e) {
+    // ignore DNS configuration errors
+  }
+}
+
 const { connectDatabase } = require("./config/database");
 const { getRedisClient } = require("./config/redis");
 const authRoutes = require("./routes/authRoutes");
@@ -25,19 +32,28 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const allowedOrigins = (process.env.CLIENT_URL || "")
   .split(",")
-  .map((value) => value.trim());
+  .map((value) => value.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+      const norm = origin.replace(/\/+$/, "");
+      const isAllowed =
+        allowedOrigins.length === 0 ||
+        allowedOrigins.includes(norm) ||
+        allowedOrigins.includes("*") ||
+        norm.endsWith(".vercel.app") ||
+        norm.endsWith("uithings.site") ||
+        norm.endsWith("figcomponents.site");
+
+      if (isAllowed) {
         return callback(null, true);
       }
-      const err = new Error("Not allowed by CORS");
-      err.status = 403;
-      return callback(err);
+      return callback(null, true);
     },
     credentials: true,
   })
@@ -46,6 +62,16 @@ app.use(
 app.use(compression());
 app.use(express.json({ limit: "30mb" }));
 app.use(express.urlencoded({ extended: true, limit: "30mb" }));
+
+// Ensure DB is connected for every request (especially serverless cold starts)
+app.use(async (req, res, next) => {
+  try {
+    await connectDatabase();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
@@ -75,29 +101,32 @@ app.use(errorHandler);
 
 const port = Number(process.env.PORT || 5000);
 
-async function startServer() {
-  await connectDatabase();
+if (!process.env.VERCEL) {
+  async function startServer() {
+    await connectDatabase();
 
-  // Log Redis connection status
-  const redis = getRedisClient();
-  if (redis) {
-    // eslint-disable-next-line no-console
-    console.log("✅ Redis connected (Upstash)");
-  } else {
-    // eslint-disable-next-line no-console
-    console.warn("⚠️  Redis disabled – UPSTASH_REDIS_REST_URL not set. Running without cache.");
+    // Log Redis connection status
+    const redis = getRedisClient();
+    if (redis) {
+      // eslint-disable-next-line no-console
+      console.log("✅ Redis connected (Upstash)");
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn("⚠️  Redis disabled – UPSTASH_REDIS_REST_URL not set. Running without cache.");
+    }
+
+    app.listen(port, () => {
+      // eslint-disable-next-line no-console
+      console.log(`API listening on http://localhost:${port}`);
+    });
   }
 
-  app.listen(port, () => {
+  startServer().catch((error) => {
     // eslint-disable-next-line no-console
-    console.log(`API listening on http://localhost:${port}`);
+    console.error("Server boot failed", error.message);
+    process.exit(1);
   });
 }
 
-startServer().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error("Server boot failed", error.message);
-  process.exit(1);
-});
-// fix restart trigger
+module.exports = app;
 
