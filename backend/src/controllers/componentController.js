@@ -99,7 +99,7 @@ const listComponents = asyncHandler(async (req, res) => {
       {
         $and: [
           { $or: [{ pricingType: { $ne: "Pro" } }, { pricingType: { $exists: false } }] },
-          { tags: { $not: { $regex: "pro", $options: "i" } } },
+          { tags: { $not: /pro/i } },
         ],
       },
     ];
