@@ -1,18 +1,39 @@
 @import "tailwindcss";
 
+@theme {
+  --font-heading: var(--font-bricolage), "Bricolage Grotesque", sans-serif;
+  --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", sans-serif;
+  --color-brand-bg: #05050A;
+  --color-brand-card: #0c0d18;
+  --color-brand-border: #1e1f38;
+  --color-brand-indigo: #3B2FE0;
+  --color-brand-purple: #6C5CE7;
+  --color-brand-violet: #7C5CFF;
+  --color-brand-primary: #4B3DF5;
+  --color-brand-muted: #A6A6C1;
+}
+
+.font-heading {
+  font-family: var(--font-bricolage), "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.font-sans {
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
-	--bg: #ffffff;
-	--surface: #f8fafc;
-	--line: #e2e8f0;
-	--ink: #0f172a;
-	--muted: #64748b;
-	--accent: #22c55e;
+	--bg: #05050A;
+	--surface: #0c0d18;
+	--line: #1e1f38;
+	--ink: #ffffff;
+	--muted: #A6A6C1;
+	--accent: #4B3DF5;
 	--accent-ink: #ffffff;
-	--font-dm-sans: "DM Sans", sans-serif;
+	--font-dm-sans: "Plus Jakarta Sans", sans-serif;
 }
 
 .font-dm-sans {
-	font-family: var(--font-dm-sans);
+	font-family: var(--font-sans);
 }
 
 .font-syne {
