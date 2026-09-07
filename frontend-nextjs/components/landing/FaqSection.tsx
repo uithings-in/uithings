@@ -1,98 +1,84 @@
 "use client";
 
 import React, { useState } from "react";
-import PillBadge from "./PillBadge";
-import { Plus, Minus } from "lucide-react";
+import SectionCaption from "./SectionCaption";
+
+const faqs = [
+  {
+    question: "What is Ui Things",
+    answer:
+      "Ui Things is a library of ready-to-use components, wireframes, themes, and templates so you can assemble polished websites without starting from scratch.",
+  },
+  {
+    question: "How does Ui Things improve my workflow?",
+    answer:
+      "Ui Things saves time and reduces complexity by offering ready-to-use components, wireframe, multiple themes, responsive version & pre-built template. It is also easy to customize, streamlining your website creation.",
+  },
+  {
+    question: "Is Ui Things customizable?",
+    answer:
+      "Yes. Swap colors, typography, and section variants through mapped variables so every screen stays on-brand without rebuilding layouts.",
+  },
+  {
+    question: "Can I use Ui Things components with Tailwind or custom CSS?",
+    answer:
+      "Yes. Components ship as clean, production-ready markup that drops into Tailwind or custom CSS without fighting the design system.",
+  },
+  {
+    question: "Can I use Ui Things for client projects?",
+    answer:
+      "Yes. Licenses include commercial use for client work, SaaS products, and marketing sites.",
+  },
+];
 
 export default function FaqSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0); // First item expanded by default
-
-  const faqs = [
-    {
-      question: "Can I use ui things components in commercial projects?",
-      answer:
-        "Yes, absolutely. All component licenses include unlimited commercial use for client work, SaaS applications, marketing websites, and digital products without requiring attribution.",
-    },
-    {
-      question: "How does the Figma auto-layout synchronization work?",
-      answer:
-        "Each component is mirrored between Figma and React/Tailwind. The auto-layout constraints, flex gap values, and typography scales are mapped 1-to-1 with Tailwind CSS utility classes for zero refactoring.",
-    },
-    {
-      question: "What frameworks and styling tools are supported?",
-      answer:
-        "Out of the box, components are built with modern React, Next.js (App Router), and Tailwind CSS. Clean vanilla HTML/CSS snippets are also provided for other web stacks.",
-    },
-    {
-      question: "Do I receive lifetime updates with my purchase?",
-      answer:
-        "Yes. Active plans include ongoing access to new component releases, section variant updates, design system patches, and Figma library additions as our ecosystem grows.",
-    },
-    {
-      question: "Can I customize the color tokens and typography globally?",
-      answer:
-        "Yes. The entire library is powered by CSS custom properties and a unified Tailwind theme file, allowing you to rebrand your entire website by modifying just a handful of color tokens.",
-    },
-  ];
-
-  const toggleAccordion = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const [openIndex, setOpenIndex] = useState<number | null>(1);
 
   return (
-    <section id="faq" className="relative py-20 md:py-28 overflow-hidden">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <PillBadge variant="default" className="mb-4">
-            FAQ
-          </PillBadge>
-          <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
-            Everything you need to know
-          </h2>
-          <p className="font-sans text-[#A6A6C1] text-base mt-4 font-normal">
-            Clear answers to common questions about our design systems, licenses, and workflow.
-          </p>
+    <section id="faq" className="relative overflow-hidden py-[120px]">
+      <div className="mx-auto flex w-full max-w-[856px] flex-col items-center gap-[100px] px-4">
+        <div className="flex flex-col items-center gap-10 text-center">
+          <SectionCaption>FAQ</SectionCaption>
+          <div className="flex flex-col items-center gap-9">
+            <h2
+              className="max-w-[521px] text-5xl font-medium leading-[60px] tracking-[-2.56px] text-[#F7F7FD] sm:text-[64px]"
+              style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+            >
+              Everything you need to know
+            </h2>
+            <p className="max-w-[643px] text-base font-medium leading-5 text-[#9389A8]">
+              From pricing to features — here are the answers to common questions
+              about Lanzo.
+            </p>
+          </div>
         </div>
 
-        {/* Accordion List */}
-        <div className="space-y-4">
+        <div className="flex w-full flex-col gap-3">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
-              <div
-                key={index}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
-                  isOpen
-                    ? "border-[#4B3DF5]/60 bg-[#0E0F21] shadow-[0_4px_25px_rgba(75,61,245,0.15)]"
-                    : "border-[#1e2038] bg-[#0c0d1a] hover:border-[#2f3256]"
-                }`}
+              <button
+                key={faq.question}
+                onClick={() => setOpenIndex(isOpen ? null : index)}
+                className="flex w-full items-start justify-between gap-8 rounded-lg border border-[rgba(247,247,253,0.1)] bg-[rgba(248,246,253,0.03)] p-8 text-left backdrop-blur-[6px]"
+                aria-expanded={isOpen}
               >
-                <button
-                  onClick={() => toggleAccordion(index)}
-                  className="w-full px-6 py-5 sm:px-7 sm:py-6 flex items-center justify-between text-left gap-4 focus:outline-none"
-                  aria-expanded={isOpen}
-                >
-                  <span className="font-heading font-semibold text-base sm:text-lg text-white leading-snug">
-                    {faq.question}
-                  </span>
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-                      isOpen
-                        ? "bg-[#4B3DF5] text-white"
-                        : "bg-[#18192e] text-[#A6A6C1] border border-[#272948]"
-                    }`}
-                  >
-                    {isOpen ? <Minus size={15} /> : <Plus size={15} />}
-                  </div>
-                </button>
-
-                {isOpen && (
-                  <div className="px-6 pb-6 sm:px-7 sm:pb-6 pt-1 text-xs sm:text-sm font-sans text-[#A6A6C1] leading-relaxed border-t border-white/5 animate-in fade-in duration-200">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-3">
+                  <span className="text-xl leading-[25px] text-white">{faq.question}</span>
+                  {isOpen && (
+                    <span className="text-sm font-medium leading-[17px] text-white/50">
+                      {faq.answer}
+                    </span>
+                  )}
+                </div>
+                <span className="relative size-6 shrink-0 overflow-hidden">
+                  <img
+                    src={isOpen ? "/landing/minus.svg" : "/landing/plus.svg"}
+                    alt=""
+                    className="absolute inset-0 size-full max-w-none"
+                  />
+                </span>
+              </button>
             );
           })}
         </div>

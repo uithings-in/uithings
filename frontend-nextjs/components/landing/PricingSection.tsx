@@ -1,9 +1,10 @@
-import { Sparkles, Link2 } from "lucide-react";
+import SectionCaption from "./SectionCaption";
 
 const plans = [
   {
     name: "Basic Plan",
-    price: "₹99",
+    pricePrefix: "₹",
+    price: "99",
     period: "per user / 180 days",
     description: "Perfect for testing and light creative needs.",
     features: [
@@ -14,13 +15,13 @@ const plans = [
       "Interactive components",
       "Auto Layout 5.0",
     ],
-    isAdvance: false,
-    accentStyle: "bg-white/20",
-    buttonStyle: "bg-[#1A1A22] border border-white/10 text-white hover:bg-[#22222C]",
+    featured: false,
+    check: "/landing/check.svg",
   },
   {
     name: "Advance Plan",
-    price: "₹199",
+    pricePrefix: "₹",
+    price: "199",
     period: "per user / 180 days",
     description: "Unlock more power with advanced models and bigger limits.",
     features: [
@@ -31,14 +32,13 @@ const plans = [
       "Interactive components",
       "Auto Layout 5.0",
     ],
-    isAdvance: true,
-    accentStyle: "bg-gradient-to-r from-[#6366F1] to-transparent",
-    buttonStyle:
-      "bg-gradient-to-r from-[#6366F1] to-[#4F46E5] text-white shadow-[0_4px_20px_rgba(99,102,241,0.4)] border-none",
+    featured: true,
+    check: "/landing/check-blue.svg",
   },
   {
     name: "Premium+",
-    price: "₹499",
+    pricePrefix: "₹",
+    price: "499",
     period: "per user / 365 days",
     description: "Everything unlimited. For pros, teams, and power creators.",
     features: [
@@ -49,9 +49,8 @@ const plans = [
       "Interactive components",
       "Auto Layout 5.0",
     ],
-    isAdvance: false,
-    accentStyle: "bg-white/20",
-    buttonStyle: "bg-[#1A1A22] border border-white/10 text-white hover:bg-[#22222C]",
+    featured: false,
+    check: "/landing/check-blue.svg",
   },
 ];
 
@@ -59,141 +58,153 @@ export default function PricingSection() {
   return (
     <section
       id="pricing"
-      className="relative w-full bg-[#050505] pt-[65px] pb-[90px] overflow-hidden text-white font-sans"
+      className="relative w-full overflow-hidden bg-black pt-[65px] pb-[90px] text-white"
     >
-      {/* 1. Top Tubelight Glowing Bar Effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center">
+      <div className="pointer-events-none absolute top-0 left-1/2 z-0 h-[486px] w-[1087px] -translate-x-1/2 overflow-hidden">
         <div
-          className="w-[280px] sm:w-[440px] h-[3px] rounded-full bg-[#FFFFFF]"
+          className="absolute top-0 left-1/2 h-[3px] w-[280px] -translate-x-1/2 rounded-full bg-white sm:w-[440px]"
           style={{
             boxShadow:
               "0 0 12px 2px #FFFFFF, 0 0 30px 6px #6366F1, 0 0 60px 16px #4F46E5",
           }}
         />
-      </div>
-
-      {/* 2. Spotlight Cone & Dotted Atmosphere */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[880px] max-w-full h-[540px] pointer-events-none z-0 overflow-hidden flex flex-col items-center">
-        <svg
-          viewBox="0 0 800 700"
-          className="w-full h-full opacity-90 filter blur-[8px]"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="lightRayGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.95" />
-              <stop offset="35%" stopColor="#4338CA" stopOpacity="0.75" />
-              <stop offset="70%" stopColor="#312E81" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#050505" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <polygon points="270,0 530,0 790,450 10,450" fill="url(#lightRayGrad)" />
-        </svg>
-
         <div
-          className="absolute inset-0 opacity-[0.08] pointer-events-none z-10"
+          className="absolute left-1/2 top-0 h-[540px] w-[880px] -translate-x-1/2"
+          style={{
+            background:
+              "conic-gradient(from 90deg at 50% 0%, rgba(76,85,223,0.95), rgba(50,30,168,0.55), rgba(8,6,5,0) 50%)",
+            filter: "blur(40px)",
+            opacity: 0.9,
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
             backgroundSize: "12px 12px",
             maskImage:
-              "linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 90%)",
-            WebkitMaskImage:
-              "linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 90%)",
+              "linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%)",
           }}
         />
-
-        <div className="absolute top-0 w-[440px] h-[320px] bg-[#6366F1]/30 rounded-full blur-[85px] pointer-events-none" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1040px] px-4 sm:px-6">
-        {/* 3. Hero Header Content */}
-        <div className="flex flex-col items-center text-center mb-[70px] pt-[30px]">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(120,110,255,0.20)] border border-[rgba(160,155,255,0.25)] px-3.5 py-1 text-[13.5px] text-[#D6D4E8] backdrop-blur-md shadow-sm mb-[32px]">
-            <Sparkles size={13} className="text-[#D6D4E8]" />
-            <span className="font-sans font-medium tracking-wide">Pricing</span>
+      <div className="relative z-10 mx-auto max-w-[1103px] px-4 sm:px-6">
+        <div className="mb-[70px] flex flex-col items-center gap-10 pt-[30px] text-center">
+          <SectionCaption>Pricing</SectionCaption>
+          <div className="flex flex-col items-center gap-9">
+            <h2
+              className="text-[40px] font-medium leading-[42px] tracking-[-2.4px] text-[#F7F7FD] sm:text-[60px]"
+              style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+            >
+              Plans that grow with you
+            </h2>
+            <p className="max-w-[577px] text-base font-medium leading-5 text-[#9389A8]">
+              Start free. Upgrade when you&apos;re ready. No hidden fees, no pressure.
+            </p>
           </div>
-
-          <h2 className="font-heading font-semibold text-[36px] sm:text-[50px] text-[#F5F5F7] tracking-tight leading-tight">
-            Plans that grow with you
-          </h2>
-
-          <p className="font-sans text-[15px] sm:text-[16px] font-normal text-[#9693A5] mt-[18px] max-w-xl leading-relaxed">
-            Start free. Upgrade when you&apos;re ready. No hidden fees, no pressure.
-          </p>
         </div>
 
-        {/* 4. Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {plans.map((plan, idx) => (
+        <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-3">
+          {plans.map((plan) => (
             <div
-              key={idx}
-              className={`relative rounded-[16px] bg-[#0A0A10] border border-white/[0.10] p-8 flex flex-col justify-between h-full shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25 ${plan.isAdvance
-                  ? "shadow-[0_0_35px_rgba(98,85,232,0.15)] border-white/20"
-                  : ""
-                }`}
+              key={plan.name}
+              className={`relative flex h-full min-h-[609px] flex-col overflow-hidden rounded-2xl border bg-[#070415] p-8 ${
+                plan.featured ? "border-[#BECBFF]" : "border-white/10"
+              }`}
             >
-              {/* Card Top Accent Line */}
               <div
-                className={`absolute top-0 left-6 w-[24px] h-[2px] rounded-full pointer-events-none ${plan.accentStyle}`}
+                className={`absolute top-0 left-8 h-[2px] w-6 ${
+                  plan.featured ? "bg-[#9797FF]" : "bg-[#F4F7F5]"
+                }`}
+                style={{
+                  boxShadow: plan.featured
+                    ? "0 0 40px 30px rgba(35,101,255,0.2), 0 0 6px rgba(35,101,255,0.6)"
+                    : "0 0 40px 30px rgba(255,255,255,0.1), 0 0 6px rgba(255,255,255,0.5)",
+                }}
               />
 
-              {/* Card Main Body */}
-              <div className="flex flex-col flex-grow">
-                {/* Plan Title */}
-                <h3 className="font-sans text-[16px] font-medium text-[#A6A3B1]">
-                  {plan.name}
-                </h3>
+              <p
+                className="text-lg leading-7 tracking-[-0.18px] text-[rgba(244,247,245,0.64)]"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                {plan.name}
+              </p>
 
-                {/* Price & Billing */}
-                <div className="mt-[16px] flex items-baseline gap-2">
-                  <span className="font-sans font-bold text-[44px] text-[#F1F1F5] tracking-tight leading-none">
-                    {plan.price}
-                  </span>
-                  <span className="font-sans text-[12.5px] text-[#9A98A7] font-normal">
-                    {plan.period}
-                  </span>
-                </div>
-
-                {/* Description */}
-                <p className="font-sans text-[14px] text-[#E1DFE8] mt-[14px] leading-[1.5] max-w-[260px] min-h-[42px] whitespace-pre-line">
-                  {plan.description}
+              <div className="mt-6 flex items-end gap-2">
+                <p
+                  className="text-[44px] leading-[48px] tracking-[-0.22px] text-[#F4F7F5]"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  {plan.pricePrefix}
+                  <span className="font-bold">{plan.price}</span>
                 </p>
-
-                {/* Dashed Divider */}
-                <div className="my-[22px] w-full border-t border-dashed border-white/[0.15]" />
-
-                {/* Features Heading */}
-                <span className="font-sans text-[14px] font-medium text-[#9693A2] mb-[16px] block">
-                  What&apos;s Included
-                </span>
-
-                {/* Feature List */}
-                <ul className="space-y-[13px] mb-[24px]">
-                  {plan.features.map((feature, fIdx) => (
-                    <li key={fIdx} className="flex items-center gap-[10px]">
-                      <Link2
-                        size={15}
-                        strokeWidth={2}
-                        className="text-[#9CA3AF] flex-shrink-0 rotate-45"
-                      />
-                      <span className="font-sans text-[14px] text-[#E5E3EB]">
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex-grow min-h-[16px]" />
+                <p
+                  className="pb-1 text-sm leading-7 tracking-[-0.14px] text-[rgba(244,247,245,0.64)]"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  {plan.period}
+                </p>
               </div>
 
-              {/* CTA Button */}
-              <div className="pt-2">
-                <a
-                  href="#checkout"
-                  className={`font-sans w-full h-[48px] rounded-[10px] text-[15px] font-semibold flex items-center justify-center transition-all duration-180 active:scale-95 ${plan.buttonStyle}`}
-                >
-                  Buy Now
-                </a>
+              <p
+                className="mt-3 min-h-12 text-base leading-6 tracking-[-0.16px] text-[#F4F7F5]"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                {plan.description}
+              </p>
+
+              <div className="relative my-8 h-px w-full bg-white/10">
+                <span className="absolute bottom-0 left-0 size-0.5 bg-[#F4F7F5]" />
+                <span className="absolute right-0 bottom-0 size-0.5 bg-[#F4F7F5]" />
+              </div>
+
+              <p
+                className="mb-6 text-base leading-6 tracking-[-0.16px] text-[rgba(244,247,245,0.64)]"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                What’s Included
+              </p>
+
+              <ul className="mb-8 flex flex-col gap-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-3">
+                    <span className="relative size-5 overflow-hidden">
+                      <img
+                        src={plan.check}
+                        alt=""
+                        className="absolute inset-0 size-full max-w-none"
+                      />
+                    </span>
+                    <span className="text-base leading-[1.4] text-white">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto">
+                {plan.featured ? (
+                  <a
+                    href="#checkout"
+                    className="relative flex h-9 w-full items-center justify-center overflow-hidden rounded-full border border-white/10 text-sm tracking-[-0.14px] text-[#F4F7F5]"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    <span
+                      className="absolute inset-0 rounded-full"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(180deg, #FFFFFF 0%, #6767DC 22%, #4343D5 90%)",
+                      }}
+                    />
+                    <span className="relative">Buy Now</span>
+                  </a>
+                ) : (
+                  <a
+                    href="#checkout"
+                    className="flex h-9 w-full items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] text-sm tracking-[-0.14px] text-[#F4F7F5]"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    Buy Now
+                  </a>
+                )}
               </div>
             </div>
           ))}
