@@ -1,15 +1,6 @@
 import React from "react";
 import StarField from "./StarField";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Sparkles,
-  SlidersHorizontal,
-  Calendar,
-  Clock,
-  Search,
-  MoreHorizontal,
-} from "lucide-react";
+import { ArrowUpRight, SlidersHorizontal } from "lucide-react";
 
 export default function HeroSection() {
   const quickLinks = [
@@ -22,35 +13,55 @@ export default function HeroSection() {
   ];
 
   return (
-    <section id="hero" className="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden">
-      {/* Deep Indigo/Purple Radial Glow Background */}
+    <section id="hero" className="relative pt-24 sm:pt-28 md:pt-32 pb-20 md:pb-28 overflow-hidden bg-[#080605] text-white">
+      {/* Upper Bright Blue Radial Aura behind Navbar and Headline */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[750px] pointer-events-none -z-10"
+        className="absolute -top-[150px] left-1/2 -translate-x-1/2 w-[1600px] h-[950px] pointer-events-none z-0"
         style={{
           background:
-            "radial-gradient(ellipse 70% 55% at 50% 15%, rgba(75, 61, 245, 0.45) 0%, rgba(108, 92, 231, 0.22) 40%, rgba(5, 5, 10, 0) 75%)",
-        }}
-      />
-      {/* Secondary subtle ambient spot */}
-      <div
-        className="absolute top-36 left-1/4 w-[500px] h-[300px] pointer-events-none -z-10 opacity-40 blur-3xl"
-        style={{
-          background: "radial-gradient(circle, #3B2FE0 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 60% at 50% 20%, #025FF7 0%, #0251D3 25%, #4343D5 45%, #080A2F 70%, transparent 95%)",
+          opacity: 0.95,
         }}
       />
 
-      {/* Star Field & Shooting Star Streaks */}
-      <StarField showShootingStars={true} />
+      {/* Secondary Left Sky Blue Blur Arc */}
+      <div
+        className="absolute top-[100px] left-[-250px] w-[950px] h-[800px] pointer-events-none z-0"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(177, 193, 228, 0.8) 0%, rgba(70, 127, 224, 0.5) 45%, transparent 75%)",
+          filter: "blur(70px)",
+        }}
+      />
+
+      {/* Inner Concentric Bright Glowing Spotlights */}
+      <div
+        className="absolute top-[120px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none z-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(102, 124, 255, 0.85) 0%, rgba(67, 67, 213, 0.6) 50%, transparent 80%)",
+          filter: "blur(50px)",
+        }}
+      />
+
+      {/* Star Field & Shooting Star Flares */}
+      <StarField showShootingStars={true} className="z-0" />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
         {/* Main H1 Headline */}
-        <h1 className="font-heading font-extrabold text-4xl sm:text-6xl md:text-7xl lg:text-[76px] tracking-[-0.03em] text-white leading-[1.08] max-w-4xl mx-auto">
-          Streamline Design with <br className="hidden sm:inline" />
+        <h1
+          className="font-bold text-4xl sm:text-6xl md:text-7xl lg:text-[75px] tracking-normal text-[#F7F7FD] leading-[1.12] max-w-4xl mx-auto"
+          style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+        >
+          Streamline Design with <br />
           Components
         </h1>
 
-        {/* Muted Subtext */}
-        <p className="font-sans text-[#A6A6C1] text-base sm:text-lg max-w-2xl mx-auto mt-6 leading-relaxed font-normal">
+        {/* Subtitle */}
+        <p
+          className="text-[#B4B3B4] text-base sm:text-lg max-w-xl mx-auto mt-6 leading-normal font-medium"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
           Accelerate your workflow with highly adaptable, accessible and consistent components build for modern design system
         </p>
 
@@ -58,178 +69,251 @@ export default function HeroSection() {
         <div className="mt-8 flex justify-center">
           <a
             href="#download"
-            className="font-sans inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-[#4B3DF5] via-[#5e4ff7] to-[#7C5CFF] px-8 py-3.5 text-sm sm:text-base font-semibold text-white shadow-[0_0_28px_rgba(75,61,245,0.45)] hover:shadow-[0_0_36px_rgba(124,92,255,0.65)] hover:brightness-110 active:scale-95 transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 text-base font-medium text-[#F7F7FD] transition-all duration-200 hover:brightness-110 active:scale-95 shadow-lg"
+            style={{
+              background: "linear-gradient(99deg, #FFFFFF 0%, #6366F1 21%, #4338CA 90%)",
+              outline: "1px rgba(248, 250, 252, 0.4) solid",
+              outlineOffset: "-1px",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
           >
             <span>Download Now</span>
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+            <ArrowUpRight className="w-5 h-5 text-[#F7F7FD]" />
           </a>
         </div>
 
         {/* 6 Sub-links row */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs sm:text-sm font-normal text-[#E2E2F0]">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-lg sm:text-2xl font-semibold text-white">
           {quickLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="font-sans hover:text-white transition-colors duration-200"
+              className="hover:text-[#F7F7FD] transition-colors duration-200"
+              style={{ fontFamily: "'Maven Pro', sans-serif" }}
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* Product Screenshot Mockup Panel */}
-        <div className="mt-16 sm:mt-20 mx-auto max-w-5xl rounded-2xl sm:rounded-3xl border border-[#1e1f38] bg-[#0A0A14]/90 p-6 sm:p-8 lg:p-12 shadow-[0_20px_70px_rgba(0,0,0,0.7)] backdrop-blur-xl relative overflow-hidden text-left">
-          {/* Internal subtle glow corner */}
-          <div
-            className="absolute -top-24 -right-24 w-80 h-80 pointer-events-none rounded-full blur-3xl opacity-20"
-            style={{ background: "#7C5CFF" }}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Copy block */}
+        {/* Hero Showcase Panel */}
+        <div
+          className="mt-14 sm:mt-20 mx-auto max-w-5xl rounded-xl p-6 sm:p-10 lg:p-12 relative overflow-hidden text-left"
+          style={{
+            background: "linear-gradient(180deg, #000000 0%, #0A0A0A 100%)",
+            outline: "6px rgba(250, 250, 250, 0.1) solid",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Left Copy Column */}
             <div className="lg:col-span-5 flex flex-col justify-center">
-              <span className="font-sans inline-block w-fit rounded-full border border-[#2e3054] bg-[#161729] px-3.5 py-1 text-xs font-medium text-[#c4bcff] mb-4">
-                Individuals
-              </span>
-
-              <h3 className="font-heading text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
-                Elevate Your Creative Workflow
-              </h3>
-
-              <div className="space-y-3 mb-8">
-                <div className="flex items-start gap-2.5">
-                  <div className="mt-1 flex-shrink-0 text-[#7C5CFF]">
-                    <CheckCircle2 size={16} />
-                  </div>
-                  <p className="font-sans text-xs sm:text-sm text-[#A6A6C1] leading-relaxed">
-                    Modular components engineered for rapid prototyping and production scale.
-                  </p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <div className="mt-1 flex-shrink-0 text-[#7C5CFF]">
-                    <CheckCircle2 size={16} />
-                  </div>
-                  <p className="font-sans text-xs sm:text-sm text-[#A6A6C1] leading-relaxed">
-                    Seamless sync between Figma auto-layout and clean Tailwind code exports.
-                  </p>
-                </div>
+              <div className="pb-3 mb-6 border-b border-white/10">
+                <span
+                  className="text-sm font-normal text-gray-500"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  Individuals
+                </span>
               </div>
+
+              <h2
+                className="text-3xl sm:text-4xl text-[#F7F7FD] font-medium leading-snug mb-8"
+                style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+              >
+                Elevate Your Creative Workflow
+              </h2>
+
+              <ul className="space-y-5 mb-10">
+                <li className="flex items-start gap-3">
+                  <span className="text-[#A1A1AA] text-sm mt-1">✦</span>
+                  <p
+                    className="text-base text-zinc-400 leading-normal"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  >
+                    Endless customization option
+                  </p>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-[#A1A1AA] text-sm mt-1">✦</span>
+                  <p
+                    className="text-base text-zinc-400 leading-normal"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                  >
+                    Stop starting from scratch and drag-and-drop complex, nested components directly into your workspace.
+                  </p>
+                </li>
+              </ul>
 
               <div>
                 <a
                   href="#start"
-                  className="font-sans inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4B3DF5] to-[#7C5CFF] px-6 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:brightness-110 active:scale-95 transition-all"
+                  className="inline-flex items-center justify-center rounded-full px-8 py-3.5 text-lg font-medium text-[#F7F7FD] transition-all hover:brightness-110 active:scale-95 shadow-md"
+                  style={{
+                    background: "linear-gradient(99deg, #FFFFFF 0%, #6366F1 21%, #4338CA 90%)",
+                    outline: "1px rgba(248, 250, 252, 0.4) solid",
+                    outlineOffset: "-1px",
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  }}
                 >
-                  <span>Start Creation</span>
-                  <ArrowRight size={14} />
+                  Start Creation
                 </a>
               </div>
             </div>
 
-            {/* Right Dashboard Mockup */}
-            <div className="lg:col-span-7 relative">
-              <div className="rounded-2xl border border-[#22243d] bg-[#0d0e1b] p-5 shadow-2xl relative">
-                {/* Dashboard Header */}
-                <div className="flex items-center justify-between border-b border-[#1c1d32] pb-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="font-heading text-sm font-semibold text-white">My task</span>
-                    <div className="flex items-center gap-1 bg-[#16172b] p-0.5 rounded-lg border border-[#252742]">
-                      <button className="font-sans text-[11px] font-semibold bg-[#4B3DF5] text-white px-2.5 py-0.5 rounded-md shadow-sm">
-                        Today
-                      </button>
-                      <button className="font-sans text-[11px] text-[#8e8ea8] hover:text-white px-2 py-0.5">
-                        Later
-                      </button>
-                      <button className="font-sans text-[11px] text-[#8e8ea8] hover:text-white px-2 py-0.5">
-                        Done
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#7d7d96]">
-                    <Search size={14} className="hover:text-white cursor-pointer" />
-                    <MoreHorizontal size={14} className="hover:text-white cursor-pointer" />
-                  </div>
-                </div>
-
-                {/* Main Task Card */}
-                <div className="rounded-xl border border-[#272948] bg-[#141528] p-4 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-sans text-xs font-semibold text-white">Finance app</span>
-                    <span className="font-sans text-[10px] font-medium bg-[#1e2338] text-[#9b8aff] px-2 py-0.5 rounded-full border border-[#3b3570]">
-                      High priority
-                    </span>
-                  </div>
-                  <p className="font-sans text-[11px] text-[#9393ad] mb-3">
-                    Redesign the portfolio analytics cards and deposit interaction flow.
-                  </p>
-                  <div className="flex items-center justify-between pt-2 border-t border-[#1f2038]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#FF5E7E] to-[#FFA462] flex items-center justify-center text-[9px] font-bold text-white">
-                        S
-                      </div>
-                      <span className="font-sans text-[11px] text-[#c0c0d8]">
-                        Samantha - Project manager
-                      </span>
-                    </div>
-                    <span className="font-sans text-[10px] text-[#71718c] flex items-center gap-1">
-                      <Clock size={11} /> 2h left
-                    </span>
-                  </div>
-                </div>
-
-                {/* Task Rows / Filter list */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#111224] border border-[#1b1d33]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                      <span className="font-sans text-xs text-white">Plan sprint backlog</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-sans text-[10px] text-[#767694]">09:30 AM</span>
-                      <span className="font-sans text-[10px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 px-2 py-0.5 rounded-full">
-                        On progress
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#111224] border border-[#1b1d33]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
-                      <span className="font-sans text-xs text-white">Update pricing page copy</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-sans text-[10px] text-[#767694]">11:15 AM</span>
-                      <span className="font-sans text-[10px] font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-800/50 px-2 py-0.5 rounded-full">
-                        On progress
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#111224] border border-[#1b1d33]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
-                      <span className="font-sans text-xs text-white">Prepare launch checklist</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-sans text-[10px] text-[#767694]">03:45 PM</span>
-                      <span className="font-sans text-[10px] font-semibold bg-purple-950/60 text-purple-300 border border-purple-800/50 px-2 py-0.5 rounded-full">
-                        On progress
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
+            {/* Right UI Dashboard Mockup Column */}
+            <div className="lg:col-span-7 relative pt-12 sm:pt-6 min-h-[380px]">
+              <div className="relative mx-auto max-w-lg lg:max-w-none">
                 {/* Floating Tooltip Pill: "Auto smart sorting, no effort" */}
-                <div className="hidden sm:flex absolute -top-4 -right-4 items-center gap-1.5 bg-[#1f1a4a] border border-[#7C5CFF]/60 text-white px-3 py-1.5 rounded-full shadow-[0_4px_20px_rgba(124,92,255,0.4)] text-[11px] font-sans font-medium backdrop-blur-md">
-                  <Sparkles size={12} className="text-[#a594ff]" />
-                  <span>Auto smart sorting, no effort</span>
+                <div
+                  className="absolute -top-12 right-20 z-30 hidden sm:flex items-center px-4 py-2 bg-slate-900/60 rounded-xl border border-neutral-50/10 backdrop-blur-md text-slate-50 text-xs font-medium shadow-xl"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  Auto smart sorting, no effort
                 </div>
 
-                {/* Floating User Chip: "Sofia G." */}
-                <div className="hidden sm:flex absolute -bottom-3 -left-3 items-center gap-2 bg-[#121326] border border-[#2b2d4f] px-3 py-1.5 rounded-full shadow-lg text-xs font-sans text-white">
-                  <div className="w-4 h-4 rounded-full bg-gradient-to-r from-teal-400 to-indigo-500" />
-                  <span className="font-medium text-[11px]">Sofia G.</span>
+                {/* Floating Sofia G. Badge */}
+                <div className="absolute top-[18px] right-[42%] z-30 hidden sm:flex items-center gap-1.5">
+                  <div
+                    className="px-3 py-1.5 rounded-lg text-slate-50 text-xs font-medium shadow-[0_0_8px_rgba(67,67,213,0.5)]"
+                    style={{
+                      background: "linear-gradient(99deg, #FFFFFF 0%, #6366F1 21%, #4338CA 90%)",
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    Sofia G.
+                  </div>
+                  <div
+                    className="w-2 h-3 rounded-[0.84px] transform rotate-180"
+                    style={{ background: "linear-gradient(180deg, #A5B4FC 0%, #4D7C0F 100%)" }}
+                  />
+                </div>
+
+                {/* Base Card: "My task" */}
+                <div
+                  className="w-[85%] sm:w-[80%] rounded-xl p-6 shadow-2xl relative z-10 bg-slate-900/60 border border-neutral-50/20 backdrop-blur-md"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
+                      <span className="text-base font-semibold text-slate-50">
+                        My task
+                      </span>
+                      <div className="pt-3 border-t border-slate-50/10 flex items-center gap-5 text-xs font-medium">
+                        <span className="text-gray-400">Today</span>
+                        <span className="text-gray-500">Later</span>
+                        <span className="text-gray-500">Done</span>
+                      </div>
+                    </div>
+
+                    {/* Task Box */}
+                    <div className="rounded-md p-3.5 bg-purple-50/10 backdrop-blur-[6px] flex flex-col gap-6">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-normal text-slate-50">
+                            Finance app
+                          </span>
+                          <div className="flex gap-1">
+                            <div className="w-1 h-1 rounded-full bg-zinc-400" />
+                            <div className="w-1 h-1 rounded-full bg-zinc-400" />
+                            <div className="w-1 h-1 rounded-full bg-zinc-400" />
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-gray-500">
+                          Make a landing and mobile app
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center text-[10px] font-bold text-slate-900">
+                          S
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-violet-200">
+                            Samantha
+                          </span>
+                          <span className="text-[10px] text-zinc-400">
+                            Project maneger
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Overlapping Floating "Filter" Panel */}
+                <div
+                  className="absolute top-16 right-0 w-[85%] sm:w-[80%] rounded-xl p-5 shadow-2xl z-20 bg-slate-900 border border-neutral-50/10 backdrop-blur-[9.43px]"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  <div className="flex items-center justify-between pb-3 mb-4">
+                    <span className="text-sm font-medium text-slate-50">
+                      Filter
+                    </span>
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-slate-50" />
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    {/* Item 1 */}
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-purple-50/5 opacity-30">
+                      <div className="flex items-center gap-2">
+                        <div className="w-0.5 h-7 bg-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">14:00</span>
+                          <span className="text-xs font-medium text-slate-50">
+                            Design onboarding screen
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] text-stone-300 opacity-50">On progress</span>
+                    </div>
+
+                    {/* Item 2 - Highlighted Active Item */}
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-purple-50/10 border border-neutral-50/10">
+                      <div className="flex items-center gap-2">
+                        <div className="w-0.5 h-7 bg-indigo-700" />
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">15:00</span>
+                          <span className="text-xs font-medium text-slate-50">
+                            Plan sprint backlog
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-1 h-1 rounded-full bg-green-500" />
+                        <div className="w-1 h-1 rounded-full bg-green-500 blur-[1px]" />
+                        <span className="text-[9px] text-stone-300 opacity-50">On progress</span>
+                      </div>
+                    </div>
+
+                    {/* Item 3 */}
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-purple-50/5 opacity-30">
+                      <div className="flex items-center gap-2">
+                        <div className="w-0.5 h-7 bg-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">17:00</span>
+                          <span className="text-xs font-medium text-slate-50">
+                            Update pricing page copy
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] text-stone-300 opacity-50">1 hour later</span>
+                    </div>
+
+                    {/* Item 4 */}
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-purple-50/5 opacity-30">
+                      <div className="flex items-center gap-2">
+                        <div className="w-0.5 h-7 bg-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">18:00</span>
+                          <span className="text-xs font-medium text-slate-50">
+                            Prepare launch checklist
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] text-stone-300 opacity-50">3 hours later</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
