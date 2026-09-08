@@ -21,21 +21,21 @@ export default function HeroSection() {
       <img
         src="/landing/hero-bg.svg"
         alt=""
-        className="pointer-events-none absolute -top-[90px] left-0 h-[1050px] w-full max-w-none object-cover opacity-90"
+        className="pointer-events-none absolute -top-[90px] left-1/2 h-[1150px] w-[2140px] max-w-none -translate-x-1/2 object-cover opacity-100"
       />
 
       <div
-        className="pointer-events-none absolute -top-[80px] left-1/2 z-0 h-[785px] w-[1213px] -translate-x-1/2"
+        className="pointer-events-none absolute -top-[80px] left-1/2 z-0 h-[850px] w-full max-w-[2000px] -translate-x-1/2"
         style={{
           background:
-            "radial-gradient(ellipse 70% 45% at 50% 8%, rgba(2,95,247,0.85) 0%, rgba(67,67,213,0.45) 40%, transparent 72%)",
+            "radial-gradient(ellipse 80% 50% at 50% 8%, rgba(2,95,247,0.95) 0%, rgba(67,67,213,0.55) 45%, rgba(10,14,40,0.3) 70%, transparent 90%)",
         }}
       />
       <div
-        className="pointer-events-none absolute top-[180px] left-1/2 z-0 h-[530px] w-[976px] -translate-x-1/2 blur-3xl"
+        className="pointer-events-none absolute top-[150px] left-1/2 z-0 h-[600px] w-full max-w-[1600px] -translate-x-1/2 blur-3xl"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(102,124,255,0.55) 0%, rgba(67,67,213,0.28) 50%, transparent 78%)",
+            "radial-gradient(ellipse at 50% 50%, rgba(102,124,255,0.65) 0%, rgba(67,67,213,0.35) 50%, transparent 80%)",
         }}
       />
 
@@ -43,7 +43,7 @@ export default function HeroSection() {
       <img
         src="/landing/noise.png"
         alt=""
-        className="pointer-events-none absolute inset-0 z-0 h-[900px] w-full object-cover opacity-20 mix-blend-multiply"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-25 mix-blend-overlay"
       />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
