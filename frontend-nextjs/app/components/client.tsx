@@ -8,7 +8,7 @@ import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from
 import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
 import { useAuth } from "../../context/AuthContext";
-import { Scaling, Frame, Copy, Layers, ArrowDownToLine, Crown, Heart, Database } from "lucide-react";
+import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Database } from "lucide-react";
 
 
 
@@ -27,36 +27,6 @@ function IconChevron() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
       <path d="M5 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function IconCopy() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <rect x="4" y="4" width="9" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M3 11V2.5A1.5 1.5 0 014.5 1H12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
-  );
-}
-function IconEye() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.4" />
-    </svg>
-  );
-}
-function IconHeart() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path d="M8 13.5S2 9.5 2 5.5A3.5 3.5 0 018 3a3.5 3.5 0 016 2c0 4-6 8.5-6 8.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function IconStar() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M8 1l1.8 4.5H15l-4 3 1.5 4.5L8 10.5l-4.5 2.5L5 8.5l-4-3h5.2z" />
     </svg>
   );
 }
@@ -88,17 +58,6 @@ function IconCheck() {
     </svg>
   );
 }
-function IconLogoFourDots() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#9FE870" strokeWidth="2" fill="none" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#9FE870" strokeWidth="2" fill="none" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#9FE870" strokeWidth="2" fill="none" />
-      <path d="M14 17.5a3.5 3.5 0 1 0 7 0 3.5 3.5 0 0 0-7 0z" stroke="#9FE870" strokeWidth="2" fill="none" />
-    </svg>
-  );
-}
-
 // ── constants ─────────────────────────────────────────────────────────────────
 
 // CATEGORIES are now loaded dynamically from the backend
@@ -217,14 +176,14 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
   // ── Unlimited / Premium+ card ──────────────────────────────────────────
   if (isUnlimited) {
     return (
-      <div className="mx-4 mb-6 shrink-0 rounded-2xl p-[1px] shadow-[0_10px_30px_rgba(15,23,42,0.07)]"
-        style={{ background: "linear-gradient(135deg, #22C55E 0%, #16A34A 40%, #0D9488 100%)" }}>
-        <div className="rounded-[15px] bg-white p-4">
+      <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white p-[1px] shadow-[0_10px_30px_rgba(15,23,42,0.07)]"
+        style={{ background: "radial-gradient(120% 120% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
+        <div className="rounded-[15px] p-4" style={{ background: "linear-gradient(146deg, rgba(255,255,255,0.06) 39%, rgba(255,255,255,0.24) 107%)" }}>
           {/* Header — stacked to avoid overlap */}
           <div className="mb-3">
             <div className="flex items-center justify-between mb-2">
-              <div className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg"
-                style={{ background: "linear-gradient(135deg, #22C55E, #0D9488)" }}>
+              <div className="shrink-0 flex h-7 w-7 items-center justify-center rounded-[4px]"
+                style={{ background: "#d66a04" }}>
                 <Crown size={14} color="white" strokeWidth={2.5} />
               </div>
               <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.56rem] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
@@ -240,34 +199,34 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
                 {daysLeft > 0 ? "Active" : "Expired"}
               </span>
             </div>
-            <p className="text-[0.92rem] font-extrabold text-slate-900 leading-tight">{planName}</p>
-            <p className="text-[0.65rem] font-bold text-[#16A34A] mt-0.5">
+            <p className="text-[0.92rem] font-extrabold text-white leading-tight">{planName}</p>
+            <p className="text-[0.65rem] font-bold text-[#d5d5d5] mt-0.5">
               {formatPlanPrice(plan?.price, plan?.durationDays)}
             </p>
           </div>
 
           {/* Unlimited downloads highlight */}
-          <div className="rounded-xl p-3 mb-3 border border-emerald-100"
-            style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 50%, #F0FDFA 100%)" }}>
+          <div className="rounded-xl p-3 mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+            style={{ background: "radial-gradient(140% 160% at 42% 36%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[0.72rem] font-bold text-slate-700">Downloads</span>
-              <div className="flex items-center gap-1 text-emerald-600">
+              <span className="text-[0.72rem] font-bold text-white">Downloads</span>
+              <div className="flex items-center gap-1 text-[#f2f2f2]">
                 <IconInfinity className="w-4 h-4" />
                 <span className="text-[0.65rem] font-extrabold uppercase tracking-wider">Unlimited</span>
               </div>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[1.4rem] font-black text-slate-900 tabular-nums leading-none">
+              <span className="text-[1.4rem] font-black text-white tabular-nums leading-none">
                 {downloadsUsed.toLocaleString()}
               </span>
-              <span className="text-[0.65rem] font-semibold text-slate-400">components copied</span>
+              <span className="text-[0.65rem] font-semibold text-[#f2f2f2]">components copied</span>
             </div>
           </div>
 
           {/* Days remaining — text only, no progress bar */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 flex items-center justify-between">
-            <span className="text-[0.72rem] font-bold text-slate-700">Validity</span>
-            <span className="text-[0.68rem] font-semibold text-slate-500">
+          <div className="rounded-lg p-3 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.1)]" style={{ background: "radial-gradient(120% 120% at 42% 36%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
+            <span className="text-[0.72rem] font-bold text-white">Validity</span>
+            <span className="text-[0.68rem] font-semibold text-[#fbfcfd]">
               {daysLeft > 0 ? `${daysLeft} days remaining` : "Plan expired"}
             </span>
           </div>
@@ -312,26 +271,26 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
 // ── SkeletonCard ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <article className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm flex flex-col p-2 animate-pulse">
+    <article className="rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2 animate-pulse bg-white/10">
       {/* Preview placeholder */}
-      <div className="h-[185px] bg-gray-100 rounded-xl" />
+      <div className="h-[210px] bg-white/20 rounded-xl" />
 
       {/* Footer row placeholder */}
       <div className="px-2 pt-3 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-3.5 w-24 bg-gray-200 rounded-full" />
-          <div className="h-3 w-8 bg-gray-100 rounded-md" />
+          <div className="h-3.5 w-24 bg-white/25 rounded-full" />
+          <div className="h-3 w-8 bg-white/15 rounded-md" />
         </div>
         <div className="flex gap-2">
-          <div className="h-4 w-4 bg-gray-200 rounded-full" />
-          <div className="h-4 w-4 bg-gray-200 rounded-full" />
-          <div className="h-4 w-6 bg-gray-200 rounded-full" />
+          <div className="h-4 w-4 bg-white/20 rounded-full" />
+          <div className="h-4 w-4 bg-white/20 rounded-full" />
+          <div className="h-4 w-6 bg-white/20 rounded-full" />
         </div>
       </div>
 
       {/* Actions placeholder */}
       <div className="px-2 pb-2">
-        <div className="w-full h-9 bg-gray-100 rounded-full" />
+        <div className="w-full h-9 bg-white/15 rounded-full" />
       </div>
     </article>
   );
@@ -547,7 +506,8 @@ function ComponentCard({
   }
 
   return (
-    <article className="bg-white rounded-[20px] border border-gray-200/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col p-2.5 font-manrope">
+    <article className="rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
+      style={{ background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
       {/* Preview */}
       <div
         className="relative cursor-pointer group/preview overflow-hidden h-[210px] w-full rounded-xl border-2 border-[#9FE870]/40 bg-[#F4F9ED]"
@@ -564,7 +524,7 @@ function ComponentCard({
             className="object-contain transition-transform duration-300 group-hover/preview:scale-[1.02]"
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-gray-400 text-sm">
+          <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
             No preview
           </div>
         )}
@@ -578,7 +538,7 @@ function ComponentCard({
           aria-pressed={isFavorite}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${
+          className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-300 disabled:cursor-wait disabled:opacity-70 ${
             isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
           }`}
         >
@@ -589,20 +549,20 @@ function ComponentCard({
       {/* Footer row */}
       <div className="px-2 pt-3 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="font-semibold text-gray-800 text-[0.8rem] truncate">{item.name}</span>
+          <span className="font-semibold text-white text-[12.8px] truncate">{item.name}</span>
           {isPro ? (
             <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
               <Crown size={20} color="#d66a04" strokeWidth={2} />
               {/* PRO */}
             </span>
           ) : (
-            <span className="text-[0.6rem] font-bold text-gray-500 px-1.5 py-0.5 rounded border border-[#a1d99b] shrink-0 uppercase tracking-wide">
+            <span className="text-[9.6px] font-bold text-white px-1.5 py-0.5 rounded border border-[#19ff00] bg-[#00ae34] shrink-0 uppercase tracking-wide">
               FREE
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-gray-500 text-[0.75rem]">
+        <div className="flex items-center gap-1 text-white text-[12px]">
           <div className="flex items-center ml-1">
             <button type="button" className="hover:text-red-500 transition-colors">
               {/* <IconHeart /> */}
@@ -619,11 +579,11 @@ function ComponentCard({
           type="button"
           onClick={handleCopy}
           disabled={isCopying || isSuccess}
-          className={`w-full flex items-center justify-center gap-1.5 text-[0.85rem] font-semibold rounded-full py-2 mt-2 transition-all duration-300 cursor-pointer font-manrope border ${isSuccess
+          className={`w-full flex items-center justify-center gap-1.5 text-[13.6px] font-semibold rounded-full py-2 mt-2 transition-all duration-300 cursor-pointer font-manrope border ${isSuccess
             ? "bg-green-50 text-green-600 border-green-200"
             : showLock
-              ? "bg-gray-50 text-gray-400 border-gray-200"
-              : "text-gray-700 bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300"
+              ? "bg-white/10 text-white/50 border-white/30"
+              : "text-white bg-white/10 hover:bg-white/20 border-[rgba(229,231,235,0.5)] hover:border-white/80"
             } disabled:opacity-100`}
         >
           {isSuccess ? (
@@ -643,7 +603,7 @@ function ComponentCard({
             </span>
           ) : (
             <>
-              <Copy size={16} color="#000000" strokeWidth={1.25} />
+              <Copy size={16} color="currentColor" strokeWidth={1.25} />
 
               {isCopying ? "Copying…" : "Copy"}
             </>
@@ -706,7 +666,7 @@ export default function ComponentsClient({
   initialPage: PaginatedComponentResponse | null;
   initialTags?: string[];
 }) {
-  const { user, loading: authLoading, isInitialized, setLoginModalOpen, setPricingModalOpen } = useAuth();
+  const { user, isInitialized, setLoginModalOpen, setPricingModalOpen } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: tags = [] } = useQuery({
@@ -996,7 +956,19 @@ export default function ComponentsClient({
   const showStaleIndicator = isFetching && !isLoading;
 
   return (
-    <div className="flex min-h-[calc(100dvh-60px)] bg-[#FAFAFA] relative">
+    <div className="relative flex min-h-[calc(100dvh-60px)] overflow-hidden bg-[#080605] font-manrope text-white">
+      <div className="pointer-events-none absolute -left-[0.05%] -right-[0.02%] top-[-48px] h-[1104px]" data-node-id="218:67">
+        <div className="absolute inset-[-31.7%_-18.22%_-31.7%_-18.15%]">
+          <Image
+            src="/components-page/figma-bg.svg"
+            alt=""
+            fill
+            priority
+            sizes="136vw"
+            className="block max-w-none object-fill"
+          />
+        </div>
+      </div>
       <style dangerouslySetInnerHTML={{
         __html: `
         .no-scrollbar::-webkit-scrollbar {
@@ -1041,46 +1013,46 @@ export default function ComponentsClient({
         }
       `}} />
       {/* ── Left Sidebar ───────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex flex-col w-[260px] shrink-0 border-r border-gray-100 bg-[#FAFAFA] pt-4 font-manrope sticky top-[60px] h-[calc(100dvh-60px)] self-start">
+      <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope sticky top-[60px] h-[calc(100dvh-60px)] self-start">
 
         {/* Plan / Upsell Block — loading animation until auth resolves */}
         {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
-          <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col items-center justify-center py-3 gap-3">
               <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                 <path className="opacity-75" fill="currentColor" d="M12 2a10 10 0 00-10 10h3a7 7 0 017-7V2z" />
               </svg>
-              <span className="text-[0.72rem] font-semibold text-slate-400">Loading plan...</span>
+              <span className="text-[0.72rem] font-semibold text-white/70">Loading plan...</span>
             </div>
           </div>
         ) : isProUser ? (
           <ProSubscriptionCard subscription={activeSubscription} />
         ) : (
-        <div className="mx-4 mb-6 bg-slate-100 rounded-xl p-4 border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] shrink-0">
+        <div className="mx-4 mb-6 rounded-2xl p-4 border border-white bg-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.07)] shrink-0">
           <div className="flex items-center gap-2 mb-4 justify-center">
             <IconUnlock className="text-orange-500 w-5 h-5" />
-            <span className="text-[#3B82F6] font-bold text-[0.95rem]">Unlock Premium+</span>
+            <span className="text-white font-bold text-[0.95rem]">Unlock Premium+</span>
           </div>
 
           <div className="space-y-2 mb-4 ">
-            <div className="flex items-start gap-2.5 bg-[#F0F6FF] border border-[#BFDBFE] rounded-lg p-2.5">
+            <div className="flex items-start gap-2.5 bg-white/10 border border-white/20 rounded-lg p-2.5">
               <div className="mt-0.5 shrink-0 bg-[#3B82F6] rounded-full w-4 h-4 flex items-center justify-center text-white">
                 <IconCheck />
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[0.65rem] text-gray-800 font-bold leading-tight">Everything in Components</span>
-                <span className="text-[0.65rem] text-gray-500 font-medium leading-tight">Unlimited Components</span>
+                <span className="text-[0.65rem] text-white font-bold leading-tight">Everything in Components</span>
+                <span className="text-[0.65rem] text-white/70 font-medium leading-tight">Unlimited Components</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5 border border-gray-200 rounded-lg p-2.5 bg-white">
+            <div className="flex items-start gap-2.5 border border-white/20 rounded-lg p-2.5 bg-white/10">
               <div className="mt-0.5 shrink-0 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-gray-400">
                 <IconCheck />
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-[0.65rem] text-gray-800 font-bold leading-tight">50+ Website UI Template</span>
-                <span className="text-[0.65rem] text-gray-500 font-medium leading-tight">All future components</span>
+                <span className="text-[0.65rem] text-white font-bold leading-tight">50+ Website UI Template</span>
+                <span className="text-[0.65rem] text-white/70 font-medium leading-tight">All future components</span>
               </div>
             </div>
           </div>
@@ -1088,7 +1060,7 @@ export default function ComponentsClient({
           <button
             type="button"
             onClick={() => setPricingModalOpen(true)}
-            className="w-full text-gray-900 border border-gray-300 bg-gray-50 hover:bg-black hover:text-white transition-all duration-100 cursor-pointer font-bold text-[0.75rem] py-3 rounded-lg transition-colors shadow-sm"
+            className="w-full text-white border border-white/50 bg-white/10 hover:bg-white/20 transition-all duration-100 cursor-pointer font-bold text-[0.75rem] py-3 rounded-lg shadow-sm"
           >
             BUY NOW !
           </button>
@@ -1097,9 +1069,9 @@ export default function ComponentsClient({
 
         {/* Components section (Fixed in Position) */}
         <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-          <span className="text-[#238B45]" ><Database size={20} strokeWidth={2.25} /></span>
-          <span className="font-bold text-gray-800 text-[15px]">Components</span>
-          <span className="ml-auto text-[0.65rem] font-bold bg-gray-200 text-gray-600 px-2 py-0.5 rounded">
+          <span className="text-[#d66a04]" ><Database size={20} strokeWidth={2.25} /></span>
+          <span className="font-bold text-white text-[15px]">Components</span>
+          <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
             {total}
           </span>
         </div>
@@ -1115,12 +1087,12 @@ export default function ComponentsClient({
                 onMouseEnter={() => prefetchCategory(cat)}
                 onFocus={() => prefetchCategory(cat)}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[0.85rem] font-medium transition-all cursor-pointer font-manrope border ${activeCategory === cat
-                  ? "text-[#238B45] font-bold bg-[#238B45]/5 border-[#238B45]/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50 border-transparent"
+                  ? "text-white font-bold bg-white/5 border-white/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
+                  : "text-white hover:text-white hover:bg-white/5 border-transparent"
                   }`}
               >
                 {cat}
-                <span className={activeCategory === cat ? "text-[#238B45]" : "text-gray-400"}><IconChevron /></span>
+                <span className={activeCategory === cat ? "text-white" : "text-white/55"}><IconChevron /></span>
               </button>
             ))}
           </nav>
@@ -1128,28 +1100,28 @@ export default function ComponentsClient({
       </aside>
 
       {/* ── Main Area ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#FAFAFA]">
+      <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent">
         {/* Page title section */}
         <div className="px-8 pt-4 pb-4">
-          <h1 className="font-outfit font-bold text-[24px] text-[#161616] leading-tight">
+          <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
             Browse Figma Components, Wireframe &amp; UI Design
           </h1>
-          <p className="font-manrope font-normal text-[14px] text-gray-500 mt-1">
+          <p className="font-manrope font-normal text-[14px] text-[#cccccc] mt-1">
             {total > 0 ? `${total}+ Components` : "Components"}
           </p>
         </div>
 
         {/* Sticky Toolbar */}
-        <div className="sticky top-[60px] z-20 px-8 py-4 bg-[#FAFAFA] font-manrope">
+        <div className="sticky top-[60px] z-20 px-8 py-4 bg-transparent font-manrope backdrop-blur-[2px]">
           <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 xl:gap-5">
             {/* View mode segmented control */}
-            <div className="flex items-center bg-white border border-gray-200/60 rounded-lg p-1 gap-1 shrink-0">
+            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
               <button
                 type="button"
                 onClick={() => setViewMode("wireframe")}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "wireframe"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 <IconWireframe />
@@ -1159,8 +1131,8 @@ export default function ComponentsClient({
                 type="button"
                 onClick={() => setViewMode("ui-design")}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "ui-design"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 <IconPalette />
@@ -1169,13 +1141,13 @@ export default function ComponentsClient({
             </div>
 
             {/* Platform segmented control */}
-            <div className="flex items-center bg-white border border-gray-200/60 rounded-lg p-1 gap-1 shrink-0">
+            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
               <button
                 type="button"
                 onClick={() => setPlatformMode("all")}
                 className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "all"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 All
@@ -1184,8 +1156,8 @@ export default function ComponentsClient({
                 type="button"
                 onClick={() => setPlatformMode("web")}
                 className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "web"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 Web
@@ -1194,8 +1166,8 @@ export default function ComponentsClient({
                 type="button"
                 onClick={() => setPlatformMode("app")}
                 className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "app"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 App
@@ -1203,13 +1175,13 @@ export default function ComponentsClient({
             </div>
 
             {/* Pricing segmented control */}
-            <div className="flex items-center bg-white border border-gray-200/60 rounded-lg p-1 gap-1 shrink-0">
+            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
               <button
                 type="button"
                 onClick={() => togglePriceMode("free")}
                 className={`px-6 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "free"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
                 Free
@@ -1218,11 +1190,11 @@ export default function ComponentsClient({
                 type="button"
                 onClick={() => togglePriceMode("pro")}
                 className={`flex items-center gap-1 px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "pro"
-                  ? "bg-[#238B45] text-[#e5f5e0] shadow-sm"
-                  : "text-gray-500 hover:text-black hover:bg-gray-50"
+                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                  : "text-white hover:bg-white/10"
                   }`}
               >
-                <Crown size={16} color={priceMode === "pro" ? "#e5f5e0" : "black"} strokeWidth={2} />
+                <Crown size={16} color={priceMode === "pro" ? "#e5f5e0" : "#d66a04"} strokeWidth={2} />
                 Pro
               </button>
             </div>
@@ -1234,7 +1206,7 @@ export default function ComponentsClient({
               {/* Search */}
               <div className="relative w-full lg:w-[260px] xl:w-[280px]">
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/65"
                   width="14"
                   height="14"
                   viewBox="0 0 16 16"
@@ -1244,7 +1216,7 @@ export default function ComponentsClient({
                   <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
                 <input
-                  className="w-full pl-8 pr-4 py-2 bg-white border border-gray-200/60 rounded-lg text-[0.82rem] text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition"
+                  className="w-full pl-8 pr-4 py-2 border border-[rgba(229,231,235,0.6)] rounded-lg bg-white/10 text-[0.82rem] text-white placeholder-white/75 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/70 transition"
                   placeholder="Search components..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -1255,7 +1227,7 @@ export default function ComponentsClient({
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="flex items-center justify-center min-w-[80px] h-[36px] text-[0.82rem] font-bold text-gray-600 bg-[#F3F4F6] hover:bg-[#E5E7EB] px-4 rounded-lg transition-colors shrink-0 cursor-pointer"
+                className="flex items-center justify-center min-w-[80px] h-[36px] text-[0.82rem] font-bold text-white bg-[#6a7282] hover:bg-[#788194] border border-[#eaeaea] px-4 rounded-md transition-colors shrink-0 cursor-pointer"
               >
                 {showStaleIndicator ? (
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -1273,19 +1245,19 @@ export default function ComponentsClient({
         {/* Grid area */}
         <div className="flex-1 px-6 py-5">
           {isError && (
-            <div className="flex items-center justify-center py-24 text-red-400 text-sm">
+            <div className="flex items-center justify-center py-24 text-red-200 text-sm">
               Could not load components from API.
             </div>
           )}
 
           {!isLoading && !isError && filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-gray-400 gap-2">
+            <div className="flex flex-col items-center justify-center py-24 text-white/70 gap-2">
               <IconGrid />
               <p className="text-sm">No components match your filters.</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {/* Skeleton cards during initial load */}
             {showSkeletons &&
               Array.from({ length: SKELETON_COUNT }).map((_, i) => (
