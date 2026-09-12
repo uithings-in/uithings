@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
@@ -24,13 +25,19 @@ function setNavScrolled(isScrolled: boolean) {
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const isComponentsPage = pathname === "/components" || pathname?.startsWith("/components");
 
   useEffect(() => {
+    if (isComponentsPage) {
+      setNavScrolled(false);
+      return;
+    }
     const handleScroll = () => setNavScrolled(window.scrollY > 20);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isComponentsPage]);
 
   const navLinks = [
     { name: "Components", href: "/components" },
@@ -42,40 +49,83 @@ export default function Navbar() {
 
   return (
     <header className="landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full bg-transparent">
-      <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 lg:px-[120px]">
-        <BrandLogo />
+      {isComponentsPage ? (
+        /* Full-width, edge-to-edge transparent layout on /components */
+        <div className="flex h-full w-full items-center justify-between px-4 lg:px-6">
+          <div className="flex items-center justify-start shrink-0">
+            <BrandLogo />
+          </div>
 
-        <nav
-          className="hidden items-center justify-center gap-8 text-[18px] font-medium leading-[22px] text-[#F7F7FD] md:flex"
-          style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
-        >
-          {navLinks.map((link) => (
+          <nav
+            className="hidden items-center justify-center gap-8 text-[18px] font-medium leading-[22px] text-[#F7F7FD] md:flex"
+            style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+          >
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="transition-colors duration-200 hover:text-white"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex items-center justify-end shrink-0">
             <a
-              key={link.name}
-              href={link.href}
-              className="transition-colors duration-200 hover:text-white"
+              href="#login"
+              className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex"
+              style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
             >
-              {link.name}
+              Log in
             </a>
-          ))}
-        </nav>
 
-        <a
-          href="#login"
-          className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex"
-          style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
-        >
-          Log in
-        </a>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="rounded-full p-2 text-[#A6A6C1] hover:bg-white/10 hover:text-white md:hidden"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Standard centered container layout on all other pages */
+        <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 lg:px-[120px]">
+          <BrandLogo />
 
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="rounded-full p-2 text-[#A6A6C1] hover:bg-white/10 hover:text-white md:hidden"
-          aria-label="Toggle navigation menu"
-        >
-          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </div>
+          <nav
+            className="hidden items-center justify-center gap-8 text-[18px] font-medium leading-[22px] text-[#F7F7FD] md:flex"
+            style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+          >
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="transition-colors duration-200 hover:text-white"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
+
+          <a
+            href="#login"
+            className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex"
+            style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+          >
+            Log in
+          </a>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-full p-2 text-[#A6A6C1] hover:bg-white/10 hover:text-white md:hidden"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      )}
 
       {mobileMenuOpen && (
         <div
