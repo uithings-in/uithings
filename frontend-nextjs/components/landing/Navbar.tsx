@@ -33,15 +33,15 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: "Components", href: "#components" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "FAQs", href: "#faq" },
+    { name: "Components", href: "/components" },
+    { name: "Pricing", href: "/#pricing" },
+    { name: "FAQs", href: "/#faq" },
     { name: "Blog", href: "/blog" },
-    { name: "Contact Us", href: "#cta" },
+    { name: "Contact Us", href: "/#cta" },
   ];
 
   return (
-    <header className="landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full">
+    <header className="landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full bg-transparent">
       <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-6 lg:px-[120px]">
         <BrandLogo />
 

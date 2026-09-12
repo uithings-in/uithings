@@ -7,8 +7,10 @@ import { componentsApi } from "../../api/components";
 import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from "../../api/payments";
 import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
+import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Database } from "lucide-react";
+
 
 
 
@@ -186,16 +188,14 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
                 style={{ background: "#d66a04" }}>
                 <Crown size={14} color="white" strokeWidth={2.5} />
               </div>
-              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.56rem] font-extrabold uppercase tracking-wider flex items-center gap-1 ${
-                expiresSoon
-                  ? "bg-red-50 text-red-600"
-                  : daysLeft > 0
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                    : "bg-red-50 text-red-600"
-              }`}>
-                <span className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  expiresSoon ? "bg-red-500" : daysLeft > 0 ? "bg-emerald-500 animate-pulse" : "bg-red-500"
-                }`} />
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.56rem] font-extrabold uppercase tracking-wider flex items-center gap-1 ${expiresSoon
+                ? "bg-red-50 text-red-600"
+                : daysLeft > 0
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                  : "bg-red-50 text-red-600"
+                }`}>
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${expiresSoon ? "bg-red-500" : daysLeft > 0 ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                  }`} />
                 {daysLeft > 0 ? "Active" : "Expired"}
               </span>
             </div>
@@ -246,9 +246,8 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
           </p>
         </div>
         <span
-          className={`shrink-0 rounded-md px-2 py-1 text-[0.56rem] font-extrabold uppercase tracking-wide ${
-            expiresSoon ? "bg-red-50 text-red-600" : "bg-sky-50 text-sky-700"
-          }`}
+          className={`shrink-0 rounded-md px-2 py-1 text-[0.56rem] font-extrabold uppercase tracking-wide ${expiresSoon ? "bg-red-50 text-red-600" : "bg-sky-50 text-sky-700"
+            }`}
         >
           {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
         </span>
@@ -271,12 +270,14 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
 // ── SkeletonCard ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <article className="rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2 animate-pulse bg-white/10">
+    <article
+      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
+    >
       {/* Preview placeholder */}
-      <div className="h-[210px] bg-white/20 rounded-xl" />
+      <div className="flex-1 bg-white/20 rounded-xl min-h-0" />
 
       {/* Footer row placeholder */}
-      <div className="px-2 pt-3 pb-3 flex items-center justify-between">
+      <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <div className="h-3.5 w-24 bg-white/25 rounded-full" />
           <div className="h-3 w-8 bg-white/15 rounded-md" />
@@ -289,8 +290,8 @@ function SkeletonCard() {
       </div>
 
       {/* Actions placeholder */}
-      <div className="px-2 pb-2">
-        <div className="w-full h-9 bg-white/15 rounded-full" />
+      <div className="px-1 pb-1 shrink-0">
+        <div className="w-full h-8 bg-white/15 rounded-full" />
       </div>
     </article>
   );
@@ -397,9 +398,8 @@ function PreviewModal({
               aria-pressed={isFavorite}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${
-                isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-              }`}
+              className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
+                }`}
             >
               <Heart size={18} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
             </button>
@@ -506,11 +506,15 @@ function ComponentCard({
   }
 
   return (
-    <article className="rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
-      style={{ background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
+    <article
+      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
+      style={{
+        background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
+      }}
+    >
       {/* Preview */}
       <div
-        className="relative cursor-pointer group/preview overflow-hidden h-[210px] w-full rounded-xl border-2 border-[#9FE870]/40 bg-[#F4F9ED]"
+        className="relative cursor-pointer group/preview overflow-hidden flex-1 min-h-0 w-full rounded-xl border-2 border-[#9FE870]/40 bg-[#F4F9ED]"
         onClick={onPreview}
         title="Click to preview"
       >
@@ -520,7 +524,7 @@ function ComponentCard({
             alt={item.name}
             fill
             priority={priority}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1920px) 25vw, 20vw"
             className="object-contain transition-transform duration-300 group-hover/preview:scale-[1.02]"
           />
         ) : (
@@ -538,48 +542,45 @@ function ComponentCard({
           aria-pressed={isFavorite}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-300 disabled:cursor-wait disabled:opacity-70 ${
-            isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-          }`}
+          className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-300 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
+            }`}
         >
-          <Heart size={18} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
+          <Heart size={16} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
 
       {/* Footer row */}
-      <div className="px-2 pt-3 pb-3 flex items-center justify-between">
+      <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="font-semibold text-white text-[12.8px] truncate">{item.name}</span>
+          <span className="font-semibold text-white text-[12.5px] truncate">{item.name}</span>
           {isPro ? (
             <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
-              <Crown size={20} color="#d66a04" strokeWidth={2} />
-              {/* PRO */}
+              <Crown size={18} color="#d66a04" strokeWidth={2} />
             </span>
           ) : (
-            <span className="text-[9.6px] font-bold text-white px-1.5 py-0.5 rounded border border-[#19ff00] bg-[#00ae34] shrink-0 uppercase tracking-wide">
+            <span className="text-[9.5px] font-bold text-white px-1.5 py-0.5 rounded border border-[#19ff00] bg-[#00ae34] shrink-0 uppercase tracking-wide">
               FREE
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-white text-[12px]">
+        <div className="flex items-center gap-1 text-white text-[11.5px]">
           <div className="flex items-center ml-1">
             <button type="button" className="hover:text-red-500 transition-colors">
-              {/* <IconHeart /> */}
-              <ArrowDownToLine size={16} strokeWidth={1.5} />
+              <ArrowDownToLine size={15} strokeWidth={1.5} />
             </button>
-            <span className="font-medium">{formatCompactCount(downloadCount)}</span>
+            <span className="font-medium ml-0.5">{formatCompactCount(downloadCount)}</span>
           </div>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="px-1 pb-1">
+      <div className="px-1 pb-1 shrink-0">
         <button
           type="button"
           onClick={handleCopy}
           disabled={isCopying || isSuccess}
-          className={`w-full flex items-center justify-center gap-1.5 text-[13.6px] font-semibold rounded-full py-2 mt-2 transition-all duration-300 cursor-pointer font-manrope border ${isSuccess
+          className={`w-full flex items-center justify-center gap-1.5 text-[13px] font-semibold rounded-full py-1.5 mt-1 transition-all duration-300 cursor-pointer font-manrope border ${isSuccess
             ? "bg-green-50 text-green-600 border-green-200"
             : showLock
               ? "bg-white/10 text-white/50 border-white/30"
@@ -924,7 +925,7 @@ export default function ComponentsClient({
             queryKey: ["components", "data", item._id],
             queryFn: () => componentsApi.getComponentData(item._id),
             staleTime: 10 * 60 * 1000,
-      })
+          })
         ).figmaDataBase64;
       if (!payload) throw new Error("Component payload is missing.");
       await copyToFigma(payload, item.name);
@@ -956,21 +957,23 @@ export default function ComponentsClient({
   const showStaleIndicator = isFetching && !isLoading;
 
   return (
-    <div className="relative flex min-h-[calc(100dvh-60px)] overflow-hidden bg-[#080605] font-manrope text-white">
-      <div className="pointer-events-none absolute -left-[0.05%] -right-[0.02%] top-[-48px] h-[1104px]" data-node-id="218:67">
-        <div className="absolute inset-[-31.7%_-18.22%_-31.7%_-18.15%]">
-          <Image
-            src="/components-page/figma-bg.svg"
-            alt=""
-            fill
-            priority
-            sizes="136vw"
-            className="block max-w-none object-fill"
-          />
+    <>
+      <Navbar />
+      <div className="relative flex h-[calc(100dvh-60px)] pt-[60px] overflow-hidden bg-[#080605] font-manrope text-white">
+        <div className="pointer-events-none fixed -left-[0.05%] -right-[0.02%] top-[-48px] h-[1104px] z-0" data-node-id="218:67">
+          <div className="absolute inset-[-31.7%_-18.22%_-31.7%_-18.15%]">
+            <Image
+              src="/components-page/figma-bg.svg"
+              alt=""
+              fill
+              priority
+              sizes="136vw"
+              className="block max-w-none object-fill"
+            />
+          </div>
         </div>
-      </div>
-      <style dangerouslySetInnerHTML={{
-        __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
         .no-scrollbar::-webkit-scrollbar {
           display: none !important;
         }
@@ -1012,320 +1015,321 @@ export default function ComponentsClient({
           100% { background-position: -200% 0; }
         }
       `}} />
-      {/* ── Left Sidebar ───────────────────────────────────────────────── */}
-      <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope sticky top-[60px] h-[calc(100dvh-60px)] self-start">
+        {/* ── Left Sidebar ───────────────────────────────────────────────── */}
+        <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope sticky top-[60px] h-[calc(100dvh-60px)] self-start">
 
-        {/* Plan / Upsell Block — loading animation until auth resolves */}
-        {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
-          <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <div className="flex flex-col items-center justify-center py-3 gap-3">
-              <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                <path className="opacity-75" fill="currentColor" d="M12 2a10 10 0 00-10 10h3a7 7 0 017-7V2z" />
-              </svg>
-              <span className="text-[0.72rem] font-semibold text-white/70">Loading plan...</span>
-            </div>
-          </div>
-        ) : isProUser ? (
-          <ProSubscriptionCard subscription={activeSubscription} />
-        ) : (
-        <div className="mx-4 mb-6 rounded-2xl p-4 border border-white bg-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.07)] shrink-0">
-          <div className="flex items-center gap-2 mb-4 justify-center">
-            <IconUnlock className="text-orange-500 w-5 h-5" />
-            <span className="text-white font-bold text-[0.95rem]">Unlock Premium+</span>
-          </div>
-
-          <div className="space-y-2 mb-4 ">
-            <div className="flex items-start gap-2.5 bg-white/10 border border-white/20 rounded-lg p-2.5">
-              <div className="mt-0.5 shrink-0 bg-[#3B82F6] rounded-full w-4 h-4 flex items-center justify-center text-white">
-                <IconCheck />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[0.65rem] text-white font-bold leading-tight">Everything in Components</span>
-                <span className="text-[0.65rem] text-white/70 font-medium leading-tight">Unlimited Components</span>
+          {/* Plan / Upsell Block — loading animation until auth resolves */}
+          {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
+            <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+              <div className="flex flex-col items-center justify-center py-3 gap-3">
+                <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path className="opacity-75" fill="currentColor" d="M12 2a10 10 0 00-10 10h3a7 7 0 017-7V2z" />
+                </svg>
+                <span className="text-[0.72rem] font-semibold text-white/70">Loading plan...</span>
               </div>
             </div>
-
-            <div className="flex items-start gap-2.5 border border-white/20 rounded-lg p-2.5 bg-white/10">
-              <div className="mt-0.5 shrink-0 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-gray-400">
-                <IconCheck />
+          ) : isProUser ? (
+            <ProSubscriptionCard subscription={activeSubscription} />
+          ) : (
+            <div className="mx-4 mb-6 rounded-2xl p-4 border border-white bg-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.07)] shrink-0">
+              <div className="flex items-center gap-2 mb-4 justify-center">
+                <IconUnlock className="text-orange-500 w-5 h-5" />
+                <span className="text-white font-bold text-[0.95rem]">Unlock Premium+</span>
               </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[0.65rem] text-white font-bold leading-tight">50+ Website UI Template</span>
-                <span className="text-[0.65rem] text-white/70 font-medium leading-tight">All future components</span>
+
+              <div className="space-y-2 mb-4 ">
+                <div className="flex items-start gap-2.5 bg-white/10 border border-white/20 rounded-lg p-2.5">
+                  <div className="mt-0.5 shrink-0 bg-[#3B82F6] rounded-full w-4 h-4 flex items-center justify-center text-white">
+                    <IconCheck />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[0.65rem] text-white font-bold leading-tight">Everything in Components</span>
+                    <span className="text-[0.65rem] text-white/70 font-medium leading-tight">Unlimited Components</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5 border border-white/20 rounded-lg p-2.5 bg-white/10">
+                  <div className="mt-0.5 shrink-0 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-gray-400">
+                    <IconCheck />
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[0.65rem] text-white font-bold leading-tight">50+ Website UI Template</span>
+                    <span className="text-[0.65rem] text-white/70 font-medium leading-tight">All future components</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPricingModalOpen(true)}
+                className="w-full text-white border border-white/50 bg-white/10 hover:bg-white/20 transition-all duration-100 cursor-pointer font-bold text-[0.75rem] py-3 rounded-lg shadow-sm"
+              >
+                BUY NOW !
+              </button>
+            </div>
+          )}
+
+          {/* Components section (Fixed in Position) */}
+          <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
+            <span className="text-[#d66a04]" ><Database size={20} strokeWidth={2.25} /></span>
+            <span className="font-bold text-white text-[15px]">Components</span>
+            <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
+              {total}
+            </span>
+          </div>
+
+          {/* Scrollable Categories List Container (Hidden scrollbar) */}
+          <div className="category-scrollbar flex-1 overflow-y-auto pb-8 select-none">
+            <nav className="flex flex-col px-3">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => selectCategory(cat)}
+                  onMouseEnter={() => prefetchCategory(cat)}
+                  onFocus={() => prefetchCategory(cat)}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[0.85rem] font-medium transition-all cursor-pointer font-manrope border ${activeCategory === cat
+                    ? "text-white font-bold bg-white/5 border-white/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
+                    : "text-white hover:text-white hover:bg-white/5 border-transparent"
+                    }`}
+                >
+                  {cat}
+                  <span className={activeCategory === cat ? "text-white" : "text-white/55"}><IconChevron /></span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </aside>
+
+        {/* ── Main Area ─────────────────────────────────────────────────────── */}
+        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-[calc(100dvh-60px)] overflow-hidden">
+          {/* Page title section */}
+          <div className="px-8 pt-3 pb-2 shrink-0">
+            <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
+              Browse Figma Components, Wireframe &amp; UI Design
+            </h1>
+            <p className="font-manrope font-normal text-[14px] text-[#cccccc] mt-1">
+              {total > 0 ? `${total}+ Components` : "Components"}
+            </p>
+          </div>
+
+          {/* Toolbar Section (sticky under navbar with transparent background) */}
+          <div className="sticky top-0 z-30 px-8 py-2 bg-transparent font-manrope shrink-0 border-b border-white/15">
+            <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 xl:gap-5">
+              {/* View mode segmented control */}
+              <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-0.5 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("wireframe")}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "wireframe"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  <IconWireframe />
+                  Wireframe
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("ui-design")}
+                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "ui-design"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  <IconPalette />
+                  UI Design
+                </button>
+              </div>
+
+              {/* Platform segmented control */}
+              <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-0.5 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
+                <button
+                  type="button"
+                  onClick={() => setPlatformMode("all")}
+                  className={`px-4 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "all"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlatformMode("web")}
+                  className={`px-4 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "web"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  Web
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlatformMode("app")}
+                  className={`px-4 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "app"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  App
+                </button>
+              </div>
+
+              {/* Pricing segmented control */}
+              <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-0.5 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
+                <button
+                  type="button"
+                  onClick={() => togglePriceMode("free")}
+                  className={`px-5 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "free"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  Free
+                </button>
+                <button
+                  type="button"
+                  onClick={() => togglePriceMode("pro")}
+                  className={`flex items-center gap-1 px-4 py-1 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "pro"
+                    ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
+                    : "text-white hover:bg-white/10"
+                    }`}
+                >
+                  <Crown size={15} color={priceMode === "pro" ? "#e5f5e0" : "#d66a04"} strokeWidth={2} />
+                  Pro
+                </button>
+              </div>
+
+              <div className="hidden lg:block flex-1" />
+
+              {/* Search and Refresh Group */}
+              <div className="flex items-center gap-3 w-full lg:w-auto mt-2 lg:mt-0 shrink-0">
+                {/* Search */}
+                <div className="relative w-full lg:w-[260px] xl:w-[280px]">
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/65"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                  <input
+                    className="w-full pl-8 pr-4 py-1 border border-[rgba(229,231,235,0.6)] rounded-lg bg-white/10 text-[0.82rem] text-white placeholder-white/75 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/70 transition h-[32px]"
+                    placeholder="Search components..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+
+                {/* Refresh button */}
+                <button
+                  type="button"
+                  onClick={() => refetch()}
+                  className="flex items-center justify-center min-w-[80px] h-[32px] text-[0.82rem] font-bold text-white bg-[#6a7282] hover:bg-[#788194] border border-[#eaeaea] px-4 rounded-md transition-colors shrink-0 cursor-pointer"
+                >
+                  {showStaleIndicator ? (
+                    <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
+                      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  ) : (
+                    "Refresh"
+                  )}
+                </button>
               </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setPricingModalOpen(true)}
-            className="w-full text-white border border-white/50 bg-white/10 hover:bg-white/20 transition-all duration-100 cursor-pointer font-bold text-[0.75rem] py-3 rounded-lg shadow-sm"
-          >
-            BUY NOW !
-          </button>
+          {/* Grid area */}
+          <div className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-6 py-5">
+            {isError && (
+              <div className="flex items-center justify-center py-24 text-red-200 text-sm">
+                Could not load components from API.
+              </div>
+            )}
+
+            {!isLoading && !isError && filtered.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-24 text-white/70 gap-2">
+                <IconGrid />
+                <p className="text-sm">No components match your filters.</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 min-[1700px]:grid-cols-5 min-[2300px]:grid-cols-6 min-[2700px]:grid-cols-7 min-[3200px]:grid-cols-8 gap-4 components-cards-grid">
+              {/* Skeleton cards during initial load */}
+              {showSkeletons &&
+                Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                  <SkeletonCard key={`sk-${i}`} />
+                ))}
+
+              {/* Real cards — shown as soon as data arrives (or placeholderData) */}
+              {!showSkeletons &&
+                filtered.map((item, index) => (
+                  <ComponentCard
+                    key={item._id}
+                    item={item}
+                    priority={index < 15}
+                    isCopying={activeId === item._id}
+                    onCopy={() => onCopy(item)}
+                    onDownloadRecorded={() => recordDownload(item)}
+                    onPreview={() =>
+                      setPreviewItem(item)
+                    }
+                    isFavorite={favoriteIds.has(item._id)}
+                    onFavoriteToggle={() => handleFavoriteToggle(item)}
+                    isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === item._id}
+                    isProUser={isProUser}
+                  />
+                ))}
+
+              {isFetchingNextPage &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonCard key={`next-sk-${i}`} />
+                ))}
+            </div>
+
+            {!isError && filtered.length > 0 && (
+              <div ref={loadMoreRef} className="flex justify-center py-6">
+                {hasNextPage ? (
+                  <span className="text-xs font-semibold text-gray-400">
+                    {isFetchingNextPage ? "Loading more..." : "Scroll for more"}
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold text-gray-300">
+                    You have reached the end
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Preview Modal */}
+        {previewItem && (
+          <PreviewModal
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+            onCopy={onCopy}
+            isCopying={activeId === previewItem._id}
+            isFavorite={favoriteIds.has(previewItem._id)}
+            onFavoriteToggle={handleFavoriteToggle}
+            isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === previewItem._id}
+            onDownloadRecorded={recordDownload}
+          />
         )}
 
-        {/* Components section (Fixed in Position) */}
-        <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-          <span className="text-[#d66a04]" ><Database size={20} strokeWidth={2.25} /></span>
-          <span className="font-bold text-white text-[15px]">Components</span>
-          <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
-            {total}
-          </span>
-        </div>
-
-        {/* Scrollable Categories List Container (Hidden scrollbar) */}
-        <div className="category-scrollbar flex-1 overflow-y-auto pb-8 select-none">
-          <nav className="flex flex-col px-3">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => selectCategory(cat)}
-                onMouseEnter={() => prefetchCategory(cat)}
-                onFocus={() => prefetchCategory(cat)}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[0.85rem] font-medium transition-all cursor-pointer font-manrope border ${activeCategory === cat
-                  ? "text-white font-bold bg-white/5 border-white/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
-                  : "text-white hover:text-white hover:bg-white/5 border-transparent"
-                  }`}
-              >
-                {cat}
-                <span className={activeCategory === cat ? "text-white" : "text-white/55"}><IconChevron /></span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      </aside>
-
-      {/* ── Main Area ─────────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent">
-        {/* Page title section */}
-        <div className="px-8 pt-4 pb-4">
-          <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
-            Browse Figma Components, Wireframe &amp; UI Design
-          </h1>
-          <p className="font-manrope font-normal text-[14px] text-[#cccccc] mt-1">
-            {total > 0 ? `${total}+ Components` : "Components"}
-          </p>
-        </div>
-
-        {/* Sticky Toolbar */}
-        <div className="sticky top-[60px] z-20 px-8 py-4 bg-transparent font-manrope backdrop-blur-[2px]">
-          <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 xl:gap-5">
-            {/* View mode segmented control */}
-            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
-              <button
-                type="button"
-                onClick={() => setViewMode("wireframe")}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "wireframe"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                <IconWireframe />
-                Wireframe
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("ui-design")}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${viewMode === "ui-design"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                <IconPalette />
-                UI Design
-              </button>
-            </div>
-
-            {/* Platform segmented control */}
-            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
-              <button
-                type="button"
-                onClick={() => setPlatformMode("all")}
-                className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "all"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => setPlatformMode("web")}
-                className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "web"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                Web
-              </button>
-              <button
-                type="button"
-                onClick={() => setPlatformMode("app")}
-                className={`px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${platformMode === "app"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                App
-              </button>
-            </div>
-
-            {/* Pricing segmented control */}
-            <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-1 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
-              <button
-                type="button"
-                onClick={() => togglePriceMode("free")}
-                className={`px-6 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "free"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                Free
-              </button>
-              <button
-                type="button"
-                onClick={() => togglePriceMode("pro")}
-                className={`flex items-center gap-1 px-5 py-1.5 rounded-md text-[0.82rem] font-bold transition-all cursor-pointer ${priceMode === "pro"
-                  ? "bg-[#6a7282] text-[#e5f5e0] shadow-sm"
-                  : "text-white hover:bg-white/10"
-                  }`}
-              >
-                <Crown size={16} color={priceMode === "pro" ? "#e5f5e0" : "#d66a04"} strokeWidth={2} />
-                Pro
-              </button>
-            </div>
-
-            <div className="hidden lg:block flex-1" />
-
-            {/* Search and Refresh Group */}
-            <div className="flex items-center gap-3 w-full lg:w-auto mt-2 lg:mt-0 shrink-0">
-              {/* Search */}
-              <div className="relative w-full lg:w-[260px] xl:w-[280px]">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/65"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-                <input
-                  className="w-full pl-8 pr-4 py-2 border border-[rgba(229,231,235,0.6)] rounded-lg bg-white/10 text-[0.82rem] text-white placeholder-white/75 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/70 transition"
-                  placeholder="Search components..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              {/* Refresh button */}
-              <button
-                type="button"
-                onClick={() => refetch()}
-                className="flex items-center justify-center min-w-[80px] h-[36px] text-[0.82rem] font-bold text-white bg-[#6a7282] hover:bg-[#788194] border border-[#eaeaea] px-4 rounded-md transition-colors shrink-0 cursor-pointer"
-              >
-                {showStaleIndicator ? (
-                  <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25" />
-                    <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  </svg>
-                ) : (
-                  "Refresh"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Grid area */}
-        <div className="flex-1 px-6 py-5">
-          {isError && (
-            <div className="flex items-center justify-center py-24 text-red-200 text-sm">
-              Could not load components from API.
-            </div>
-          )}
-
-          {!isLoading && !isError && filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-24 text-white/70 gap-2">
-              <IconGrid />
-              <p className="text-sm">No components match your filters.</p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {/* Skeleton cards during initial load */}
-            {showSkeletons &&
-              Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-                <SkeletonCard key={`sk-${i}`} />
-              ))}
-
-            {/* Real cards — shown as soon as data arrives (or placeholderData) */}
-            {!showSkeletons &&
-              filtered.map((item, index) => (
-                <ComponentCard
-                  key={item._id}
-                  item={item}
-                  priority={index < 15}
-                  isCopying={activeId === item._id}
-                  onCopy={() => onCopy(item)}
-                  onDownloadRecorded={() => recordDownload(item)}
-                  onPreview={() =>
-                    setPreviewItem(item)
-                  }
-                  isFavorite={favoriteIds.has(item._id)}
-                  onFavoriteToggle={() => handleFavoriteToggle(item)}
-                  isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === item._id}
-                  isProUser={isProUser}
-                />
-              ))}
-
-            {isFetchingNextPage &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonCard key={`next-sk-${i}`} />
-              ))}
-          </div>
-
-          {!isError && filtered.length > 0 && (
-            <div ref={loadMoreRef} className="flex justify-center py-6">
-              {hasNextPage ? (
-                <span className="text-xs font-semibold text-gray-400">
-                  {isFetchingNextPage ? "Loading more..." : "Scroll for more"}
-                </span>
-              ) : (
-                <span className="text-xs font-semibold text-gray-300">
-                  You have reached the end
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+        {toastMessage && (
+          <Toast
+            message={toastMessage}
+            onClose={() => setToastMessage(null)}
+          />
+        )}
       </div>
-
-      {/* Preview Modal */}
-      {previewItem && (
-        <PreviewModal
-          item={previewItem}
-          onClose={() => setPreviewItem(null)}
-          onCopy={onCopy}
-          isCopying={activeId === previewItem._id}
-          isFavorite={favoriteIds.has(previewItem._id)}
-          onFavoriteToggle={handleFavoriteToggle}
-          isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === previewItem._id}
-          onDownloadRecorded={recordDownload}
-        />
-      )}
-
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
-    </div>
+    </>
   );
 }
