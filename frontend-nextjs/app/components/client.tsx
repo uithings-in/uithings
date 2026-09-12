@@ -1102,10 +1102,10 @@ export default function ComponentsClient({
           </div>
         </aside>
 
-        {/* ── Main Area ─────────────────────────────────────────────────────── */}
-        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-[calc(100dvh-60px)] overflow-hidden">
-          {/* Page title section */}
-          <div className="px-8 pt-3 pb-2 shrink-0">
+        {/* ── Main Area (Scrolls heading away while filter bar sticks to top under navbar) ──────────────── */}
+        <div className="category-scrollbar relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-[calc(100dvh-60px)] overflow-y-auto overflow-x-hidden">
+          {/* Page title section (scrolls away naturally) */}
+          <div className="px-8 pt-4 pb-2 shrink-0">
             <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
               Browse Figma Components, Wireframe &amp; UI Design
             </h1>
@@ -1114,7 +1114,7 @@ export default function ComponentsClient({
             </p>
           </div>
 
-          {/* Toolbar Section (sticky under navbar with transparent background) */}
+          {/* Toolbar Section (transparent and sticky directly under navbar) */}
           <div className="sticky top-0 z-30 px-8 py-2 bg-transparent font-manrope shrink-0 border-b border-white/15">
             <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 xl:gap-5">
               {/* View mode segmented control */}
@@ -1245,8 +1245,8 @@ export default function ComponentsClient({
             </div>
           </div>
 
-          {/* Grid area */}
-          <div className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-6 py-5">
+          {/* Grid area (Cards continue scrolling underneath sticky controls) */}
+          <div className="px-8 py-5 flex-1">
             {isError && (
               <div className="flex items-center justify-center py-24 text-red-200 text-sm">
                 Could not load components from API.
