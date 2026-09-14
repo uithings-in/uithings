@@ -956,9 +956,61 @@ export default function ComponentsClient({
   // isFetching (but not initial load) = stale re-fetch in background — keep old data, no skeleton
   const showStaleIndicator = isFetching && !isLoading;
 
+  // Main content scroll, heading, and filter refs to compute exact sticky clipping metrics
+  const mainScrollRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const [clipStyles, setClipStyles] = useState<{ stickyPct: number; maxClip: number; key: number } | null>(null);
+
+  useEffect(() => {
+    let count = 0;
+    const updateClipMetrics = () => {
+      if (!mainScrollRef.current || !filterRef.current) return;
+      const scrollEl = mainScrollRef.current;
+      const filterEl = filterRef.current;
+      const filterTop = filterEl.offsetTop;
+      const maxScroll = Math.max(1, scrollEl.scrollHeight - scrollEl.clientHeight);
+      const stickyPct = Math.min(100, Math.max(0, (filterTop / maxScroll) * 100));
+      const maxClip = Math.max(0, maxScroll - filterTop + 6);
+      count++;
+      setClipStyles({ stickyPct, maxClip, key: count });
+    };
+
+    updateClipMetrics();
+
+    const ro = new ResizeObserver(updateClipMetrics);
+    if (mainScrollRef.current) ro.observe(mainScrollRef.current);
+    if (headingRef.current) ro.observe(headingRef.current);
+    if (filterRef.current) ro.observe(filterRef.current);
+    window.addEventListener("resize", updateClipMetrics);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateClipMetrics);
+    };
+  }, [filtered.length, showSkeletons]);
+
   return (
     <>
       <Navbar />
+      {clipStyles && (
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes clipCards_${clipStyles.key} {
+              0%, ${clipStyles.stickyPct.toFixed(4)}% {
+                clip-path: inset(0px 0 0 0);
+              }
+              100% {
+                clip-path: inset(${clipStyles.maxClip.toFixed(1)}px 0 0 0);
+              }
+            }
+            .cards-clipping-container {
+              animation: clipCards_${clipStyles.key} linear;
+              animation-timeline: scroll(nearest);
+            }
+          `
+        }} />
+      )}
       <div className="relative flex h-[calc(100dvh-60px)] pt-[60px] overflow-hidden bg-[#080605] font-manrope text-white">
         <div className="pointer-events-none fixed -left-[0.05%] -right-[0.02%] top-[-48px] h-[1104px] z-0" data-node-id="218:67">
           <div className="absolute inset-[-31.7%_-18.22%_-31.7%_-18.15%]">
@@ -1103,9 +1155,9 @@ export default function ComponentsClient({
         </aside>
 
         {/* ── Main Area (Scrolls heading away while filter bar sticks to top under navbar) ──────────────── */}
-        <div className="category-scrollbar relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-[calc(100dvh-60px)] overflow-y-auto overflow-x-hidden">
+        <div ref={mainScrollRef} className="category-scrollbar relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-[calc(100dvh-60px)] overflow-y-auto overflow-x-hidden">
           {/* Page title section (scrolls away naturally) */}
-          <div className="px-8 pt-4 pb-2 shrink-0">
+          <div ref={headingRef} className="px-8 pt-4 pb-2 shrink-0">
             <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
               Browse Figma Components, Wireframe &amp; UI Design
             </h1>
@@ -1115,7 +1167,7 @@ export default function ComponentsClient({
           </div>
 
           {/* Toolbar Section (transparent and sticky directly under navbar) */}
-          <div className="sticky top-0 z-30 px-8 py-2 bg-transparent font-manrope shrink-0 border-b border-white/15">
+          <div ref={filterRef} className="sticky top-0 z-30 px-8 py-2 bg-transparent font-manrope shrink-0 border-b border-white/15">
             <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 xl:gap-5">
               {/* View mode segmented control */}
               <div className="flex items-center border border-[rgba(229,231,235,0.6)] rounded p-0.5 gap-1 shrink-0" style={{ background: "radial-gradient(160% 100% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
@@ -1245,8 +1297,8 @@ export default function ComponentsClient({
             </div>
           </div>
 
-          {/* Grid area (Cards continue scrolling underneath sticky controls) */}
-          <div className="px-8 py-5 flex-1">
+          {/* Grid area (Cards clipped at sticky filter boundary) */}
+          <div className="cards-clipping-container px-8 py-5 flex-1">
             {isError && (
               <div className="flex items-center justify-center py-24 text-red-200 text-sm">
                 Could not load components from API.
