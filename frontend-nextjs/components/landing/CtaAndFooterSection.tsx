@@ -101,25 +101,25 @@ export default function CtaAndFooterSection() {
       </div>
 
       {/* Earth Ball / Glowing Horizon Arc */}
-      <div className="relative mx-auto mt-10 w-full max-w-[1400px]">
-        {/* Horizon Arc SVGs - Positioned to stretch full-width across the section */}
-        <div className="pointer-events-none absolute -top-16 left-1/2 h-[750px] w-[1800px] max-w-none -translate-x-1/2 overflow-visible">
+      <div className="relative mx-auto mt-[120px] w-full max-w-[1400px]">
+        {/* Horizon Arc SVGs - Positioned with the apex exactly at the 120px gap boundary */}
+        <div className="pointer-events-none absolute top-0 left-1/2 h-[750px] w-[1800px] max-w-none -translate-x-1/2 overflow-visible">
           {/* Cyan/Blue Atmospheric Outer Glow */}
           <img
             src="/landing/earth-glow-3.svg"
             alt=""
-            className="absolute top-0 left-1/2 h-[540px] w-[1600px] -translate-x-1/2 opacity-70"
+            className="absolute -top-8 left-1/2 h-[540px] w-[1600px] -translate-x-1/2 opacity-70"
           />
           {/* Multi-layered Glowing Planet Horizon Ball */}
           <img
             src="/landing/earth-ball.svg"
             alt=""
-            className="absolute top-8 left-1/2 h-[750px] w-[1720px] -translate-x-1/2"
+            className="absolute top-0 left-1/2 h-[750px] w-[1720px] -translate-x-1/2"
           />
         </div>
 
         {/* Footer Container sitting seamlessly over the horizon background */}
-        <div className="relative z-10 mx-auto max-w-[1240px] px-6 pt-32 sm:px-8 sm:pt-40">
+        <div className="relative z-10 mx-auto max-w-[1240px] px-6 pt-28 sm:px-8 sm:pt-36">
           {/* Main Footer Row */}
           <div className="flex flex-col justify-between gap-12 lg:flex-row lg:gap-16">
             {/* Left Column: Brand, Tagline, Newsletter */}
