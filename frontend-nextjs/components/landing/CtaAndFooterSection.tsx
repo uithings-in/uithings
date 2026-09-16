@@ -219,7 +219,7 @@ export default function CtaAndFooterSection() {
               className="text-xs font-normal text-[#9389A8] sm:text-sm"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              © 2025 ui things. All rights reserved.
+              © 2026 uithings. All rights reserved.
             </p>
 
             {/* Social Icons */}
