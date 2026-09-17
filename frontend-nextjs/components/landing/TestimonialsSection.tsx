@@ -122,7 +122,7 @@ export default function TestimonialsSection() {
   return (
     <section
       id="testimonials"
-      className="relative w-full overflow-hidden bg-[#080605] py-[100px] sm:py-[130px]"
+      className="relative w-full overflow-hidden bg-[#080605] pt-10 pb-20 sm:pt-14 sm:pb-28"
     >
       <style>{`
         @keyframes scrollRight {

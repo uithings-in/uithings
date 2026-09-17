@@ -164,7 +164,7 @@ const featureCards: FeatureCardData[] = [
 
 export default function StackingProcessSection() {
   return (
-    <section id="process" className="relative pb-24 pt-16 md:pb-36 md:pt-24">
+    <section id="process" className="relative pb-10 pt-16 md:pb-14 md:pt-24">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-[747px] text-center md:mb-20">
