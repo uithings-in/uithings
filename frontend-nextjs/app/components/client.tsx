@@ -1157,7 +1157,7 @@ export default function ComponentsClient({
         </aside>
 
         {/* ── Main Area (Title collapses under navbar, cards scroll natively below the white line) ──────────────── */}
-        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-hidden px-8">
+        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-hidden pl-8 pr-0">
           {/* Header area (Title + Filter toolbar) */}
           <div
             ref={headerWrapperRef}
@@ -1169,7 +1169,7 @@ export default function ComponentsClient({
             }}
           >
             {/* Page title section (scrolls up and goes under navbar) */}
-            <div ref={titleRef} className="pt-4 pb-2 bg-transparent">
+            <div ref={titleRef} className="pt-4 pb-2 bg-transparent pr-8">
               <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
                 Browse Figma Components, Wireframe &amp; UI Design
               </h1>
@@ -1178,8 +1178,8 @@ export default function ComponentsClient({
               </p>
             </div>
 
-            {/* Toolbar Section (Sticky under navbar with transparent background and slick white line) */}
-            <div ref={filterRef} className="py-2.5 bg-transparent border-b border-white/20 -mx-8 px-8">
+            {/* Toolbar Section (Sticky under navbar with transparent background) */}
+            <div ref={filterRef} className="py-2.5 bg-transparent border-b border-transparent -ml-8 pl-8 pr-8">
               <div className="flex flex-wrap items-center gap-3">
                 {/* 1. Search Box */}
                 <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white transition-all focus-within:border-white/40 focus-within:ring-1 focus-within:ring-white/10">
@@ -1296,7 +1296,7 @@ export default function ComponentsClient({
           {/* Grid area (Pure native scroll container starting directly at the white line) */}
           <div
             ref={mainScrollRef}
-            className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-8"
+            className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-8 pr-8"
           >
             {isError && (
               <div className="flex items-center justify-center py-24 text-red-200 text-sm">
