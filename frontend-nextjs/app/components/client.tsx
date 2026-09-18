@@ -957,12 +957,66 @@ export default function ComponentsClient({
   const showStaleIndicator = isFetching && !isLoading;
 
   const mainScrollRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const headerWrapperRef = useRef<HTMLDivElement>(null);
+  const titleHeightRef = useRef<number>(68);
+
+  useEffect(() => {
+    if (!titleRef.current) return;
+    const updateTitleHeight = () => {
+      if (titleRef.current) {
+        titleHeightRef.current = titleRef.current.offsetHeight || 68;
+      }
+    };
+    updateTitleHeight();
+    const ro = new ResizeObserver(updateTitleHeight);
+    ro.observe(titleRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const scrollEl = mainScrollRef.current;
+    if (!scrollEl) return;
+
+    let rafId: number | null = null;
+
+    const onScroll = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const scrollTop = scrollEl.scrollTop;
+          const titleHeight = titleHeightRef.current || 68;
+          const titleOffset = Math.min(scrollTop, titleHeight);
+          if (titleRef.current) {
+            titleRef.current.style.marginTop = `-${titleOffset}px`;
+          }
+        });
+      }
+    };
+
+    onScroll();
+    scrollEl.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      scrollEl.removeEventListener("scroll", onScroll);
+    };
+  }, [filtered.length, showSkeletons]);
 
   return (
     <>
       <Navbar />
       <div className="relative flex h-dvh pt-[60px] overflow-hidden bg-[#0d1830] font-manrope text-white">
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" data-node-id="218:67">
+        <div
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          style={{
+            transform: "translate3d(0, 0, 0)",
+            backfaceVisibility: "hidden",
+            contain: "strict",
+          }}
+          data-node-id="218:67"
+        >
           <Image
             src="/components-page/figma-bg.svg"
             alt=""
@@ -1102,12 +1156,20 @@ export default function ComponentsClient({
           </div>
         </aside>
 
-        {/* ── Main Area (Title & Filters transparent with original background; components scroll underneath) ──────────────── */}
-        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-hidden">
-          {/* Top Header Section (Title + Filters) */}
-          <div className="px-8 pt-4 pb-3 bg-transparent shrink-0">
-            {/* Page title section */}
-            <div>
+        {/* ── Main Area (Title collapses under navbar, cards scroll natively below the white line) ──────────────── */}
+        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-hidden px-8">
+          {/* Header area (Title + Filter toolbar) */}
+          <div
+            ref={headerWrapperRef}
+            className="shrink-0 bg-transparent"
+            onWheel={(e) => {
+              if (mainScrollRef.current) {
+                mainScrollRef.current.scrollTop += e.deltaY;
+              }
+            }}
+          >
+            {/* Page title section (scrolls up and goes under navbar) */}
+            <div ref={titleRef} className="pt-4 pb-2 bg-transparent">
               <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
                 Browse Figma Components, Wireframe &amp; UI Design
               </h1>
@@ -1116,8 +1178,8 @@ export default function ComponentsClient({
               </p>
             </div>
 
-            {/* Toolbar Section (Transparent background, same effect as navbar) */}
-            <div className="mt-3">
+            {/* Toolbar Section (Sticky under navbar with transparent background and slick white line) */}
+            <div ref={filterRef} className="py-2.5 bg-transparent border-b border-white/20 -mx-8 px-8">
               <div className="flex flex-wrap items-center gap-3">
                 {/* 1. Search Box */}
                 <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white transition-all focus-within:border-white/40 focus-within:ring-1 focus-within:ring-white/10">
@@ -1231,8 +1293,11 @@ export default function ComponentsClient({
             </div>
           </div>
 
-          {/* Grid area (scrollable container for component cards) */}
-          <div ref={mainScrollRef} className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-8 pt-2 pb-8">
+          {/* Grid area (Pure native scroll container starting directly at the white line) */}
+          <div
+            ref={mainScrollRef}
+            className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-8"
+          >
             {isError && (
               <div className="flex items-center justify-center py-24 text-red-200 text-sm">
                 Could not load components from API.
