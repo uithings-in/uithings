@@ -14,11 +14,13 @@
 }
 
 .font-heading {
-  font-family: var(--font-bricolage), "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--font-bricolage), "Bricolage Grotesque", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 .font-sans {
-  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -91,44 +93,66 @@
   transition: padding 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+
+/* ============================================================
+   /components PAGE
+   Full-width navbar
+   ============================================================ */
+
 .dynamic-island-header.is-components-page .dynamic-island-frame {
-  padding-inline: 20px;
+  width: 100%;
+  padding-inline: 0;
 }
 
 .dynamic-island-header.is-components-page .dynamic-island-shell {
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
 }
 
 .dynamic-island-header.is-components-page .dynamic-island-content {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   padding-inline: 0;
 }
 
-.dynamic-island-header.is-components-page .dynamic-island-content > :last-child {
+.dynamic-island-header.is-components-page .dynamic-island-content> :last-child {
   justify-self: end;
 }
 
-/* Sticky behavior: the shell grows to the viewport, while this inner rail keeps
-   the logo, navigation links, and actions at their original horizontal spots. */
+
+/* ============================================================
+   Sticky Navbar
+   ============================================================ */
+
 .dynamic-island-header.is-stuck {
   padding-top: 0;
 }
 
 .dynamic-island-header.is-stuck .dynamic-island-frame {
+  width: 100%;
   padding-inline: 0;
 }
 
 .dynamic-island-header.is-stuck .dynamic-island-shell {
-  max-width: 100%;
+  width: 100%;
+  max-width: none;
   border-radius: 0;
   box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
 }
 
 .dynamic-island-header.is-stuck .dynamic-island-content {
+  width: 100%;
   padding-inline: 40px 28px;
 }
+
+
+/* ============================================================
+   Responsive Navbar
+   ============================================================ */
 
 @media (min-width: 640px) {
   .dynamic-island-frame {
@@ -142,6 +166,15 @@
   .dynamic-island-header.is-stuck .dynamic-island-content {
     padding-inline: 52px 40px;
   }
+
+  /* Keep Components page full width */
+  .dynamic-island-header.is-components-page .dynamic-island-frame {
+    padding-inline: 0;
+  }
+
+  .dynamic-island-header.is-components-page .dynamic-island-content {
+    padding-inline: 0;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -151,6 +184,15 @@
 
   .dynamic-island-header.is-stuck .dynamic-island-content {
     padding-inline: 56px 40px;
+  }
+
+  /* Keep Components page full width */
+  .dynamic-island-header.is-components-page .dynamic-island-frame {
+    padding-inline: 0;
+  }
+
+  .dynamic-island-header.is-components-page .dynamic-island-content {
+    padding-inline: 0;
   }
 }
 
@@ -162,7 +204,21 @@
   .dynamic-island-header.is-stuck .dynamic-island-content {
     padding-inline: 24px 8px;
   }
+
+  /* Keep Components page full width */
+  .dynamic-island-header.is-components-page .dynamic-island-frame {
+    padding-inline: 0;
+  }
+
+  .dynamic-island-header.is-components-page .dynamic-island-content {
+    padding-inline: 0;
+  }
 }
+
+
+/* ============================================================
+   Hero Responsive
+   ============================================================ */
 
 @media (max-width: 640px) {
   .figma-hero {
@@ -178,12 +234,20 @@
   }
 }
 
+
+/* ============================================================
+   Global Box Sizing
+   ============================================================ */
+
 * {
   box-sizing: border-box;
 }
 
 
-/* Custom Scrollbar Global */
+/* ============================================================
+   Global Scrollbar
+   ============================================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -209,22 +273,68 @@
   background-clip: content-box;
 }
 
-/* Firefox Support */
+
+/* ============================================================
+   Firefox Scrollbar
+   ============================================================ */
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-html,
-body {
+
+/* ============================================================
+   Document Width / Viewport
+   ============================================================ */
+
+html {
+  width: 100%;
+  min-width: 100%;
   margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  width: 100%;
+  min-width: 100%;
+  margin: 0;
+  padding: 0;
   min-height: 100vh;
+
   color: var(--ink);
   background: var(--bg);
+
   font-family: "DM Sans", "Segoe UI", "Trebuchet MS", sans-serif;
-  scrollbar-gutter: stable;
+
+  /*
+   * Prevent accidental horizontal page expansion.
+   * Unlike `overflow-x: hidden`, `clip` does not create
+   * another scrolling mechanism.
+   */
+  overflow-x: clip;
   overflow-y: visible;
 }
+
+/*
+ * Next.js / React root must also occupy the complete viewport.
+ * This prevents an outer root wrapper from becoming narrower
+ * than the browser viewport.
+ */
+#__next,
+#root {
+  width: 100%;
+  min-width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ============================================================
+   Typography
+   ============================================================ */
 
 h1,
 h2,
@@ -248,20 +358,35 @@ samp {
 }
 
 
+/* ============================================================
+   App Shell
+   ============================================================ */
+
 .app-shell {
+  width: 100%;
+  min-width: 100%;
   min-height: 100vh;
 }
+
+
+/* ============================================================
+   Topbar
+   ============================================================ */
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 10;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 16px;
   padding: 14px 20px;
+
   border-bottom: 1px solid var(--line);
+
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(6px);
 }
@@ -281,8 +406,10 @@ samp {
   border: 1px solid var(--line);
   background: #f1f5f9;
   color: var(--ink);
+
   padding: 8px 12px;
   border-radius: 999px;
+
   text-decoration: none;
   font-size: 0.9rem;
 }
@@ -295,6 +422,11 @@ samp {
   border-color: #e2e8f0;
   color: #22c55e;
 }
+
+
+/* ============================================================
+   Generic Page Wrapper
+   ============================================================ */
 
 .page-wrap {
   max-width: 1180px;
@@ -309,12 +441,19 @@ samp {
   background: rgba(255, 255, 255, 0.84);
 }
 
+
+/* ============================================================
+   Generic Hero
+   ============================================================ */
+
 .eyebrow {
   color: #22c55e;
   letter-spacing: 0.08em;
   font-size: 0.8rem;
   font-weight: 700;
+
   font-family: "DM Mono", "Consolas", "Courier New", monospace;
+
   margin-bottom: 8px;
 }
 
@@ -336,8 +475,10 @@ samp {
 
 .hero-actions {
   margin-top: 22px;
+
   display: flex;
   flex-wrap: wrap;
+
   gap: 10px;
 }
 
@@ -345,8 +486,10 @@ samp {
 .secondary-btn {
   border-radius: 10px;
   border: 1px solid transparent;
+
   text-decoration: none;
   padding: 10px 14px;
+
   font-weight: 700;
   cursor: pointer;
 }
@@ -369,29 +512,45 @@ samp {
 
 .hero-note {
   margin-top: 20px;
+
   border: 1px solid #bbf7d0;
   background: rgba(220, 252, 231, 0.35);
+
   border-radius: 10px;
   padding: 10px 12px;
+
   color: #166534;
   font-size: 0.9rem;
 }
+
+
+/* ============================================================
+   Section Header
+   ============================================================ */
 
 .section-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   gap: 12px;
   margin-bottom: 12px;
 }
+
+
+/* ============================================================
+   Forms / Search
+   ============================================================ */
 
 .search-input,
 .stack-form input,
 .stack-form textarea {
   width: 100%;
+
   border: 1px solid var(--line);
   background: #ffffff;
   color: var(--ink);
+
   border-radius: 10px;
   padding: 10px 12px;
 }
@@ -400,9 +559,17 @@ samp {
   margin-bottom: 14px;
 }
 
+
+/* ============================================================
+   Generic Component Grid
+   ============================================================ */
+
 .component-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(280px, 1fr));
+
   gap: 14px;
 }
 
@@ -410,16 +577,21 @@ samp {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px;
+
   background: rgba(255, 255, 255, 0.95);
+
   display: flex;
   flex-direction: column;
+
   gap: 12px;
 }
 
 .preview-box {
   height: 180px;
+
   border-radius: 10px;
   border: 1px solid #e2e8f0;
+
   background: #f1f5f9 center / cover no-repeat;
 }
 
@@ -430,9 +602,15 @@ samp {
 
 .component-content p {
   margin: 6px 0;
+
   color: var(--muted);
   font-size: 0.92rem;
 }
+
+
+/* ============================================================
+   Tags
+   ============================================================ */
 
 .tag-list {
   display: flex;
@@ -443,12 +621,21 @@ samp {
 .tag-pill {
   border: 1px solid #e2e8f0;
   background: #f8fafc;
+
   border-radius: 999px;
   padding: 4px 8px;
+
   font-size: 0.76rem;
+
   font-family: "DM Mono", "Consolas", "Courier New", monospace;
+
   color: var(--muted);
 }
+
+
+/* ============================================================
+   Status
+   ============================================================ */
 
 .status-text {
   color: #166534;
@@ -459,12 +646,19 @@ samp {
   color: #ef4444;
 }
 
+
+/* ============================================================
+   Auth / Add Page
+   ============================================================ */
+
 .auth-card,
 .add-page {
   max-width: 680px;
   margin: 0 auto;
+
   border: 1px solid var(--line);
   border-radius: 12px;
+
   background: #ffffff;
   padding: 20px;
 }
@@ -477,8 +671,14 @@ samp {
 .field-label {
   color: #475569;
   font-size: 0.9rem;
+
   font-family: "DM Mono", "Consolas", "Courier New", monospace;
 }
+
+
+/* ============================================================
+   Mobile
+   ============================================================ */
 
 @media (max-width: 720px) {
   .topbar {
@@ -491,7 +691,10 @@ samp {
 }
 
 
-/* Utility to hide scrollbars */
+/* ============================================================
+   Utility: Hide Scrollbar
+   ============================================================ */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -509,122 +712,65 @@ samp {
 .components-cards-grid {
   display: grid !important;
   gap: 1rem !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr)) !important;
 }
 
 @media (max-width: 640px) {
   .components-cards-grid {
-    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(1, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 641px) and (max-width: 800px) {
   .components-cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 801px) and (max-width: 1023px) {
   .components-cards-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1699px) {
   .components-cards-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 1700px) and (max-width: 2299px) {
   .components-cards-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(5, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 2300px) and (max-width: 2699px) {
   .components-cards-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(6, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 2700px) and (max-width: 3199px) {
   .components-cards-grid {
-    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(7, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 3200px) {
   .components-cards-grid {
-    grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+    grid-template-columns:
+      repeat(8, minmax(0, 1fr)) !important;
   }
 }
 
-
-/* ============================================================
-   /components PAGE
-   Card clipping at the sticky Filter boundary
-   ============================================================ */
-
-/*
- * IMPORTANT:
- *
- * The Navbar remains transparent.
- * The Filter remains transparent.
- * The existing page background remains visible.
- *
- * We do NOT create:
- *   - a solid overlay
- *   - an rgba mask
- *   - a fake background
- *   - a backdrop blur
- *   - a copied background
- *
- * The cards themselves remain normal scrolling content.
- */
-
-
-/*
- * Card viewport
- * -------------
- *
- * This element contains the component cards.
- *
- * `overflow: clip` prevents card pixels from visually escaping
- * outside the card viewport.
- *
- * It does NOT create another scrollbar.
- * It does NOT create another scrolling container.
- */
-.cards-clipping-container {
-  position: relative;
-  background: transparent;
-  overflow: clip;
-
-  /*
-   * Prevent visual overflow such as:
-   *   - shadows
-   *   - borders
-   *   - images
-   *   - rounded corners
-   *   - buttons
-   *
-   * from leaking outside the clipping area.
-   */
-  contain: paint;
-}
-
-
-/*
- * Keep the actual card grid as normal document content.
- *
- * Do NOT:
- *   position: fixed;
- *   position: sticky;
- *   overflow-y: auto;
- *
- * The existing mainScrollRef remains the only scroll container.
- */
-.cards-clipping-container > .components-cards-grid {
-  position: relative;
-}
+
