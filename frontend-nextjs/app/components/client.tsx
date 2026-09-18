@@ -956,61 +956,11 @@ export default function ComponentsClient({
   // isFetching (but not initial load) = stale re-fetch in background — keep old data, no skeleton
   const showStaleIndicator = isFetching && !isLoading;
 
-  // Main content scroll, heading, and filter refs to compute exact sticky clipping metrics
   const mainScrollRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLDivElement>(null);
-  const filterRef = useRef<HTMLDivElement>(null);
-  const [clipStyles, setClipStyles] = useState<{ stickyPct: number; maxClip: number; key: number } | null>(null);
-
-  useEffect(() => {
-    let count = 0;
-    const updateClipMetrics = () => {
-      if (!mainScrollRef.current || !filterRef.current) return;
-      const scrollEl = mainScrollRef.current;
-      const filterEl = filterRef.current;
-      const filterTop = filterEl.offsetTop;
-      const maxScroll = Math.max(1, scrollEl.scrollHeight - scrollEl.clientHeight);
-      const stickyPct = Math.min(100, Math.max(0, (filterTop / maxScroll) * 100));
-      const maxClip = Math.max(0, maxScroll - filterTop + 6);
-      count++;
-      setClipStyles({ stickyPct, maxClip, key: count });
-    };
-
-    updateClipMetrics();
-
-    const ro = new ResizeObserver(updateClipMetrics);
-    if (mainScrollRef.current) ro.observe(mainScrollRef.current);
-    if (headingRef.current) ro.observe(headingRef.current);
-    if (filterRef.current) ro.observe(filterRef.current);
-    window.addEventListener("resize", updateClipMetrics);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", updateClipMetrics);
-    };
-  }, [filtered.length, showSkeletons]);
 
   return (
     <>
       <Navbar />
-      {clipStyles && (
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes clipCards_${clipStyles.key} {
-              0%, ${clipStyles.stickyPct.toFixed(4)}% {
-                clip-path: inset(0px 0 0 0);
-              }
-              100% {
-                clip-path: inset(${clipStyles.maxClip.toFixed(1)}px 0 0 0);
-              }
-            }
-            .cards-clipping-container {
-              animation: clipCards_${clipStyles.key} linear;
-              animation-timeline: scroll(nearest);
-            }
-          `
-        }} />
-      )}
       <div className="relative flex h-dvh pt-[60px] overflow-hidden bg-[#0d1830] font-manrope text-white">
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" data-node-id="218:67">
           <Image
@@ -1152,134 +1102,137 @@ export default function ComponentsClient({
           </div>
         </aside>
 
-        {/* ── Main Area (Scrolls heading away while filter bar sticks to top under navbar) ──────────────── */}
-        <div ref={mainScrollRef} className="category-scrollbar relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-y-auto overflow-x-hidden">
-          {/* Page title section (scrolls away naturally) */}
-          <div ref={headingRef} className="px-8 pt-4 pb-2 shrink-0">
-            <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
-              Browse Figma Components, Wireframe &amp; UI Design
-            </h1>
-            <p className="font-manrope font-normal text-[14px] text-[#cccccc] mt-1">
-              {total > 0 ? `${total}+ Components` : "Components"}
-            </p>
-          </div>
+        {/* ── Main Area (Title & Filters transparent with original background; components scroll underneath) ──────────────── */}
+        <div className="relative z-10 flex-1 flex flex-col min-w-0 bg-transparent h-full overflow-hidden">
+          {/* Top Header Section (Title + Filters) */}
+          <div className="px-8 pt-4 pb-3 bg-transparent shrink-0">
+            {/* Page title section */}
+            <div>
+              <h1 className="font-outfit font-bold text-[24px] text-white leading-[30px]">
+                Browse Figma Components, Wireframe &amp; UI Design
+              </h1>
+              <p className="font-manrope font-normal text-[14px] text-[#cccccc] mt-1">
+                {total > 0 ? `${total}+ Components` : "Components"}
+              </p>
+            </div>
 
-          {/* Toolbar Section (transparent and sticky directly under navbar) */}
-          <div ref={filterRef} className="sticky top-0 z-30 px-8 py-3 bg-transparent font-manrope shrink-0">
-            <div className="flex flex-wrap items-center gap-3">
-              {/* 1. Search Box */}
-              <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white transition-all focus-within:border-white/40 focus-within:ring-1 focus-within:ring-white/10">
-                <Search size={15} className="text-white/50 shrink-0 mr-2.5" />
-                <input
-                  type="text"
-                  placeholder="Search components..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-transparent text-[13px] text-white placeholder-white/40 focus:outline-none"
-                />
-              </div>
-
-              {/* 2. View Mode Toggle (Wireframe / UI Design) */}
-              <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("wireframe")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    viewMode === "wireframe"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <IconWireframe />
-                  Wireframe
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("ui-design")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    viewMode === "ui-design"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <SquarePen size={14} strokeWidth={1.8} />
-                  UI Design
-                </button>
-              </div>
-
-              {/* 3. Platform Mode Toggle (All / Web / App) */}
-              <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setPlatformMode("all")}
-                  className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    platformMode === "all"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlatformMode("web")}
-                  className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    platformMode === "web"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  Web
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPlatformMode("app")}
-                  className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    platformMode === "app"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  App
-                </button>
-              </div>
-
-              {/* 4. Pricing Mode Toggle (Free / Pro) */}
-              <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => togglePriceMode("free")}
-                  className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    priceMode === "free"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  Free
-                </button>
-                <button
-                  type="button"
-                  onClick={() => togglePriceMode("pro")}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                    priceMode === "pro"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  <Crown
-                    size={14}
-                    color={priceMode === "pro" ? "#FFFFFF" : "#FF7A1B"}
-                    strokeWidth={2}
-                    className="transition-transform active:scale-95"
+            {/* Toolbar Section (Transparent background, same effect as navbar) */}
+            <div className="mt-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* 1. Search Box */}
+                <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white transition-all focus-within:border-white/40 focus-within:ring-1 focus-within:ring-white/10">
+                  <Search size={15} className="text-white/50 shrink-0 mr-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search components..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full bg-transparent text-[13px] text-white placeholder-white/40 focus:outline-none"
                   />
-                  Pro
-                </button>
+                </div>
+
+                {/* 2. View Mode Toggle (Wireframe / UI Design) */}
+                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("wireframe")}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      viewMode === "wireframe"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <IconWireframe />
+                    Wireframe
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("ui-design")}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      viewMode === "ui-design"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <SquarePen size={14} strokeWidth={1.8} />
+                    UI Design
+                  </button>
+                </div>
+
+                {/* 3. Platform Mode Toggle (All / Web / App) */}
+                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPlatformMode("all")}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      platformMode === "all"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlatformMode("web")}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      platformMode === "web"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    Web
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlatformMode("app")}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      platformMode === "app"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    App
+                  </button>
+                </div>
+
+                {/* 4. Pricing Mode Toggle (Free / Pro) */}
+                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => togglePriceMode("free")}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      priceMode === "free"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    Free
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => togglePriceMode("pro")}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
+                      priceMode === "pro"
+                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                        : "text-white/70 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Crown
+                      size={14}
+                      color={priceMode === "pro" ? "#FFFFFF" : "#FF7A1B"}
+                      strokeWidth={2}
+                      className="transition-transform active:scale-95"
+                    />
+                    Pro
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Grid area (Cards clipped at sticky filter boundary) */}
-          <div className="cards-clipping-container px-8 py-5 flex-1">
+          {/* Grid area (scrollable container for component cards) */}
+          <div ref={mainScrollRef} className="category-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-8 pt-2 pb-8">
             {isError && (
               <div className="flex items-center justify-center py-24 text-red-200 text-sm">
                 Could not load components from API.
