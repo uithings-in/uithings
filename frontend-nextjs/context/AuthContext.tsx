@@ -3,6 +3,9 @@ import { createContext, useContext, useMemo, useState, useCallback, useEffect } 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "../api/auth";
 import type { User } from "../lib/types";
+import { LoginModal } from "../components/LoginModal";
+import { RegisterModal } from "../components/RegisterModal";
+import { PricingModal } from "../components/PricingModal";
 
 interface AuthContextValue {
   user: User | null;
@@ -87,7 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user, loading, isInitialized, login, register, loginWithGoogle, logout, registerModalOpen, setRegisterModalOpen, loginModalOpen, setLoginModalOpen, pricingModalOpen, setPricingModalOpen]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {loginModalOpen && <LoginModal />}
+      {registerModalOpen && <RegisterModal />}
+      {pricingModalOpen && <PricingModal isOpen={pricingModalOpen} onClose={() => setPricingModalOpen(false)} />}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import { useAuth } from "../../context/AuthContext";
 
 const SCROLLED_CSS =
   "header.landing-nav{background:rgba(0,0,0,.8);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 20px 25px -5px rgba(0,0,0,.5)}";
@@ -27,6 +28,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isComponentsPage = pathname === "/components" || pathname?.startsWith("/components");
+  const { user, setLoginModalOpen } = useAuth();
 
   useEffect(() => {
     if (isComponentsPage) {
@@ -72,13 +74,37 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center justify-end shrink-0">
-            <a
-              href="#login"
-              className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex"
-              style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
-            >
-              Log in
-            </a>
+            {user ? (
+              <a
+                href="/dashboard"
+                className="hidden h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60 transition-all shadow-md md:inline-flex bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white"
+                title={user.name || "Dashboard"}
+                aria-label="User Profile"
+              >
+                {user.profilePicture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.profilePicture}
+                    alt={user.name || "Profile"}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : user.name ? (
+                  user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                ) : (
+                  <User size={18} />
+                )}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setLoginModalOpen(true)}
+                className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex cursor-pointer"
+                style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+              >
+                Log in
+              </button>
+            )}
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -109,13 +135,37 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <a
-            href="#login"
-            className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex"
-            style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
-          >
-            Log in
-          </a>
+          {user ? (
+            <a
+              href="/dashboard"
+              className="hidden h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60 transition-all shadow-md md:inline-flex bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white"
+              title={user.name || "Dashboard"}
+              aria-label="User Profile"
+            >
+              {user.profilePicture ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.profilePicture}
+                  alt={user.name || "Profile"}
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : user.name ? (
+                user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+              ) : (
+                <User size={18} />
+              )}
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setLoginModalOpen(true)}
+              className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex cursor-pointer"
+              style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+            >
+              Log in
+            </button>
+          )}
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -142,13 +192,44 @@ export default function Navbar() {
               {link.name}
             </a>
           ))}
-          <a
-            href="#login"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block w-full rounded-full border border-white/20 bg-white/10 py-2.5 text-center text-[18px] font-medium text-white"
-          >
-            Log in
-          </a>
+          {user ? (
+            <a
+              href="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 p-2.5 text-white hover:bg-white/20 transition-all"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white shadow-sm ring-1 ring-white/30">
+                {user.profilePicture ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.profilePicture}
+                    alt={user.name || "Profile"}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : user.name ? (
+                  user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                ) : (
+                  <User size={18} />
+                )}
+              </div>
+              <div className="truncate text-left">
+                <p className="text-sm font-semibold leading-none truncate">{user.name || "Account"}</p>
+                <p className="text-xs text-white/60 truncate mt-1">{user.email || "View Dashboard"}</p>
+              </div>
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setLoginModalOpen(true);
+              }}
+              className="block w-full rounded-full border border-white/20 bg-white/10 py-2.5 text-center text-[18px] font-medium text-white cursor-pointer"
+            >
+              Log in
+            </button>
+          )}
         </div>
       )}
     </header>
