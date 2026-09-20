@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, LayoutDashboard, CreditCard, LogOut } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import { useAuth } from "../../context/AuthContext";
+import type { User as UserType } from "../../lib/types";
 
 const SCROLLED_CSS =
   "header.landing-nav{background:rgba(0,0,0,.8);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 20px 25px -5px rgba(0,0,0,.5)}";
@@ -24,11 +26,147 @@ function setNavScrolled(isScrolled: boolean) {
   }
 }
 
+function ProfileDropdown({ user, logout }: { user: UserType; logout: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  function handleMouseEnter() {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  }
+
+  function handleMouseLeave() {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 200);
+  }
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={dropdownRef}
+      className="relative hidden md:inline-flex items-center"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60 transition-all shadow-md inline-flex bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white cursor-pointer relative"
+        title={user.name || "Account"}
+        aria-label="User Profile"
+        aria-expanded={isOpen}
+      >
+        {user.profilePicture ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.profilePicture}
+            alt={user.name || "Profile"}
+            className="h-full w-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : user.name ? (
+          user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+        ) : (
+          <User size={18} />
+        )}
+      </button>
+
+      {isOpen && (
+        <div
+          className="absolute right-0 top-[calc(100%+10px)] z-[100] w-64 rounded-2xl border border-white/15 bg-[#0B0B14]/95 p-2 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 text-left"
+          style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
+        >
+          {/* User Info Header */}
+          <div className="flex items-center gap-3 p-3 border-b border-white/10 mb-1">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white shadow-sm ring-1 ring-white/30">
+              {user.profilePicture ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.profilePicture}
+                  alt={user.name || "Profile"}
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : user.name ? (
+                user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+              ) : (
+                <User size={18} />
+              )}
+            </div>
+            <div className="truncate flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <p className="text-sm font-bold text-white truncate leading-tight">{user.name || "User"}</p>
+                {user.isProUser && (
+                  <span className="shrink-0 text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                    PRO
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-white/50 truncate mt-0.5">{user.email}</p>
+            </div>
+          </div>
+
+          {/* Menu Items */}
+          <div className="space-y-1">
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#D4D4D8] hover:text-white hover:bg-white/10 transition duration-150"
+            >
+              <LayoutDashboard size={16} className="text-purple-400" />
+              <span>Dashboard</span>
+            </Link>
+
+            <Link
+              href="/#pricing"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#D4D4D8] hover:text-white hover:bg-white/10 transition duration-150"
+            >
+              <CreditCard size={16} className="text-emerald-400" />
+              <span>Pricing</span>
+            </Link>
+          </div>
+
+          {/* Divider */}
+          <div className="my-1.5 border-t border-white/10" />
+
+          {/* Logout Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsOpen(false);
+              logout();
+            }}
+            className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition duration-150 text-left cursor-pointer"
+          >
+            <LogOut size={16} className="text-rose-400" />
+            <span>Log Out</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isComponentsPage = pathname === "/components" || pathname?.startsWith("/components");
-  const { user, setLoginModalOpen } = useAuth();
+  const { user, isInitialized, setLoginModalOpen, logout } = useAuth();
 
   useEffect(() => {
     if (isComponentsPage) {
@@ -63,38 +201,19 @@ export default function Navbar() {
             style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
           >
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="transition-colors duration-200 hover:text-white"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
-          <div className="flex items-center justify-end shrink-0">
+          <div className="flex items-center justify-end shrink-0 min-w-[116px]">
             {user ? (
-              <a
-                href="/dashboard"
-                className="hidden h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60 transition-all shadow-md md:inline-flex bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white"
-                title={user.name || "Dashboard"}
-                aria-label="User Profile"
-              >
-                {user.profilePicture ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.profilePicture}
-                    alt={user.name || "Profile"}
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : user.name ? (
-                  user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
-                ) : (
-                  <User size={18} />
-                )}
-              </a>
+              <ProfileDropdown user={user} logout={logout} />
             ) : (
               <button
                 type="button"
@@ -125,37 +244,18 @@ export default function Navbar() {
             style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
           >
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="transition-colors duration-200 hover:text-white"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
           {user ? (
-            <a
-              href="/dashboard"
-              className="hidden h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-white/20 hover:ring-white/60 transition-all shadow-md md:inline-flex bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white"
-              title={user.name || "Dashboard"}
-              aria-label="User Profile"
-            >
-              {user.profilePicture ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.profilePicture}
-                  alt={user.name || "Profile"}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : user.name ? (
-                user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
-              ) : (
-                <User size={18} />
-              )}
-            </a>
+            <ProfileDropdown user={user} logout={logout} />
           ) : (
             <button
               type="button"
@@ -183,41 +283,69 @@ export default function Navbar() {
           style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
         >
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.name}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
               className="text-[18px] font-medium text-[#D4D4D8] hover:text-white"
             >
               {link.name}
-            </a>
+            </Link>
           ))}
           {user ? (
-            <a
-              href="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 p-2.5 text-white hover:bg-white/20 transition-all"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white shadow-sm ring-1 ring-white/30">
-                {user.profilePicture ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.profilePicture}
-                    alt={user.name || "Profile"}
-                    className="h-full w-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : user.name ? (
-                  user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
-                ) : (
-                  <User size={18} />
-                )}
+            <div className="flex flex-col gap-2 rounded-2xl border border-white/15 bg-white/5 p-3">
+              <div className="flex items-center gap-3 pb-2 border-b border-white/10">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-[#8A2BE2] to-[#4343D5] text-sm font-bold text-white shadow-sm ring-1 ring-white/30">
+                  {user.profilePicture ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.profilePicture}
+                      alt={user.name || "Profile"}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : user.name ? (
+                    user.name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("")
+                  ) : (
+                    <User size={18} />
+                  )}
+                </div>
+                <div className="truncate text-left flex-1">
+                  <p className="text-sm font-semibold leading-none truncate text-white">{user.name || "Account"}</p>
+                  <p className="text-xs text-white/60 truncate mt-1">{user.email || "User"}</p>
+                </div>
               </div>
-              <div className="truncate text-left">
-                <p className="text-sm font-semibold leading-none truncate">{user.name || "Account"}</p>
-                <p className="text-xs text-white/60 truncate mt-1">{user.email || "View Dashboard"}</p>
-              </div>
-            </a>
+
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold text-[#D4D4D8] hover:text-white hover:bg-white/10 transition"
+              >
+                <LayoutDashboard size={16} className="text-purple-400" />
+                <span>Dashboard</span>
+              </Link>
+
+              <Link
+                href="/#pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold text-[#D4D4D8] hover:text-white hover:bg-white/10 transition"
+              >
+                <CreditCard size={16} className="text-emerald-400" />
+                <span>Pricing</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition text-left cursor-pointer"
+              >
+                <LogOut size={16} className="text-rose-400" />
+                <span>Log Out</span>
+              </button>
+            </div>
           ) : (
             <button
               type="button"
@@ -235,3 +363,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+

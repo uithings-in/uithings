@@ -29,7 +29,9 @@ import {
   Search,
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  ArrowLeft,
+  LogOut
 } from "lucide-react";
 
 function DeleteConfirmModal({
@@ -1276,7 +1278,7 @@ function PlanCard({
 }
 
 function DashboardContent() {
-  const { user, loading: authLoading, setLoginModalOpen } = useAuth();
+  const { user, loading: authLoading, isInitialized, setLoginModalOpen, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -1362,7 +1364,7 @@ function DashboardContent() {
   }
 
   // Loading States
-  if (authLoading || subLoading) {
+  if (!isInitialized || authLoading || (user && subLoading)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
         <Loader2 className="h-10 w-10 animate-spin text-[#238B45]" />
@@ -1472,6 +1474,25 @@ function DashboardContent() {
                 );
               })}
             </nav>
+
+            {/* Bottom Actions: Back to Home & Logout */}
+            <div className="mt-auto pt-6 border-t border-slate-100 flex flex-col gap-1">
+              <Link
+                href="/"
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-[#64748B] hover:bg-slate-50 hover:text-[#1E293B] transition duration-200"
+              >
+                <ArrowLeft size={16} className="text-gray-400" />
+                <span>Back to Home</span>
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 transition duration-200 text-left cursor-pointer"
+              >
+                <LogOut size={16} className="text-red-400" />
+                <span>Log Out</span>
+              </button>
+            </div>
 
           </div>
         </aside>

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LockKeyhole } from "lucide-react";
+import { Loader2, LockKeyhole } from "lucide-react";
 import { componentsApi } from "../../api/components";
 import { uploadApi } from "../../api/upload";
 import { useAuth } from "../../context/AuthContext";
@@ -40,7 +40,7 @@ function AuthRequiredCard({ onLogin }: { onLogin: () => void }) {
 export default function AddComponentPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, setLoginModalOpen } = useAuth();
+  const { user, isInitialized, setLoginModalOpen } = useAuth();
   const [status, setStatus] = useState("");
 
   const addComponentMutation = useMutation({
@@ -88,6 +88,15 @@ export default function AddComponentPage() {
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not add component.");
     }
+  }
+
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center gap-3 bg-[linear-gradient(135deg,#f8fbf6,#eef6f1)]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#238B45]" />
+        <p className="text-sm font-bold text-slate-500">Loading...</p>
+      </div>
+    );
   }
 
   if (!user) {

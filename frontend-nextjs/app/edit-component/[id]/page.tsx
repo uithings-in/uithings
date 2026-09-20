@@ -41,7 +41,7 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, setLoginModalOpen } = useAuth();
+  const { user, isInitialized, setLoginModalOpen } = useAuth();
   const [status, setStatus] = useState("");
 
   const { data: componentData, isLoading } = useQuery({
@@ -105,6 +105,15 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not update component.");
     }
+  }
+
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center gap-3 bg-[linear-gradient(135deg,#f8fbf6,#eef6f1)]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#238B45]" />
+        <p className="text-sm font-bold text-slate-500">Loading...</p>
+      </div>
+    );
   }
 
   if (!user) {
