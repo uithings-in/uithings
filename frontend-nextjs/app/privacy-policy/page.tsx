@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../context/AuthContext";
 import { plansApi } from "../../api/plans";
 import { paymentsApi } from "../../api/payments";
+import Navbar from "@/components/landing/Navbar";
 
 declare global {
   interface Window {
@@ -304,7 +305,8 @@ export default function PrivacyPolicyPage() {
   ];
 
   return (
-    <main className="w-full bg-[#fcfdfa] text-[#111111] font-sans">
+    <main className="w-full bg-[#fcfdfa] text-[#111111] font-sans pt-[60px]">
+      <Navbar />
       {/* Main Content Layout Container */}
       <div className="w-full max-w-[1344px] mx-auto bg-white border-x border-[#e5e7eb] grid lg:grid-cols-[280px_1fr] items-start relative">
         {/* Sticky Table of Contents Sidebar */}

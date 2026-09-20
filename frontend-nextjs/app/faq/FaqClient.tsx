@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import type { Plan } from "../../api/plans";
+import Navbar from "@/components/landing/Navbar";
 
 interface FaqItem {
   question: string;
@@ -352,7 +353,8 @@ export default function FaqClient({ initialPlans }: { initialPlans: Plan[] }) {
 
   return (
     <main className="w-full bg-white text-black">
-      <section className="w-full px-5 pb-12 pt-[78px] sm:px-8 lg:pb-16">
+      <Navbar />
+      <section className="w-full px-5 pb-12 pt-[100px] sm:px-8 lg:pb-16">
         <div className="mx-auto w-full max-w-[860px]">
           <div className="text-center">
             <h1 className="text-[42px] font-bold leading-[1.16] text-[#07150c] md:text-[52px]">

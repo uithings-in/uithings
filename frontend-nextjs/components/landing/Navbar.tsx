@@ -8,23 +8,7 @@ import BrandLogo from "./BrandLogo";
 import { useAuth } from "../../context/AuthContext";
 import type { User as UserType } from "../../lib/types";
 
-const SCROLLED_CSS =
-  "header.landing-nav{background:rgba(0,0,0,.8);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 20px 25px -5px rgba(0,0,0,.5)}";
 
-function setNavScrolled(isScrolled: boolean) {
-  if (typeof document === "undefined") return;
-  let styleEl = document.getElementById("nav-scrolled-css") as HTMLStyleElement | null;
-  if (isScrolled) {
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "nav-scrolled-css";
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = SCROLLED_CSS;
-  } else if (styleEl) {
-    styleEl.remove();
-  }
-}
 
 function ProfileDropdown({ user, logout }: { user: UserType; logout: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -166,29 +150,43 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isComponentsPage = pathname === "/components" || pathname?.startsWith("/components");
-  const { user, isInitialized, setLoginModalOpen, logout } = useAuth();
+  const isHomePage = pathname === "/";
+  const { user, setLoginModalOpen, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    if (isComponentsPage) {
-      setNavScrolled(false);
-      return;
-    }
-    const handleScroll = () => setNavScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const isPast = window.scrollY > 20;
+      setScrolled(isPast);
+      if (isPast) {
+        document.documentElement.classList.add("scrolled");
+      } else {
+        document.documentElement.classList.remove("scrolled");
+      }
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isComponentsPage]);
+  }, []);
 
   const navLinks = [
     { name: "Components", href: "/components" },
-    { name: "Pricing", href: "/#pricing" },
-    { name: "FAQs", href: "/#faq" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "FAQs", href: "/faq" },
     { name: "Blog", href: "/blog" },
-    { name: "Contact Us", href: "/#cta" },
+    { name: "Contact Us", href: "/contact" },
   ];
 
+  const hasBackground = (!isHomePage && !isComponentsPage) || scrolled;
+
   return (
-    <header className="landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full bg-transparent">
+    <header
+      className={`landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full transition-colors duration-200 ${
+        hasBackground
+          ? "bg-[#05050A]/90 backdrop-blur-xl shadow-lg is-scrolled"
+          : "bg-transparent"
+      }`}
+    >
       {isComponentsPage ? (
         /* Full-width, edge-to-edge transparent layout on /components */
         <div className="flex h-full w-full items-center justify-between px-4 lg:px-6">
@@ -326,7 +324,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/#pricing"
+                href="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold text-[#D4D4D8] hover:text-white hover:bg-white/10 transition"
               >

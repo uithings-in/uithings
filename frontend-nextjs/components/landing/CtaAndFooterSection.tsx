@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import StarField from "./StarField";
 
@@ -85,18 +86,18 @@ export default function CtaAndFooterSection() {
           className="max-w-[560px] text-sm leading-relaxed text-[#AEB2EA] sm:text-base"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
-          From pricing to features — here are the answers to common questions about Ryzo
+          Accelerate your design workflow with production-ready <br /> Figma Components.
         </p>
 
         {/* Download Button */}
         <div className="pt-2">
-          <a
-            href="#download"
-            className="inline-flex items-center justify-center rounded-full bg-[#4343D5] px-8 py-3.5 text-base font-semibold text-[#F7F7FD] shadow-[0_0_24px_rgba(67,67,213,0.55)] border border-[rgba(255,255,255,0.15)] hover:bg-[#525BE0] hover:shadow-[0_0_32px_rgba(82,91,224,0.7)] active:scale-95 transition-all"
+          <Link
+            href="/components"
+            className="group relative inline-flex items-center justify-center rounded-full bg-[#4343D5]/70 backdrop-blur-md px-8 py-3.5 text-base font-semibold text-[#F7F7FD] border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] animate-subtle-glow hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 transition-all duration-300 cursor-pointer"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             Download Now
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -146,7 +147,7 @@ export default function CtaAndFooterSection() {
                 />
                 <button
                   type="submit"
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-[#4343D5] px-6 text-sm font-medium text-white hover:bg-[#525BE0] active:scale-95 transition-all"
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-[#4343D5] px-6 text-sm font-medium text-white hover:bg-[#525BE0] active:scale-95 transition-all cursor-pointer"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Submit

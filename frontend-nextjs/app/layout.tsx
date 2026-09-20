@@ -56,11 +56,15 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${josefinSans.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${josefinSans.variable} ${inter.variable}`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){if(window.scrollY>20){var s=document.createElement('style');s.id='nav-scrolled-css';s.textContent='header.landing-nav{background:rgba(0,0,0,.8);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.1);box-shadow:0 20px 25px -5px rgba(0,0,0,.5)}';document.head.appendChild(s);}})();`,
+            __html: `(function(){function u(){if(window.scrollY>20){document.documentElement.classList.add('scrolled')}else{document.documentElement.classList.remove('scrolled')}}u();window.addEventListener('scroll',u,{passive:true})})();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

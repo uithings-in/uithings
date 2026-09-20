@@ -773,4 +773,27 @@ samp {
   }
 }
 
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(67, 67, 213, 0.45), 0 0 40px rgba(82, 91, 224, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(67, 67, 213, 0.75), 0 0 55px rgba(82, 91, 224, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  }
+}
+
+.animate-subtle-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
+}
+
+/* Persistent Scrolled Navbar */
+html.scrolled header.landing-nav,
+header.landing-nav.is-scrolled {
+  background-color: rgba(5, 5, 10, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+
 
