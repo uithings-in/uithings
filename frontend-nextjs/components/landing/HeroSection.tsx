@@ -1,7 +1,7 @@
 import React from "react";
+import Link from "next/link";
 import StarField from "./StarField";
 import CosmicAtmosphere from "./CosmicAtmosphere";
-import GradientButton from "./GradientButton";
 
 export default function HeroSection() {
   const quickLinks = [
@@ -61,9 +61,13 @@ export default function HeroSection() {
         </p>
 
         <div className="mt-10 flex justify-center">
-          <GradientButton href="#download" iconSrc="/landing/arrow-outward.svg">
+          <Link
+            href="/components"
+            className="group relative inline-flex items-center justify-center rounded-full bg-[#4343D5]/70 backdrop-blur-md px-8 py-3.5 text-base font-semibold text-[#F7F7FD] border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] animate-subtle-glow hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 transition-all duration-300 cursor-pointer"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
             Download Now
-          </GradientButton>
+          </Link>
         </div>
 
         <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-lg font-semibold text-white sm:text-2xl">
@@ -133,13 +137,6 @@ export default function HeroSection() {
                   </p>
                 </li>
               </ul>
-
-              <GradientButton
-                href="#start"
-                className="h-[60px] w-full max-w-[332px] text-lg leading-[22px]"
-              >
-                Start Creation
-              </GradientButton>
             </div>
 
             <div className="relative min-h-[380px] pt-12 sm:pt-6 lg:col-span-7">
@@ -149,26 +146,6 @@ export default function HeroSection() {
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Auto smart sorting, no effort
-                </div>
-
-                <div className="absolute top-[18px] right-[42%] z-30 hidden items-center gap-1 sm:flex">
-                  <div
-                    className="rounded-[7px] px-2 py-2 text-xs font-medium text-[#F7F7FD] shadow-[0_0_8px_rgba(67,67,213,0.5)]"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(180deg, #FFFFFF 0%, #6767DC 22%, #4343D5 90%)",
-                      fontFamily: "Inter, sans-serif",
-                    }}
-                  >
-                    Sofia G.
-                  </div>
-                  <span className="relative h-3 w-[9px] overflow-hidden">
-                    <img
-                      src="/landing/pointer.svg"
-                      alt=""
-                      className="absolute inset-0 size-full max-w-none"
-                    />
-                  </span>
                 </div>
 
                 <div

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { ArrowRight, Calendar, Clock, Sparkles } from "lucide-react";
+import Navbar from "@/components/landing/Navbar";
 
 interface BlogPost {
   id: string;
@@ -120,7 +121,8 @@ export default function BlogPage() {
 
   return (
     <main className="w-full bg-[#fbfcfb] text-[#0b1510]">
-      <section className="border-b border-black/5 bg-[linear-gradient(180deg,#ffffff_0%,#f6faf5_100%)] px-5 pb-16 pt-16 sm:px-8 lg:pb-20 lg:pt-20">
+      <Navbar />
+      <section className="border-b border-black/5 bg-[linear-gradient(180deg,#ffffff_0%,#f6faf5_100%)] px-5 pb-16 pt-24 sm:px-8 lg:pb-20 lg:pt-28">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="grid items-end gap-10 lg:grid-cols-[0.95fr_0.65fr]">
             <div>

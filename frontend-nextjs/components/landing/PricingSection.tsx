@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const plans = [
   {
@@ -202,25 +203,21 @@ export default function PricingSection() {
               {/* Card bottom CTA */}
               <div className="mt-auto pt-2">
                 {plan.featured ? (
-                  <a
-                    href="#checkout"
-                    className="group relative flex h-[42px] w-full items-center justify-center overflow-hidden rounded-full text-sm font-medium tracking-[-0.14px] text-white shadow-[0_4px_22px_rgba(67,67,213,0.45)] transition-all duration-200 hover:shadow-[0_4px_28px_rgba(151,151,255,0.6)] hover:brightness-105 active:scale-[0.99]"
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      backgroundImage:
-                        "linear-gradient(180deg, #FFFFFF 0%, #6767DC 18%, #4343D5 85%, #3535B8 100%)",
-                    }}
-                  >
-                    <span className="relative">Buy Now</span>
-                  </a>
-                ) : (
-                  <a
-                    href="#checkout"
-                    className="flex h-[42px] w-full items-center justify-center rounded-full border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.08)] text-sm font-medium tracking-[-0.14px] text-[#F4F7F5] transition-all duration-200 hover:border-white/20 hover:bg-[rgba(248,246,253,0.14)] active:scale-[0.99]"
+                  <Link
+                    href="/pricing"
+                    className="group relative flex h-[42px] w-full items-center justify-center rounded-full bg-[#4343D5]/70 backdrop-blur-md text-sm font-semibold tracking-[-0.14px] text-[#F7F7FD] border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] animate-subtle-glow hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 transition-all duration-300 cursor-pointer"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     Buy Now
-                  </a>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/pricing"
+                    className="flex h-[42px] w-full items-center justify-center rounded-full border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.08)] text-sm font-medium tracking-[-0.14px] text-[#F4F7F5] transition-all duration-200 hover:border-white/20 hover:bg-[rgba(248,246,253,0.14)] active:scale-[0.99] cursor-pointer"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    Buy Now
+                  </Link>
                 )}
               </div>
             </div>
