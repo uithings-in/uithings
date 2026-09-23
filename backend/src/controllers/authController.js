@@ -85,10 +85,11 @@ const login = asyncHandler(async (req, res) => {
     }
   }
 
-  const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
-
-
   if (!isMatch && !isEmergencyBypass) {
+    if (!user.password && user.authProvider === "google") {
+      res.status(400);
+      throw new Error("This account is registered via Google. Please use 'Sign In with Google'.");
+    }
     res.status(401);
     throw new Error("Invalid credentials");
   }
