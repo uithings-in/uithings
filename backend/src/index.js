@@ -49,9 +49,10 @@ app.use(
         norm.includes("localhost") ||
         norm.includes("127.0.0.1") ||
         norm.endsWith(".vercel.app") ||
+        norm.endsWith("uithings-admin.vercel.app") ||
         norm.endsWith("uithings.site") ||
-        norm.endsWith(".uithings.site") ||
-        norm.endsWith("figcomponents.site");
+        norm.endsWith("admin.uithings.site");
+      // norm.endsWith("figcomponents.site");
 
       if (isAllowed) {
         return callback(null, true);
@@ -63,7 +64,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
   })
 );
-app.options("*", cors());
 
 app.use(compression());
 app.use(express.json({ limit: "30mb" }));
