@@ -103,7 +103,17 @@ const port = Number(process.env.PORT || 5000);
 
 if (!process.env.VERCEL) {
   async function startServer() {
-    await connectDatabase();
+    app.listen(port, () => {
+      // eslint-disable-next-line no-console
+      console.log(`API listening on http://localhost:${port}`);
+    });
+
+    try {
+      await connectDatabase();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn("⚠️ Initial DB connection delayed:", error.message);
+    }
 
     // Log Redis connection status
     const redis = getRedisClient();
@@ -114,17 +124,11 @@ if (!process.env.VERCEL) {
       // eslint-disable-next-line no-console
       console.warn("⚠️  Redis disabled – UPSTASH_REDIS_REST_URL not set. Running without cache.");
     }
-
-    app.listen(port, () => {
-      // eslint-disable-next-line no-console
-      console.log(`API listening on http://localhost:${port}`);
-    });
   }
 
   startServer().catch((error) => {
     // eslint-disable-next-line no-console
-    console.error("Server boot failed", error.message);
-    process.exit(1);
+    console.error("Server boot error:", error.message);
   });
 }
 
