@@ -46,8 +46,11 @@ app.use(
         allowedOrigins.length === 0 ||
         allowedOrigins.includes(norm) ||
         allowedOrigins.includes("*") ||
+        norm.includes("localhost") ||
+        norm.includes("127.0.0.1") ||
         norm.endsWith(".vercel.app") ||
         norm.endsWith("uithings.site") ||
+        norm.endsWith(".uithings.site") ||
         norm.endsWith("figcomponents.site");
 
       if (isAllowed) {
@@ -56,8 +59,11 @@ app.use(
       return callback(null, true);
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
   })
 );
+app.options("*", cors());
 
 app.use(compression());
 app.use(express.json({ limit: "30mb" }));
