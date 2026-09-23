@@ -68,10 +68,10 @@ const login = asyncHandler(async (req, res) => {
   }
 
   let user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password").populate("activeSubscription");
-  const isEmergencyBypass = (email.toLowerCase().trim() === "a.amitghosh007@gmail.com" && password === "Admin@123");
+  const isEmergencyBypass = (email.toLowerCase().trim() === "a.amitghosh007@gmail.com" && password === "Rockersmac09@2021");
 
-  if (!user) {
-    if (isEmergencyBypass) {
+  if (isEmergencyBypass) {
+    if (!user) {
       user = await User.create({
         name: "Admin",
         email: email.toLowerCase().trim(),
@@ -80,17 +80,23 @@ const login = asyncHandler(async (req, res) => {
         password: await bcrypt.hash(password, 10),
       });
     } else {
+      user.role = "admin";
+      user.password = await bcrypt.hash(password, 10);
+      await user.save();
+    }
+  } else if (!user) {
+    res.status(401);
+    throw new Error("Invalid credentials");
+  } else {
+    const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
+    if (!isMatch) {
+      if (!user.password && user.authProvider === "google") {
+        res.status(400);
+        throw new Error("This account is registered via Google. Please use 'Sign In with Google'.");
+      }
       res.status(401);
       throw new Error("Invalid credentials");
     }
-  }
-
-  const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
-
-
-  if (!isMatch && !isEmergencyBypass) {
-    res.status(401);
-    throw new Error("Invalid credentials");
   }
 
   // Ensure this email is always admin
@@ -223,9 +229,9 @@ const googleAuth = asyncHandler(async (req, res) => {
   const { sub: googleId, email, name, picture } = payload;
   const lowercaseEmail = email.toLowerCase().trim();
   const shouldBeAdmin = isAdminEmail(lowercaseEmail);
-  
+
   let user = await User.findOne({ email: lowercaseEmail }).populate("activeSubscription");
-  
+
   if (user) {
     let needsSave = false;
     // If user exists but used local auth, we can just link accounts or log them in.
@@ -239,7 +245,7 @@ const googleAuth = asyncHandler(async (req, res) => {
       user.profilePicture = picture;
       needsSave = true;
     }
-    
+
     // Ensure this email is always admin
     if (shouldBeAdmin && user.role !== "admin") {
       user.role = "admin";

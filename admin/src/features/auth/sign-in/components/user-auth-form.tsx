@@ -20,8 +20,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_URL } from '@/lib/api-url'
 
 const formSchema = z.object({
   email: z.email({
@@ -74,7 +73,10 @@ export function UserAuthForm({
       const targetPath = redirectTo || '/'
       navigate({ to: targetPath, replace: true })
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Google login failed')
+      toast.error(
+        error.response?.data?.message ||
+          (error.message ? `Login failed: ${error.message}` : 'Google login failed')
+      )
     } finally {
       setIsLoading(false)
     }
@@ -98,7 +100,10 @@ export function UserAuthForm({
       const targetPath = redirectTo || '/'
       navigate({ to: targetPath, replace: true })
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed')
+      toast.error(
+        error.response?.data?.message ||
+          (error.message ? `Login failed: ${error.message}` : 'Login failed')
+      )
     } finally {
       setIsLoading(false)
     }

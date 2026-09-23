@@ -18,8 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { copyToFigma } from '@/lib/clipboard'
 import { Copy, Eye } from 'lucide-react'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_URL } from '@/lib/api-url'
 
 export function ComponentsModeration() {
   const [components, setComponents] = useState<any[]>([])
