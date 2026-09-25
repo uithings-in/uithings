@@ -43,21 +43,20 @@ app.use(
       if (!origin) return callback(null, true);
       const norm = origin.replace(/\/+$/, "");
       const isAllowed =
-        allowedOrigins.length === 0 ||
         allowedOrigins.includes(norm) ||
-        allowedOrigins.includes("*") ||
         norm.includes("localhost") ||
         norm.includes("127.0.0.1") ||
-        norm.endsWith(".vercel.app") ||
-        norm.endsWith("uithings-admin.vercel.app") ||
-        norm.endsWith("uithings.site") ||
-        norm.endsWith("admin.uithings.site");
-      // norm.endsWith("figcomponents.site");
+        norm === "https://uithings.site" ||
+        norm === "http://uithings.site" ||
+        norm === "https://admin.uithings.site" ||
+        norm === "http://admin.uithings.site" ||
+        norm === "https://www.uithings.site" ||
+        norm === "http://www.uithings.site";
 
       if (isAllowed) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
