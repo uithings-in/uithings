@@ -8,6 +8,24 @@
       href="/images/icon.svg"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        var h = window.location.hostname;
+        var isLocal =
+          h === 'localhost' ||
+          h === '127.0.0.1' ||
+          h.startsWith('192.168.') ||
+          h.endsWith('.local');
+        if (!isLocal && h !== 'admin.uithings.site') {
+          window.location.replace(
+            'https://admin.uithings.site' +
+              window.location.pathname +
+              window.location.search +
+              window.location.hash
+          );
+        }
+      })();
+    </script>
 
     <!-- Primary Meta Tags -->
     <title>uithings Team</title>
