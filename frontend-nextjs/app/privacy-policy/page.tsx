@@ -627,8 +627,8 @@ export default function PrivacyPolicyPage() {
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 grid sm:grid-cols-2 gap-6">
               <div>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Email Support</p>
-                <a href="mailto:support@figmacomponents.site" className="text-[15px] font-semibold text-[#2c5114] hover:underline flex items-center gap-1.5">
-                  support@figmacomponents.site
+                <a href="mailto:support@uithings.site" className="text-[15px] font-semibold text-[#2c5114] hover:underline flex items-center gap-1.5">
+                  support@uithings.site
                 </a>
               </div>
               <div>

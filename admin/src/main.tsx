@@ -21,6 +21,22 @@ import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
 
+// Domain enforcement: Only allow admin.uithings.site in production
+if (typeof window !== 'undefined') {
+  const hostname = window.location.hostname
+  const isLocal =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.startsWith('192.168.') ||
+    hostname.endsWith('.local')
+
+  if (!isLocal && hostname !== 'admin.uithings.site') {
+    window.location.replace(
+      `https://admin.uithings.site${window.location.pathname}${window.location.search}${window.location.hash}`
+    )
+  }
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -76,7 +76,7 @@ const faqs: FaqItem[] = [
     question: "Why can't I sign in using my email?",
     answer: [
       "Please make sure you are using the same email address as you used to purchase Figmacomponents and verify your address for typos.",
-      "We can assist you at support@figmacomponents.site if you become extremely stuck. Despite our limited staff size, we will respond to you as quickly as we can."
+      "We can assist you at support@uithings.site if you become extremely stuck. Despite our limited staff size, we will respond to you as quickly as we can."
     ]
   },
   // Using Figma
@@ -98,7 +98,7 @@ const faqs: FaqItem[] = [
   {
     question: "How does support work?",
     answer: [
-      "Please email us at support@figmacomponents.site if you have any queries regarding your license or are experiencing difficulties using Figmacomponents. Use the same email address you used to buy Figmacomponents to get in touch with us. Despite our small team size, we will try our best to respond to you as soon as we can.",
+      "Please email us at support@uithings.site if you have any queries regarding your license or are experiencing difficulties using Figmacomponents. Use the same email address you used to buy Figmacomponents to get in touch with us. Despite our small team size, we will try our best to respond to you as soon as we can.",
       "Please be aware that we do not provide general Figma help or assistance with utilizing Figma features; we are not Figma support. We advise you to start by visiting our Figma Help Center if you have any questions about Figma. Their paperwork, support materials, and instructional materials are very thorough and beneficial.",
       "For important features like components, variations, Auto Layout 5.0, interactive components, and component characteristics, Figma also offers excellent tutorials."
     ]
