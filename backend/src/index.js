@@ -37,32 +37,41 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
   .map((value) => value.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin) return callback(null, true);
-      const norm = origin.replace(/\/+$/, "");
-      const isAllowed =
-        allowedOrigins.includes(norm) ||
-        norm.includes("localhost") ||
-        norm.includes("127.0.0.1") ||
-        norm === "https://uithings.site" ||
-        norm === "http://uithings.site" ||
-        norm === "https://admin.uithings.site" ||
-        norm === "http://admin.uithings.site" ||
-        norm === "https://www.uithings.site" ||
-        norm === "http://www.uithings.site";
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+  const norm = origin.replace(/\/+$/, "").toLowerCase();
 
-      if (isAllowed) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-  })
-);
+  // Explicitly block deprecated domains
+  if (norm.includes("figmacomponents.site") || norm.includes("figcomponents.site")) {
+    return false;
+  }
+
+  // Allow uithings.site, admin.uithings.site, localhost, and Vercel deployments
+  return (
+    allowedOrigins.some((allowed) => norm === allowed.toLowerCase()) ||
+    norm.includes("localhost") ||
+    norm.includes("127.0.0.1") ||
+    norm.includes("uithings.site") ||
+    norm.endsWith("uithings.site") ||
+    norm.endsWith(".vercel.app")
+  );
+};
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(compression());
 app.use(express.json({ limit: "30mb" }));
