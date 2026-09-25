@@ -68,6 +68,18 @@ app.use(compression());
 app.use(express.json({ limit: "30mb" }));
 app.use(express.urlencoded({ extended: true, limit: "30mb" }));
 
+// Domain security: block all requests coming from deprecated/unauthorized domains
+app.use((req, res, next) => {
+  const origin = (req.headers.origin || req.headers.referer || "").toLowerCase();
+  if (origin.includes("figmacomponents.site") || origin.includes("figcomponents.site")) {
+    return res.status(403).json({
+      success: false,
+      message: "Access via this domain is permanently disabled. Please use https://admin.uithings.site",
+    });
+  }
+  next();
+});
+
 // Ensure DB is connected for every request (especially serverless cold starts)
 app.use(async (req, res, next) => {
   try {
