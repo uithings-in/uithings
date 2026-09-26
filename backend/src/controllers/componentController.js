@@ -322,19 +322,28 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
     throw new Error("Admin access required");
   }
 
-  const { page = 1, limit = 50 } = req.query;
+  const { page = 1, limit = 50, createdBy, userId, status } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 50, 1), 100);
   const skip = (pageNumber - 1) * perPage;
 
+  const query = {};
+  const creatorId = createdBy || userId;
+  if (creatorId) {
+    query.createdBy = creatorId;
+  }
+  if (status) {
+    query.status = status;
+  }
+
   const [items, total] = await Promise.all([
-    Component.find({})
+    Component.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(perPage)
       .populate({ path: "createdBy", select: "name email" })
       .lean(),
-    Component.countDocuments({}),
+    Component.countDocuments(query),
   ]);
 
   res.json({
