@@ -1,10 +1,11 @@
 import { type ColumnDef } from '@tanstack/react-table'
+import { Link } from '@tanstack/react-router'
+import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
-import { LongText } from '@/components/long-text'
-import { callTypes, roles } from '../data/data'
+import { callTypes } from '../data/data'
 import { type User } from '../data/schema'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -23,7 +24,7 @@ export const usersColumns: ColumnDef<User>[] = [
       />
     ),
     meta: {
-      className: cn('inset-s-0 z-10 rounded-tl-[inherit] max-md:sticky'),
+      className: cn('inset-s-0 z-10 rounded-tl-[inherit] max-md:sticky w-10'),
     },
     cell: ({ row }) => (
       <Checkbox
@@ -37,32 +38,24 @@ export const usersColumns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'username',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Username' />
-    ),
-    cell: ({ row }) => (
-      <LongText className='max-w-36 ps-3'>{row.getValue('username')}</LongText>
-    ),
-    meta: {
-      className: cn(
-        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)]',
-        'inset-s-6 ps-0.5 max-md:sticky @4xl/content:table-cell @4xl/content:drop-shadow-none'
-      ),
-    },
-    enableHiding: false,
-  },
-  {
-    id: 'fullName',
+    accessorKey: 'name',
+    id: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => {
-      const { firstName, lastName } = row.original
-      const fullName = `${firstName} ${lastName}`
-      return <LongText className='max-w-36'>{fullName}</LongText>
+      const { id, name } = row.original
+      return (
+        <Link
+          to='/users/$userId'
+          params={{ userId: id }}
+          className='font-medium text-foreground hover:text-primary hover:underline transition-colors block max-w-48 truncate'
+        >
+          {name || 'Anonymous User'}
+        </Link>
+      )
     },
-    meta: { className: 'w-36' },
+    meta: { className: 'w-48' },
   },
   {
     accessorKey: 'email',
@@ -70,16 +63,23 @@ export const usersColumns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='Email' />
     ),
     cell: ({ row }) => (
-      <div className='w-fit ps-2 text-nowrap'>{row.getValue('email')}</div>
+      <div className='w-fit ps-2 text-nowrap text-muted-foreground'>{row.getValue('email')}</div>
     ),
   },
   {
-    accessorKey: 'phoneNumber',
+    accessorKey: 'createdAt',
+    id: 'createdAt',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Phone Number' />
+      <DataTableColumnHeader column={column} title='Join date' />
     ),
-    cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
-    enableSorting: false,
+    cell: ({ row }) => {
+      const date = row.original.createdAt
+      return (
+        <span className='text-xs text-muted-foreground whitespace-nowrap'>
+          {date ? format(new Date(date), 'MMM dd, yyyy') : 'N/A'}
+        </span>
+      )
+    },
   },
   {
     accessorKey: 'status',
@@ -87,12 +87,12 @@ export const usersColumns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const { status } = row.original
-      const badgeColor = callTypes.get(status)
+      const status = row.original.status || 'active'
+      const badgeColor = callTypes.get(status) || callTypes.get('active')
       return (
         <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('status')}
+          <Badge variant='outline' className={cn('capitalize font-medium', badgeColor)}>
+            {status}
           </Badge>
         </div>
       )
@@ -100,35 +100,6 @@ export const usersColumns: ColumnDef<User>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
-    enableHiding: false,
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'role',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Role' />
-    ),
-    cell: ({ row }) => {
-      const { role } = row.original
-      const userType = roles.find(({ value }) => value === role)
-
-      if (!userType) {
-        return null
-      }
-
-      return (
-        <div className='flex items-center gap-x-2'>
-          {userType.icon && (
-            <userType.icon size={16} className='text-muted-foreground' />
-          )}
-          <span className='text-sm capitalize'>{row.getValue('role')}</span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableSorting: false,
     enableHiding: false,
   },
   {

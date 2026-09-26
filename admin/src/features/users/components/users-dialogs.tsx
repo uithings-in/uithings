@@ -4,13 +4,14 @@ import { UsersInviteDialog } from './users-invite-dialog'
 import { useUsers } from './users-provider'
 
 export function UsersDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useUsers()
+  const { open, setOpen, currentRow, setCurrentRow, onRefresh } = useUsers()
   return (
     <>
       <UsersActionDialog
         key='user-add'
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
+        onSuccess={onRefresh}
       />
 
       <UsersInviteDialog
@@ -24,25 +25,35 @@ export function UsersDialogs() {
           <UsersActionDialog
             key={`user-edit-${currentRow.id}`}
             open={open === 'edit'}
-            onOpenChange={() => {
-              setOpen('edit')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+            onOpenChange={(val) => {
+              if (!val) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 300)
+              } else {
+                setOpen('edit')
+              }
             }}
             currentRow={currentRow}
+            onSuccess={onRefresh}
           />
 
           <UsersDeleteDialog
             key={`user-delete-${currentRow.id}`}
             open={open === 'delete'}
-            onOpenChange={() => {
-              setOpen('delete')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+            onOpenChange={(val) => {
+              if (!val) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 300)
+              } else {
+                setOpen('delete')
+              }
             }}
             currentRow={currentRow}
+            onSuccess={onRefresh}
           />
         </>
       )}

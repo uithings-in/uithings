@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "invited", "suspended"],
+      default: "active",
+    },
     activeSubscription: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subscription",
