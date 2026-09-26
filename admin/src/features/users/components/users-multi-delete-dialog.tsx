@@ -1,19 +1,23 @@
 'use client'
 
 import { useState } from 'react'
+import axios from 'axios'
 import { type Table } from '@tanstack/react-table'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
-import { sleep } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { useAuthStore } from '@/stores/auth-store'
+import { API_URL } from '@/lib/api-url'
+import { type User } from '../data/schema'
 
 type UserMultiDeleteDialogProps<TData> = {
   open: boolean
   onOpenChange: (open: boolean) => void
   table: Table<TData>
+  onSuccess?: () => void
 }
 
 const CONFIRM_WORD = 'DELETE'
@@ -22,44 +26,55 @@ export function UsersMultiDeleteDialog<TData>({
   open,
   onOpenChange,
   table,
+  onSuccess,
 }: UserMultiDeleteDialogProps<TData>) {
   const [value, setValue] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { auth } = useAuthStore()
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (value.trim() !== CONFIRM_WORD) {
       toast.error(`Please type "${CONFIRM_WORD}" to confirm.`)
       return
     }
 
-    onOpenChange(false)
+    const ids = selectedRows.map((row) => (row.original as User).id)
+    setLoading(true)
 
-    toast.promise(sleep(2000), {
-      loading: 'Deleting users...',
-      success: () => {
-        setValue('')
-        table.resetRowSelection()
-        return `Deleted ${selectedRows.length} ${
-          selectedRows.length > 1 ? 'users' : 'user'
-        }`
-      },
-      error: 'Error',
-    })
+    try {
+      await axios.post(
+        `${API_URL}/users/bulk-delete`,
+        { ids },
+        { headers: { Authorization: `Bearer ${auth.accessToken}` } }
+      )
+      toast.success(`Successfully deleted ${ids.length} user(s)`)
+      setValue('')
+      table.resetRowSelection()
+      onOpenChange(false)
+      onSuccess?.()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete users')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <ConfirmDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(v) => {
+        if (!loading) {
+          setValue('')
+          onOpenChange(v)
+        }
+      }}
       form='users-multi-delete-form'
-      disabled={value.trim() !== CONFIRM_WORD}
+      disabled={value.trim() !== CONFIRM_WORD || loading}
       title={
-        <span className='text-destructive'>
-          <AlertTriangle
-            className='me-1 inline-block stroke-destructive'
-            size={18}
-          />{' '}
+        <span className='text-destructive flex items-center gap-1.5'>
+          <AlertTriangle className='h-5 w-5 stroke-destructive' />
           Delete {selectedRows.length}{' '}
           {selectedRows.length > 1 ? 'users' : 'user'}
         </span>
@@ -73,30 +88,31 @@ export function UsersMultiDeleteDialog<TData>({
           }}
           className='space-y-4'
         >
-          <p className='mb-2'>
-            Are you sure you want to delete the selected users? <br />
-            This action cannot be undone.
+          <p className='text-sm text-muted-foreground'>
+            Are you sure you want to delete the selected <strong className='text-foreground'>{selectedRows.length}</strong> user(s)? <br />
+            This action cannot be undone and will permanently remove them from the database.
           </p>
 
           <Label className='my-4 flex flex-col items-start gap-1.5'>
-            <span className=''>Confirm by typing "{CONFIRM_WORD}":</span>
+            <span className='text-xs font-medium'>Confirm by typing "{CONFIRM_WORD}":</span>
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={`Type "${CONFIRM_WORD}" to confirm.`}
               autoFocus
+              disabled={loading}
             />
           </Label>
 
           <Alert variant='destructive'>
             <AlertTitle>Warning!</AlertTitle>
             <AlertDescription>
-              Please be careful, this operation can not be rolled back.
+              Please be careful, this operation cannot be rolled back.
             </AlertDescription>
           </Alert>
         </form>
       }
-      confirmText='Delete'
+      confirmText={loading ? 'Deleting...' : 'Delete Selected'}
       destructive
     />
   )

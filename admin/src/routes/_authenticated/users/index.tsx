@@ -17,8 +17,8 @@ const usersSearchSchema = z.object({
     )
     .optional()
     .catch([]),
-  // Per-column text filter (for email)
-  email: z.string().optional().catch(''),
+  // Per-column text filter (for name or email)
+  name: z.string().optional().catch(''),
 })
 
 export const Route = createFileRoute('/_authenticated/users/')({

@@ -1,5 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
+import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -23,7 +24,7 @@ export const usersColumns: ColumnDef<User>[] = [
       />
     ),
     meta: {
-      className: cn('inset-s-0 z-10 rounded-tl-[inherit] max-md:sticky'),
+      className: cn('inset-s-0 z-10 rounded-tl-[inherit] max-md:sticky w-10'),
     },
     cell: ({ row }) => (
       <Checkbox
@@ -37,24 +38,24 @@ export const usersColumns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    id: 'fullName',
+    accessorKey: 'name',
+    id: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => {
-      const { id, firstName, lastName } = row.original
-      const fullName = `${firstName} ${lastName}`
+      const { id, name } = row.original
       return (
         <Link
           to='/users/$userId'
           params={{ userId: id }}
-          className='font-medium text-foreground hover:text-primary hover:underline transition-colors block max-w-36 truncate'
+          className='font-medium text-foreground hover:text-primary hover:underline transition-colors block max-w-48 truncate'
         >
-          {fullName}
+          {name || 'Anonymous User'}
         </Link>
       )
     },
-    meta: { className: 'w-36' },
+    meta: { className: 'w-48' },
   },
   {
     accessorKey: 'email',
@@ -62,8 +63,23 @@ export const usersColumns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='Email' />
     ),
     cell: ({ row }) => (
-      <div className='w-fit ps-2 text-nowrap'>{row.getValue('email')}</div>
+      <div className='w-fit ps-2 text-nowrap text-muted-foreground'>{row.getValue('email')}</div>
     ),
+  },
+  {
+    accessorKey: 'createdAt',
+    id: 'createdAt',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Join date' />
+    ),
+    cell: ({ row }) => {
+      const date = row.original.createdAt
+      return (
+        <span className='text-xs text-muted-foreground whitespace-nowrap'>
+          {date ? format(new Date(date), 'MMM dd, yyyy') : 'N/A'}
+        </span>
+      )
+    },
   },
   {
     accessorKey: 'status',
@@ -71,12 +87,12 @@ export const usersColumns: ColumnDef<User>[] = [
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const { status } = row.original
-      const badgeColor = callTypes.get(status)
+      const status = row.original.status || 'active'
+      const badgeColor = callTypes.get(status) || callTypes.get('active')
       return (
         <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('status')}
+          <Badge variant='outline' className={cn('capitalize font-medium', badgeColor)}>
+            {status}
           </Badge>
         </div>
       )
@@ -85,7 +101,6 @@ export const usersColumns: ColumnDef<User>[] = [
       return value.includes(row.getValue(id))
     },
     enableHiding: false,
-    enableSorting: false,
   },
   {
     id: 'actions',
