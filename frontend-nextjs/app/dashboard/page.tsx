@@ -35,6 +35,8 @@ import {
   Info,
   Bell,
   Settings,
+  Sun,
+  Moon,
   HelpCircle,
   Filter,
   ArrowUpDown,
@@ -2067,6 +2069,41 @@ function DashboardContent() {
   const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
   const notificationRef = useRef<HTMLDivElement | null>(null);
 
+  // Profile Navbar Menu State
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Dark / Light Theme Toggle State
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (
+      savedTheme === "dark" ||
+      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+      return next;
+    });
+  };
+
   const [notifications, setNotifications] = useState<
     Array<{
       id: string;
@@ -2195,14 +2232,17 @@ function DashboardContent() {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
     }
-    if (notificationsOpen) {
+    if (notificationsOpen || userMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [notificationsOpen]);
+  }, [notificationsOpen, userMenuOpen]);
 
   const markAllAsRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -2265,12 +2305,18 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen w-full bg-[#FAFAFB] text-[#1E293B] flex flex-col md:flex-row font-sans antialiased overflow-hidden">
+    <div
+      className={`dashboard-container h-screen max-h-screen w-full flex flex-col md:flex-row font-sans antialiased overflow-hidden transition-colors duration-200 ${
+        isDarkMode
+          ? "dark bg-[#000000] text-[#EDEDED]"
+          : "bg-[#FAFAFB] text-[#1E293B]"
+      }`}
+    >
       
       {/* ==========================================
           LEFT SIDEBAR (CONCEPTZILLA STYLE)
           ========================================== */}
-      <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] border-r border-gray-200/90 p-4 flex flex-col justify-between shrink-0 select-none md:h-screen overflow-y-auto">
+      <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] border-r border-gray-200/90 p-4 flex flex-col justify-between shrink-0 select-none md:h-full overflow-y-auto">
         <div>
           {/* Brand Logo & Name */}
           <div className="flex items-center justify-between gap-2.5 pb-4 mb-3 border-b border-gray-100">
@@ -2279,7 +2325,7 @@ function DashboardContent() {
               <img
                 src="/assets/logo.svg"
                 alt="UI Things"
-                className="h-7 w-auto object-contain invert"
+                className={`h-7 w-auto object-contain transition ${isDarkMode ? "invert-0" : "invert"}`}
               />
             </Link>
             <ChevronDown size={14} className="text-gray-400 cursor-pointer hover:text-gray-600" />
@@ -2424,7 +2470,7 @@ function DashboardContent() {
       {/* ==========================================
           MAIN CONTENT AREA (WITH FIXED NAVBAR)
           ========================================== */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#FAFAFB]">
+      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#FAFAFB]">
         
         {/* FIXED TOPBAR HEADER */}
         <header className="sticky top-0 z-30 shrink-0 bg-white/95 backdrop-blur-md border-b border-gray-200/80 px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
@@ -2643,21 +2689,140 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* Settings button */}
+              {/* Dark / Light Mode Toggle Button */}
               <button
                 type="button"
-                onClick={() => handleSidebarSelect("Plans & Billing")}
-                className="p-1.5 rounded-lg hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer"
-                title="Settings & Billing"
+                onClick={toggleTheme}
+                className="p-1.5 rounded-lg hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer text-gray-400"
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
-                <Settings size={15} />
+                {isDarkMode ? (
+                  <Sun size={15} className="text-amber-500" />
+                ) : (
+                  <Moon size={15} />
+                )}
               </button>
+            </div>
+
+            {/* Vertical separator */}
+            <div className="h-4 w-px bg-gray-200 hidden sm:block" />
+
+            {/* User Profile Pill in Navbar */}
+            <div ref={userMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition cursor-pointer border ${
+                  userMenuOpen
+                    ? "bg-gray-100/90 border-gray-300 shadow-sm"
+                    : "hover:bg-gray-50/90 border-gray-200/90 bg-white shadow-xs"
+                }`}
+                aria-label="User Profile Menu"
+              >
+                <div className="relative shrink-0">
+                  <div className="h-7 w-7 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-[11px] overflow-hidden shadow-inner">
+                    {user.profilePicture ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={user.profilePicture}
+                        alt={user.name}
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      user.name.slice(0, 2).toUpperCase()
+                    )}
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white" />
+                </div>
+
+                <div className="text-left hidden sm:block">
+                  <p className="text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">
+                    {user.name}
+                  </p>
+                  <span className="text-[9.5px] font-semibold text-gray-400 leading-none mt-0.5 block">
+                    {isPro ? "Pro Member" : "Free Plan"}
+                  </span>
+                </div>
+
+                <ChevronDown
+                  size={12}
+                  className={`text-gray-400 transition-transform duration-200 ${
+                    userMenuOpen ? "rotate-180 text-gray-700" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 top-11 z-50 w-56 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-200/90 py-2 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
+                  <div className="px-3.5 py-2 border-b border-gray-100">
+                    <p className="text-xs font-bold text-gray-900 truncate">{user.name}</p>
+                    <p className="text-[11px] text-gray-400 truncate mt-0.5">{user.email}</p>
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-[#EA580C]">
+                      <Sparkles size={11} />
+                      <span>{isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Tier"}</span>
+                    </div>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSidebarSelect("Overview");
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                    >
+                      <LayoutDashboard size={14} className="text-gray-400" />
+                      <span>Overview</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSidebarSelect("My Components");
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                    >
+                      <Package size={14} className="text-gray-400" />
+                      <span>My Components</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSidebarSelect("Plans & Billing");
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                    >
+                      <CreditCard size={14} className="text-gray-400" />
+                      <span>Billing & Plans</span>
+                    </button>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                    >
+                      <LogOut size={14} className="text-rose-500" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
         {/* SCROLLABLE MAIN CONTENT AREA */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 min-h-0">
           {activeTab === "My Components" ? (
             <MyComponentsPanel />
           ) : activeTab === "Favorites" ? (
