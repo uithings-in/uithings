@@ -45,6 +45,8 @@ import {
   X,
   TrendingUp,
   Sparkles,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 // ==========================================
@@ -312,50 +314,87 @@ function DeleteConfirmModal({
 
 // Toast Notification Popup (Bottom Right)
 function ToastPopup({
+  title,
   message,
   onClose,
   type = "info",
+  actionLabel,
+  onAction,
+  duration = 6000,
 }: {
+  title?: string;
   message: string;
   onClose: () => void;
   type?: "info" | "warning" | "success" | "error";
+  actionLabel?: string;
+  onAction?: () => void;
+  duration?: number;
 }) {
   useEffect(() => {
-    if (!message) return;
+    if (!message || duration <= 0) return;
     const timer = setTimeout(() => {
       onClose();
-    }, 4500);
+    }, duration);
     return () => clearTimeout(timer);
-  }, [message, onClose]);
+  }, [message, onClose, duration]);
 
   if (!message) return null;
 
-  const isErrorOrWarning =
-    type === "warning" ||
+  const isError =
     type === "error" ||
-    message.toLowerCase().includes("no figma") ||
+    message.toLowerCase().includes("rejected") ||
     message.toLowerCase().includes("fail") ||
     message.toLowerCase().includes("error") ||
-    message.toLowerCase().includes("not found");
+    message.toLowerCase().includes("no figma");
+
+  const isWarning = type === "warning" || message.toLowerCase().includes("warning");
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.14)] border border-gray-200/90 text-xs animate-in fade-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-start gap-3 rounded-2xl bg-white p-3.5 shadow-[0_15px_40px_rgba(0,0,0,0.16)] border border-gray-200 text-xs animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-          isErrorOrWarning
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5 ${
+          isError
             ? "bg-rose-50 text-rose-600 border border-rose-100"
+            : isWarning
+            ? "bg-amber-50 text-amber-600 border border-amber-100"
             : "bg-emerald-50 text-emerald-600 border border-emerald-100"
         }`}
       >
-        {isErrorOrWarning ? <Info size={15} /> : <Check size={15} />}
+        {isError ? (
+          <XCircle size={16} />
+        ) : isWarning ? (
+          <AlertTriangle size={16} />
+        ) : (
+          <Check size={16} />
+        )}
       </div>
-      <div className="flex-1 font-semibold text-gray-800 pr-2 leading-snug">
-        {message}
+      <div className="flex-1 min-w-0 pr-1">
+        {title && (
+          <h5 className="font-bold text-gray-900 text-xs leading-snug mb-0.5 truncate">
+            {title}
+          </h5>
+        )}
+        <p className="text-[11.5px] text-gray-600 leading-snug">
+          {message}
+        </p>
+        {actionLabel && onAction && (
+          <button
+            type="button"
+            onClick={() => {
+              onAction();
+              onClose();
+            }}
+            className="mt-2 text-[11px] font-bold text-[#F97316] hover:text-[#EA580C] hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <span>{actionLabel}</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        )}
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="rounded-md p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer"
+        className="rounded-lg p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer shrink-0"
         aria-label="Close notification"
       >
         <X size={14} />
@@ -403,7 +442,10 @@ function MyComponentsPanel() {
         ? { skip: totalLoaded, limit: MY_COMPONENTS_PAGE_SIZE }
         : undefined;
     },
-    staleTime: 60 * 1000,
+    staleTime: 0,
+    refetchInterval: 3000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
   });
 
   const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
@@ -1979,6 +2021,47 @@ function DashboardContent() {
 
   const headerInfo = getHeaderTitle();
 
+  // Helper to format human-readable relative time
+  function formatRelativeTime(dateString?: string) {
+    if (!dateString) return "Recently";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (isNaN(diffMs) || diffMs < 0) return "Just now";
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHours = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSec < 60) return "Just now";
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  // Fetch user uploaded components for status updates & verification notifications with live polling
+  const { data: userComponentsData } = useQuery({
+    queryKey: ["my-components", "status-notifications"],
+    queryFn: () => componentsApi.listMine("", 1, 50),
+    enabled: !!user,
+    staleTime: 0,
+    refetchInterval: 3000, // Poll every 3 seconds for instant real-time verification updates
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+  });
+
+  const [liveToast, setLiveToast] = useState<{
+    title?: string;
+    message: string;
+    type: "error" | "warning" | "info";
+    actionLabel?: string;
+    actionLink?: string;
+  } | null>(null);
+  const previouslyKnownRejectionsRef = useRef<Set<string>>(new Set());
+  const isFirstLoadRef = useRef(true);
+
   // Notifications State & Logic
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
@@ -1991,7 +2074,7 @@ function DashboardContent() {
       message: string;
       time: string;
       read: boolean;
-      type: "plan" | "credits" | "component" | "system";
+      type: "plan" | "credits" | "component" | "system" | "rejection";
       link?: string;
     }>
   >([
@@ -2037,6 +2120,73 @@ function DashboardContent() {
       type: "system" as const,
     },
   ]);
+
+  // Synchronize rejected components into notifications box instantly without reload
+  useEffect(() => {
+    if (!userComponentsData?.items) return;
+
+    const currentItems = userComponentsData.items;
+    const rejectedItems = currentItems.filter((comp) => comp.status === "rejected");
+    const nonRejectedIds = new Set(
+      currentItems.filter((comp) => comp.status !== "rejected").map((c) => c._id)
+    );
+
+    // Show warning in the bottom right corner when a component is rejected
+    if (!isFirstLoadRef.current) {
+      for (const item of rejectedItems) {
+        if (!previouslyKnownRejectionsRef.current.has(item._id)) {
+          setLiveToast({
+            title: "Verification Rejected",
+            message: `"${item.name}" was not approved during review. Click to edit and resubmit.`,
+            type: "error",
+            actionLabel: "Edit Component",
+            actionLink: `/dashboard?page=my-components&edit=${item._id}`,
+          });
+          break;
+        }
+      }
+    } else if (rejectedItems.length > 0) {
+      // If rejected components exist on page load, show bottom-right warning notice
+      const firstRejected = rejectedItems[0];
+      setLiveToast({
+        title: "Component Verification Notice",
+        message: `${rejectedItems.length} of your uploaded component${
+          rejectedItems.length > 1 ? "s were" : " was"
+        } rejected during verification.`,
+        type: "warning",
+        actionLabel: "Review in Library",
+        actionLink: `/dashboard?page=my-components&edit=${firstRejected._id}`,
+      });
+    }
+
+    previouslyKnownRejectionsRef.current = new Set(rejectedItems.map((c) => c._id));
+    isFirstLoadRef.current = false;
+
+    setNotifications((prev) => {
+      // Clean up notifications for components that are no longer rejected
+      const filtered = prev.filter((n) => {
+        if (!n.id.startsWith("rejected-comp-")) return true;
+        const compId = n.id.replace("rejected-comp-", "");
+        return !nonRejectedIds.has(compId);
+      });
+
+      const existingIds = new Set(filtered.map((n) => n.id));
+      const newNotifs = rejectedItems
+        .filter((c) => !existingIds.has(`rejected-comp-${c._id}`))
+        .map((c) => ({
+          id: `rejected-comp-${c._id}`,
+          title: `Verification Rejected: ${c.name}`,
+          message: `Your component "${c.name}" was rejected during verification. Click to edit and resubmit.`,
+          time: formatRelativeTime(c.updatedAt || c.createdAt),
+          read: false,
+          type: "rejection" as const,
+          link: `/dashboard?page=my-components&edit=${c._id}`,
+        }));
+
+      if (newNotifs.length === 0 && filtered.length === prev.length) return prev;
+      return [...newNotifs, ...filtered];
+    });
+  }, [userComponentsData]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -2379,7 +2529,9 @@ function DashboardContent() {
                         </div>
                       ) : (
                         displayedNotifications.map((n) => {
+                          const isRejection = n.type === "rejection";
                           const getIcon = () => {
+                            if (isRejection) return <XCircle size={14} className="text-rose-600" />;
                             if (n.type === "plan") return <ShieldCheck size={14} className="text-blue-600" />;
                             if (n.type === "credits") return <CreditCard size={14} className="text-amber-600" />;
                             if (n.type === "component") return <Package size={14} className="text-[#F97316]" />;
@@ -2397,28 +2549,61 @@ function DashboardContent() {
                                 }
                               }}
                               className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${
-                                !n.read ? "bg-orange-50/20 hover:bg-orange-50/40" : "hover:bg-gray-50/80"
+                                isRejection && !n.read
+                                  ? "bg-rose-50/50 hover:bg-rose-50/80 border-l-2 border-rose-500"
+                                  : isRejection
+                                  ? "bg-rose-50/20 hover:bg-rose-50/50"
+                                  : !n.read
+                                  ? "bg-orange-50/20 hover:bg-orange-50/40"
+                                  : "hover:bg-gray-50/80"
                               }`}
                             >
-                              <div className="h-7 w-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                              <div
+                                className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                                  isRejection ? "bg-rose-100/70" : "bg-gray-100"
+                                }`}
+                              >
                                 {getIcon()}
                               </div>
 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-1">
-                                  <h4 className={`text-xs truncate ${!n.read ? "font-bold text-gray-900" : "font-semibold text-gray-700"}`}>
-                                    {n.title}
-                                  </h4>
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <h4
+                                      className={`text-xs truncate ${
+                                        isRejection
+                                          ? "font-bold text-rose-950"
+                                          : !n.read
+                                          ? "font-bold text-gray-900"
+                                          : "font-semibold text-gray-700"
+                                      }`}
+                                    >
+                                      {n.title}
+                                    </h4>
+                                    {isRejection && (
+                                      <span className="shrink-0 rounded bg-rose-100 px-1.5 py-0.2 text-[9px] font-extrabold text-rose-700">
+                                        Rejected
+                                      </span>
+                                    )}
+                                  </div>
                                   <span className="text-[10px] text-gray-400 shrink-0">{n.time}</span>
                                 </div>
-                                <p className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-2">
+                                <p
+                                  className={`text-[11px] mt-0.5 leading-snug line-clamp-2 ${
+                                    isRejection ? "text-rose-800/80" : "text-gray-500"
+                                  }`}
+                                >
                                   {n.message}
                                 </p>
                               </div>
 
                               <div className="flex items-center gap-1.5 shrink-0 self-center">
                                 {!n.read && (
-                                  <span className="h-2 w-2 rounded-full bg-[#F97316]" />
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${
+                                      isRejection ? "bg-rose-500" : "bg-[#F97316]"
+                                    }`}
+                                  />
                                 )}
                                 <button
                                   type="button"
@@ -2497,6 +2682,20 @@ function DashboardContent() {
         </main>
 
       </div>
+
+      {/* Real-time Toast Popup Alert (Bottom Right Warning / Notice) */}
+      <ToastPopup
+        title={liveToast?.title}
+        message={liveToast?.message || ""}
+        onClose={() => setLiveToast(null)}
+        type={liveToast?.type || "error"}
+        actionLabel={liveToast?.actionLabel}
+        onAction={
+          liveToast?.actionLink
+            ? () => router.push(liveToast.actionLink!)
+            : undefined
+        }
+      />
 
     </div>
   );
