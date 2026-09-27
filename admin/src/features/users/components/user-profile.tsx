@@ -44,6 +44,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -55,6 +56,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -116,6 +119,19 @@ export function UserProfile() {
   const [copyingCompId, setCopyingCompId] = useState<string | null>(null)
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
   const [previewModalComp, setPreviewModalComp] = useState<any | null>(null)
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean
+    compId: string
+    compName: string
+    reason: string
+    submitting: boolean
+  }>({
+    open: false,
+    compId: '',
+    compName: '',
+    reason: '',
+    submitting: false,
+  })
 
   const fetchUserDetails = useCallback(async () => {
     if (!userId) return
@@ -192,6 +208,39 @@ export function UserProfile() {
       toast.error(err.response?.data?.message || 'Failed to update component status')
     } finally {
       setStatusUpdatingId(null)
+    }
+  }
+
+  const handleConfirmReject = async () => {
+    if (!rejectDialog.compId) return
+    try {
+      setRejectDialog((prev) => ({ ...prev, submitting: true }))
+      await axios.patch(
+        `${API_URL}/components/${rejectDialog.compId}/status`,
+        {
+          status: 'rejected',
+          rejectionReason: rejectDialog.reason.trim(),
+        },
+        { headers: { Authorization: `Bearer ${auth.accessToken}` } }
+      )
+      setUserComponents((prev) =>
+        prev.map((c) =>
+          c._id === rejectDialog.compId
+            ? { ...c, status: 'rejected', rejectionReason: rejectDialog.reason.trim() }
+            : c
+        )
+      )
+      toast.success('Component rejected with message')
+      setRejectDialog({
+        open: false,
+        compId: '',
+        compName: '',
+        reason: '',
+        submitting: false,
+      })
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to reject component')
+      setRejectDialog((prev) => ({ ...prev, submitting: false }))
     }
   }
 
@@ -1093,7 +1142,15 @@ export function UserProfile() {
                                   <Clock className='mr-2 h-3.5 w-3.5 text-amber-500' /> Mark Pending
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleUpdateComponentStatus(comp._id, 'rejected')}
+                                  onClick={() =>
+                                    setRejectDialog({
+                                      open: true,
+                                      compId: comp._id,
+                                      compName: comp.name,
+                                      reason: comp.rejectionReason || '',
+                                      submitting: false,
+                                    })
+                                  }
                                   disabled={comp.status === 'rejected'}
                                 >
                                   <XCircle className='mr-2 h-3.5 w-3.5 text-rose-500' /> Mark Rejected
@@ -1215,6 +1272,65 @@ export function UserProfile() {
         currentRow={user}
         onSuccess={fetchUserDetails}
       />
+
+      {/* Component Rejection Reason Modal */}
+      <Dialog
+        open={rejectDialog.open}
+        onOpenChange={(open) => {
+          if (!rejectDialog.submitting) {
+            setRejectDialog((prev) => ({ ...prev, open }))
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5 text-destructive shrink-0" />
+              Reject Component
+            </DialogTitle>
+            <DialogDescription>
+              Provide a rejection reason or feedback for <strong>{rejectDialog.compName}</strong>. This message will be sent to the user on their dashboard.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2">
+            <Label htmlFor="user-comp-rejection-reason" className="text-sm font-semibold text-foreground">
+              Rejection Message / Feedback
+            </Label>
+            <Textarea
+              id="user-comp-rejection-reason"
+              rows={4}
+              placeholder="e.g. Preview image is low resolution, contains broken layers, or doesn't meet design guidelines..."
+              value={rejectDialog.reason}
+              onChange={(e) => setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))}
+              className="resize-none"
+              autoFocus
+            />
+            <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+              The user will be immediately notified on their dashboard so they can adjust and resubmit.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRejectDialog((prev) => ({ ...prev, open: false }))}
+              disabled={rejectDialog.submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={rejectDialog.submitting}
+            >
+              {rejectDialog.submitting ? 'Submitting...' : 'Reject Component'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

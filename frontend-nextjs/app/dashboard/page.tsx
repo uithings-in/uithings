@@ -2174,7 +2174,9 @@ function DashboardContent() {
         if (!previouslyKnownRejectionsRef.current.has(item._id)) {
           setLiveToast({
             title: "Verification Rejected",
-            message: `"${item.name}" was not approved during review. Click to edit and resubmit.`,
+            message: item.rejectionReason
+              ? `"${item.name}" was rejected: ${item.rejectionReason}`
+              : `"${item.name}" was not approved during review. Click to edit and resubmit.`,
             type: "error",
             actionLabel: "Edit Component",
             actionLink: `/dashboard?page=my-components&edit=${item._id}`,
@@ -2187,9 +2189,11 @@ function DashboardContent() {
       const firstRejected = rejectedItems[0];
       setLiveToast({
         title: "Component Verification Notice",
-        message: `${rejectedItems.length} of your uploaded component${
-          rejectedItems.length > 1 ? "s were" : " was"
-        } rejected during verification.`,
+        message: firstRejected.rejectionReason
+          ? `"${firstRejected.name}" was rejected: ${firstRejected.rejectionReason}`
+          : `${rejectedItems.length} of your uploaded component${
+              rejectedItems.length > 1 ? "s were" : " was"
+            } rejected during verification.`,
         type: "warning",
         actionLabel: "Review in Library",
         actionLink: `/dashboard?page=my-components&edit=${firstRejected._id}`,
@@ -2213,7 +2217,9 @@ function DashboardContent() {
         .map((c) => ({
           id: `rejected-comp-${c._id}`,
           title: `Verification Rejected: ${c.name}`,
-          message: `Your component "${c.name}" was rejected during verification. Click to edit and resubmit.`,
+          message: c.rejectionReason
+            ? `Reason: ${c.rejectionReason}`
+            : `Your component "${c.name}" was rejected during verification. Click to edit and resubmit.`,
           time: formatRelativeTime(c.updatedAt || c.createdAt),
           read: false,
           type: "rejection" as const,
