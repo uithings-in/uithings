@@ -2078,14 +2078,13 @@ function DashboardContent() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    if (
+    const isDark =
       savedTheme === "dark" ||
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      setIsDarkMode(true);
+      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    setIsDarkMode(isDark);
+    if (isDark) {
       document.documentElement.classList.add("dark");
     } else {
-      setIsDarkMode(false);
       document.documentElement.classList.remove("dark");
     }
   }, []);
@@ -2279,9 +2278,13 @@ function DashboardContent() {
   // Loading States
   if (!isInitialized || authLoading || (user && subLoading)) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3 bg-[#F4F5F7]">
+      <div
+        className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors duration-150 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
+      >
         <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
-        <p className="text-gray-500 font-medium text-xs">Loading dashboard...</p>
+        <p className="font-medium text-xs text-gray-500 dark:text-neutral-400">
+          Loading dashboard...
+        </p>
       </div>
     );
   }
@@ -2289,13 +2292,15 @@ function DashboardContent() {
   // Not logged in state
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl bg-white p-8 shadow-xl border border-gray-200 text-center">
-          <div className="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-[#F97316] mx-auto mb-4">
+      <div
+        className="min-h-screen h-screen w-screen fixed inset-0 z-[999] flex items-center justify-center p-6 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
+      >
+        <div className="max-w-md w-full rounded-2xl bg-white dark:bg-[#121316] p-8 shadow-xl border border-gray-200 dark:border-neutral-800 text-center">
+          <div className="w-14 h-14 bg-orange-50 dark:bg-orange-950/80 rounded-2xl flex items-center justify-center text-[#F97316] mx-auto mb-4">
             <ShieldCheck size={28} />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Sign in to Access Dashboard</h1>
-          <p className="text-gray-500 text-xs mb-6 leading-relaxed">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sign in to Access Dashboard</h1>
+          <p className="text-gray-500 dark:text-neutral-400 text-xs mb-6 leading-relaxed">
             Please log in to manage your components, access saved favorites, manage billing tiers, and copy assets.
           </p>
           <button
@@ -2872,16 +2877,22 @@ function DashboardContent() {
   );
 }
 
+function DashboardFallback() {
+  return (
+    <div
+      className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
+    >
+      <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
+      <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">
+        Loading your dashboard...
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#FAFAFB]">
-          <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
-          <p className="text-xs font-medium text-gray-500">Loading your dashboard...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<DashboardFallback />}>
       <DashboardContent />
     </Suspense>
   );
