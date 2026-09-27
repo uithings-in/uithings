@@ -53,6 +53,11 @@ const componentSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    rejectionReason: {
+      type: String,
+      default: "",
+      maxlength: 1000,
+    },
     downloadCount: {
       type: Number,
       default: 0,

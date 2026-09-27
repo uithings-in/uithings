@@ -29,6 +29,7 @@ export interface ComponentItem {
     email?: string;
   };
   status?: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
   isFavorite?: boolean;
   downloadCount?: number;
   createdAt: string;

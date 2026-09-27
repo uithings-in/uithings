@@ -795,5 +795,249 @@ header.landing-nav.is-scrolled {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* ============================================================
+   CLOUDFLARE STYLE DASHBOARD DARK MODE
+   ============================================================ */
+/* Prevent outer double scrollbar on dashboard */
+html:has(.dashboard-container),
+body:has(.dashboard-container) {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+}
+
+.dark .dashboard-container {
+  background-color: #000000 !important;
+  color: #ededed !important;
+}
+
+/* Sidebar */
+.dark .dashboard-container aside {
+  background-color: #000000 !important;
+  border-color: #1c1c1c !important;
+}
+
+.dark .dashboard-container aside nav button,
+.dark .dashboard-container aside nav a {
+  color: #a1a1aa !important;
+}
+
+.dark .dashboard-container aside nav button:hover,
+.dark .dashboard-container aside nav a:hover {
+  background-color: #141414 !important;
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container aside nav button[class*="bg-[#F3F4F6]"],
+.dark .dashboard-container aside nav button.bg-\[\#F3F4F6\] {
+  background-color: #1c1c1c !important;
+  color: #ffffff !important;
+  border: 1px solid #2a2a2a !important;
+}
+
+.dark .dashboard-container aside .border-b,
+.dark .dashboard-container aside .border-t {
+  border-color: #1c1c1c !important;
+}
+
+.dark .dashboard-container aside p.text-gray-900 {
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container aside p.text-gray-400 {
+  color: #71717a !important;
+}
+
+.dark .dashboard-container aside span.text-gray-400 {
+  color: #71717a !important;
+}
+
+/* Header & Topbar */
+.dark .dashboard-container header {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  border-color: #1c1c1c !important;
+}
+
+.dark .dashboard-container header h1 {
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container header .text-gray-400 {
+  color: #a1a1aa !important;
+}
+
+.dark .dashboard-container header .bg-gray-200 {
+  background-color: #262626 !important;
+}
+
+.dark .dashboard-container header button:hover {
+  background-color: #161616 !important;
+  color: #ffffff !important;
+}
+
+/* User profile pill in navbar */
+.dark .dashboard-container header [aria-label="User Profile Menu"] {
+  background-color: #0d0d0d !important;
+  border-color: #262626 !important;
+}
+
+.dark .dashboard-container header [aria-label="User Profile Menu"]:hover {
+  background-color: #181818 !important;
+  border-color: #383838 !important;
+}
+
+.dark .dashboard-container header [aria-label="User Profile Menu"] p.text-gray-900 {
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container header [aria-label="User Profile Menu"] span.text-gray-400 {
+  color: #a1a1aa !important;
+}
+
+/* Dropdowns & Popovers */
+.dark .dashboard-container header .bg-white {
+  background-color: #0f0f0f !important;
+  border-color: #242424 !important;
+  color: #ededed !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.dark .dashboard-container header .bg-\[\#FAFAFB\],
+.dark .dashboard-container header .bg-\[\#F8F9FA\] {
+  background-color: #141414 !important;
+  border-color: #242424 !important;
+}
+
+.dark .dashboard-container header .border-b,
+.dark .dashboard-container header .border-t,
+.dark .dashboard-container header .divide-y > * {
+  border-color: #202020 !important;
+}
+
+.dark .dashboard-container header .text-gray-900,
+.dark .dashboard-container header .text-gray-800,
+.dark .dashboard-container header .text-gray-700 {
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container header .text-gray-500,
+.dark .dashboard-container header .text-gray-400 {
+  color: #a1a1aa !important;
+}
+
+.dark .dashboard-container header .hover\:bg-gray-50:hover,
+.dark .dashboard-container header .hover\:bg-gray-50\/80:hover,
+.dark .dashboard-container header .hover\:bg-gray-100:hover {
+  background-color: #181818 !important;
+}
+
+/* Main Content Area */
+.dark .dashboard-container main {
+  background-color: #000000 !important;
+  color: #ededed !important;
+}
+
+.dark .dashboard-container .bg-white {
+  background-color: #0d0d0d !important;
+  border-color: #222222 !important;
+  color: #ededed !important;
+}
+
+.dark .dashboard-container .bg-\[\#FAFAFB\],
+.dark .dashboard-container .bg-\[\#F8F9FA\],
+.dark .dashboard-container .bg-\[\#F4F5F7\],
+.dark .dashboard-container .bg-\[\#FDFDFE\] {
+  background-color: #000000 !important;
+}
+
+.dark .dashboard-container .border-gray-100,
+.dark .dashboard-container .border-gray-200,
+.dark .dashboard-container .border-gray-200\/80,
+.dark .dashboard-container .border-gray-200\/90,
+.dark .dashboard-container .border-gray-300 {
+  border-color: #222222 !important;
+}
+
+.dark .dashboard-container .text-gray-900,
+.dark .dashboard-container .text-gray-800,
+.dark .dashboard-container .text-gray-700 {
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container .text-gray-600,
+.dark .dashboard-container .text-gray-500 {
+  color: #a1a1aa !important;
+}
+
+.dark .dashboard-container .text-gray-400 {
+  color: #71717a !important;
+}
+
+.dark .dashboard-container input,
+.dark .dashboard-container textarea,
+.dark .dashboard-container select {
+  background-color: #121212 !important;
+  border-color: #262626 !important;
+  color: #ffffff !important;
+}
+
+.dark .dashboard-container input:focus,
+.dark .dashboard-container textarea:focus,
+.dark .dashboard-container select:focus {
+  border-color: #f97316 !important;
+}
+
+.dark .dashboard-container input::placeholder,
+.dark .dashboard-container textarea::placeholder {
+  color: #52525b !important;
+}
+
+.dark .dashboard-container .bg-gray-50,
+.dark .dashboard-container .bg-gray-100 {
+  background-color: #161616 !important;
+}
+
+.dark .dashboard-container .hover\:bg-gray-50:hover,
+.dark .dashboard-container .hover\:bg-gray-100:hover {
+  background-color: #1c1c1c !important;
+}
+
+.dark .dashboard-container thead {
+  background-color: #141414 !important;
+  color: #a1a1aa !important;
+  border-color: #222222 !important;
+}
+
+.dark .dashboard-container table tbody tr:hover {
+  background-color: #161616 !important;
+}
+
+.dark .dashboard-container .divide-gray-100 > *,
+.dark .dashboard-container .divide-gray-200 > * {
+  border-color: #1f1f1f !important;
+}
+
+/* Card image previews and dashed areas */
+.dark .dashboard-container [class*="bg-[#F8F9FA]"] {
+  background-color: #141414 !important;
+}
+
+/* Toast Popups in Dark Mode */
+.dark .fixed.bottom-6.right-6 {
+  background-color: #111111 !important;
+  border-color: #282828 !important;
+  color: #ffffff !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9) !important;
+}
+
+.dark .fixed.bottom-6.right-6 h5 {
+  color: #ffffff !important;
+}
+
+.dark .fixed.bottom-6.right-6 p {
+  color: #a1a1aa !important;
+}
+
+
 
 

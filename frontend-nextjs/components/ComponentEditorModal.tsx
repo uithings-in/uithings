@@ -1,27 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import type { FormEvent } from "react";
 import Image from "next/image";
 import {
   CheckCircle2,
   Clipboard,
   Crown,
-  Image as ImageIcon,
-  Layers3,
   Loader2,
   MonitorSmartphone,
   UploadCloud,
   X,
   ChevronDown,
+  AlertCircle,
+  FileCheck,
+  Trash2,
+  SlidersHorizontal,
+  Image as ImageIcon,
 } from "lucide-react";
 import { extractFigmaBase64FromPaste } from "../lib/clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { componentsApi } from "../api/components";
 
-type DesignType = "Wireframe" | "UI Design";
+type DesignType = "UI Design" | "Wireframe";
 type PricingType = "Free" | "Pro";
-type PlatformTag = "app" | "web";
+type PlatformTag = "web" | "app";
 
 export interface ComponentEditorValues {
   name: string;
@@ -61,7 +64,7 @@ const samplePayload = `<!-- figma-component -->
 [NODE_READY: 0x7A21]
 [PAYLOAD_STATUS: verified]
 [STREAM: base64-encoded]
-010110101100101001110010`;
+010110101100101001110010...`;
 
 function mergeInitialValues(initialValues?: Partial<ComponentEditorValues>) {
   return {
@@ -74,16 +77,16 @@ function mergeInitialValues(initialValues?: Partial<ComponentEditorValues>) {
 
 function getStatusTone(status: string) {
   if (!status) return "";
-  if (/success|captured|submitted/i.test(status)) {
-    return "border-[#238B45]/20 bg-[#238B45]/10 text-[#176534]";
+  if (/success|captured|submitted|added|updated/i.test(status)) {
+    return "border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-700 dark:text-emerald-300";
   }
-  if (/uploading|updating|saving/i.test(status)) {
-    return "border-blue-100 bg-blue-50 text-blue-700";
+  if (/uploading|updating|saving|loading/i.test(status)) {
+    return "border-orange-300 bg-orange-50 text-orange-800 dark:bg-orange-950/60 dark:border-orange-700 dark:text-orange-300";
   }
   if (/paste|select|required/i.test(status)) {
-    return "border-amber-100 bg-amber-50 text-amber-700";
+    return "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:border-amber-700 dark:text-amber-300";
   }
-  return "border-red-100 bg-red-50 text-red-600";
+  return "border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:border-rose-700 dark:text-rose-300";
 }
 
 export function ComponentEditorModal({
@@ -109,6 +112,8 @@ export function ComponentEditorModal({
   const [localStatus, setLocalStatus] = useState("");
   const [hasInitialized, setHasInitialized] = useState(false);
   const [tagsDropdownOpen, setTagsDropdownOpen] = useState(false);
+  const [tagSearch, setTagSearch] = useState("");
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const { data: availableTags = [] } = useQuery({
     queryKey: ["components", "tags"],
@@ -128,6 +133,19 @@ export function ComponentEditorModal({
       setHasInitialized(true);
     }
   }, [seed, isLoading, hasInitialized]);
+
+  // Click outside to close tag dropdown
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setTagsDropdownOpen(false);
+      }
+    }
+    if (tagsDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [tagsDropdownOpen]);
 
   const previewUrl = useMemo(() => {
     if (previewFile) return URL.createObjectURL(previewFile);
@@ -155,7 +173,7 @@ export function ComponentEditorModal({
         const value = await extractFigmaBase64FromPaste(event);
         if (value) {
           setFigmaDataBase64(value);
-          setLocalStatus("Captured Figma payload successfully.");
+          setLocalStatus("Figma payload captured successfully.");
         }
       } catch (error) {
         if (target.id === "figmaPaste") {
@@ -169,11 +187,11 @@ export function ComponentEditorModal({
   }, []);
 
   const visibleStatus = status || localStatus;
-  const title = mode === "create" ? "Add New Component" : "Update Component";
+  const title = mode === "create" ? "Add Component" : "Edit Component";
   const subtitle =
     mode === "create"
-      ? "Package the preview, metadata, and Figma payload in one clean submission."
-      : "Refresh the component details while keeping the existing assets intact.";
+      ? "Create and publish a component to your workspace library."
+      : "Update component details, classification, or figma asset payload.";
 
   function toggleTag(tagToToggle: string) {
     setTags((current) => {
@@ -187,6 +205,17 @@ export function ComponentEditorModal({
       return [...current, tagToToggle];
     });
   }
+
+  function removeTag(tagToRemove: string) {
+    setTags((current) => current.filter((t) => t !== tagToRemove));
+  }
+
+  const filteredTags = useMemo(() => {
+    if (!tagSearch.trim()) return availableTags;
+    return availableTags.filter((t) =>
+      t.toLowerCase().includes(tagSearch.trim().toLowerCase())
+    );
+  }, [availableTags, tagSearch]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -212,119 +241,189 @@ export function ComponentEditorModal({
 
   return (
     <div
-      className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/45 p-4 text-slate-950 backdrop-blur-sm"
+      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={(event) => {
         if (event.target === event.currentTarget && !isSubmitting) onClose();
       }}
     >
-        <section className="relative w-full max-w-[820px] overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.24)]">
-          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#238B45,#9FE870,#2563EB)]" />
+      <section
+        className="relative flex flex-col w-full max-w-[840px] max-h-[92vh] overflow-hidden rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#121316] text-gray-900 dark:text-neutral-100 shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Conceptzilla Header */}
+        <div className="shrink-0 border-b border-gray-100 dark:border-neutral-800/80 bg-white dark:bg-[#121316] px-5 sm:px-6 py-4 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+                {title}
+              </h2>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[9.5px] font-extrabold uppercase tracking-wider bg-[#FFF4ED] dark:bg-orange-950/80 text-[#EA580C] dark:text-[#FB923C] border border-[#FED7AA]/60 dark:border-orange-900/60">
+                {mode === "create" ? "NEW" : "EDIT"}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 z-10 grid h-9 w-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:text-slate-950"
-            aria-label="Close editor"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 transition cursor-pointer shadow-xs"
+            aria-label="Close modal"
           >
-            <X size={18} />
+            <X size={14} />
           </button>
+        </div>
 
-          <div className="border-b border-slate-100 px-5 py-4 pr-16 sm:px-6">
-            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#238B45]">
-              Component Studio
-            </p>
-            <h1 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950">{title}</h1>
-            <p className="mt-1 max-w-2xl text-xs font-medium text-slate-500">{subtitle}</p>
-          </div>
+        {/* Modal Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+              
+              {/* LEFT COLUMN: Metadata & Classification */}
+              <div className="space-y-4">
+                
+                {/* Component Name */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-neutral-300">
+                    Component Name <span className="text-[#EA580C] dark:text-[#FB923C]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Header Navigation, Analytics Card..."
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    required
+                    className="h-8 w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-xs font-semibold text-gray-900 dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 outline-none transition focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 shadow-xs"
+                  />
+                </div>
 
-            <form onSubmit={handleSubmit} className="max-h-[76vh] overflow-y-auto p-4 sm:p-5">
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="space-y-3">
-                  <div className="grid gap-2">
-                    <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
-                      Component Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Hero Section, Dashboard Header..."
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      required
-                      className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-[#238B45] focus:bg-white focus:ring-4 focus:ring-[#238B45]/10"
-                    />
-                  </div>
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-neutral-300">
+                    Description
+                  </label>
+                  <textarea
+                    placeholder="Short summary of layout variants, styling, or usage..."
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={3}
+                    className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-2.5 text-xs font-medium text-gray-900 dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 outline-none transition focus:border-[#F97316] focus:ring-2 focus:ring-[#F97316]/20 shadow-xs resize-none"
+                  />
+                </div>
 
-                  <div className="grid gap-2">
-                    <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
-                      Description
-                    </label>
-                    <textarea
-                      placeholder="Short notes about layout, use case, variants, or style."
-                      value={description}
-                      onChange={(event) => setDescription(event.target.value)}
-                      rows={2}
-                      className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium leading-5 text-slate-950 outline-none transition focus:border-[#238B45] focus:bg-white focus:ring-4 focus:ring-[#238B45]/10"
-                    />
-                  </div>
-
-                  <div className="grid gap-2 relative">
-                    <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                {/* Tags Selector */}
+                <div className="space-y-1.5" ref={dropdownRef}>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-neutral-300">
                       Tags
                     </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setTagsDropdownOpen(!tagsDropdownOpen)}
-                        className="flex min-h-[42px] w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100 focus:border-[#238B45] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#238B45]/10"
-                      >
-                        <span className="truncate">
-                          {tags.length === 0 ? "Select Tags" : `${tags.length} tag${tags.length > 1 ? "s" : ""} selected`}
-                        </span>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${tagsDropdownOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      {tagsDropdownOpen && (
-                        <div className="absolute top-full z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                          {availableTags.length === 0 ? (
-                            <div className="p-2 text-xs font-medium text-slate-400">Loading tags...</div>
-                          ) : (
-                            <div className="flex flex-wrap gap-1.5">
-                              {availableTags.map((tag) => {
-                                const isSelected = tags.includes(tag);
-                                return (
-                                  <button
-                                    key={tag}
-                                    type="button"
-                                    onClick={() => toggleTag(tag)}
-                                    className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition-colors ${
-                                      isSelected
-                                        ? "bg-[#238B45]/10 text-[#176534] ring-1 ring-inset ring-[#238B45]/20"
-                                        : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                                    }`}
-                                  >
-                                    {tag}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <span className="text-[10px] text-gray-500 dark:text-neutral-400 font-mono font-semibold">
+                      {tags.length}/3 tags
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="grid gap-2">
-                      <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setTagsDropdownOpen(!tagsDropdownOpen)}
+                      className="flex min-h-[36px] w-full items-center justify-between rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-gray-800 dark:text-neutral-200 transition hover:border-gray-400 dark:hover:border-neutral-600 focus:border-[#F97316] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 shadow-xs cursor-pointer"
+                    >
+                      <div className="flex flex-wrap gap-1 items-center min-w-0 pr-2">
+                        {tags.length === 0 ? (
+                          <span className="text-gray-400 dark:text-neutral-500 font-normal">Select up to 3 tags...</span>
+                        ) : (
+                          tags.map((t) => (
+                            <span
+                              key={t}
+                              className="inline-flex items-center gap-1 rounded-[5px] bg-[#FFF4ED] dark:bg-orange-950/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#EA580C] dark:text-[#FB923C] border border-[#FED7AA]/60 dark:border-orange-900/60"
+                            >
+                              {t}
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeTag(t);
+                                }}
+                                className="hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+                              >
+                                <X size={9} />
+                              </span>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <ChevronDown
+                        size={13}
+                        className={`text-gray-400 dark:text-neutral-400 shrink-0 transition-transform ${
+                          tagsDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {tagsDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-52 w-full overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-2 shadow-xl animate-in fade-in zoom-in-95 duration-100 flex flex-col">
+                        <input
+                          type="text"
+                          placeholder="Search available tags..."
+                          value={tagSearch}
+                          onChange={(e) => setTagSearch(e.target.value)}
+                          className="h-7 w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 px-2.5 text-xs font-semibold text-gray-900 dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500 outline-none focus:border-[#F97316] mb-2"
+                        />
+
+                        <div className="overflow-y-auto max-h-36 flex flex-wrap gap-1 p-0.5">
+                          {filteredTags.length === 0 ? (
+                            <div className="p-2 text-center text-xs font-medium text-gray-400 dark:text-neutral-400 w-full">
+                              No matching tags found
+                            </div>
+                          ) : (
+                            filteredTags.map((tag) => {
+                              const isSelected = tags.includes(tag);
+                              return (
+                                <button
+                                  key={tag}
+                                  type="button"
+                                  onClick={() => toggleTag(tag)}
+                                  className={`rounded-[5px] px-2 py-1 text-[11px] font-semibold transition cursor-pointer ${
+                                    isSelected
+                                      ? "bg-[#FFF4ED] dark:bg-orange-950/80 text-[#EA580C] dark:text-[#FB923C] ring-1 ring-[#EA580C] font-bold"
+                                      : "bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-200/80 dark:hover:bg-neutral-700"
+                                  }`}
+                                >
+                                  {tag}
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Classification / Properties Group */}
+                <div className="rounded-xl border border-gray-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 p-3 space-y-2.5">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800 dark:text-neutral-200">
+                    <SlidersHorizontal size={13} className="text-[#F97316]" />
+                    <span>Classification</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* Design Type */}
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Design
-                      </label>
-                    <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                      </span>
+                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["UI Design", "Wireframe"] as DesignType[]).map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => setDesignType(option)}
-                            className={`rounded-lg px-2 py-1.5 text-xs font-extrabold transition ${
-                              designType === option ? "bg-white text-[#238B45] shadow-sm" : "text-slate-500"
+                            className={`rounded-md py-1 text-[11px] font-bold transition cursor-pointer ${
+                              designType === option
+                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
+                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
                             }`}
                           >
                             {option === "UI Design" ? "UI" : "Wire"}
@@ -333,39 +432,47 @@ export function ComponentEditorModal({
                       </div>
                     </div>
 
-                    <div className="grid gap-2">
-                      <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                    {/* Access / Pricing */}
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Access
-                      </label>
-                      <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                      </span>
+                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["Free", "Pro"] as PricingType[]).map((option) => (
                           <button
                             key={option}
                             type="button"
-                            onClick={() => allowPro || option === "Free" ? setPricingType(option) : undefined}
+                            onClick={() => (allowPro || option === "Free" ? setPricingType(option) : undefined)}
                             disabled={!allowPro && option === "Pro"}
-                            className={`rounded-lg px-2 py-1.5 text-xs font-extrabold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                              pricingType === option ? "bg-white text-[#238B45] shadow-sm" : "text-slate-500"
+                            title={!allowPro && option === "Pro" ? "Only admins can mark as Pro" : undefined}
+                            className={`rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
+                              pricingType === option
+                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
+                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
                             }`}
                           >
+                            {option === "Pro" && <Crown size={10} className="text-[#F97316]" />}
                             {option}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <div className="grid gap-2">
-                      <label className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                    {/* Platform */}
+                    <div className="space-y-1">
+                      <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Platform
-                      </label>
-                      <div className="grid grid-cols-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                      </span>
+                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["web", "app"] as PlatformTag[]).map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => setPlatformTag(option)}
-                            className={`rounded-lg px-2 py-1.5 text-xs font-extrabold capitalize transition ${
-                              platformTag === option ? "bg-white text-[#238B45] shadow-sm" : "text-slate-500"
+                            className={`rounded-md py-1 text-[11px] font-bold capitalize transition cursor-pointer ${
+                              platformTag === option
+                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
+                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
                             }`}
                           >
                             {option}
@@ -374,22 +481,112 @@ export function ComponentEditorModal({
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex items-center gap-3">
-                      <span className="grid h-8 w-8 place-items-center rounded-xl bg-white text-[#238B45] shadow-sm">
-                        <UploadCloud size={17} />
-                      </span>
+              </div>
+
+              {/* RIGHT COLUMN: Figma Payload & Preview Image */}
+              <div className="space-y-4">
+                
+                {/* 1. Figma Payload Dark Card (Conceptzilla Slate Theme) */}
+                <div className="rounded-xl border border-gray-800 dark:border-neutral-800 bg-[#0B0F19] dark:bg-[#090C14] p-3.5 text-white shadow-sm flex flex-col">
+                  <div className="mb-2.5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-500/20 text-[#F97316]">
+                        <Clipboard size={13} />
+                      </div>
                       <div>
-                        <p className="text-xs font-extrabold text-slate-950">Preview image</p>
-                        <p className="text-xs font-semibold text-slate-500">
-                          {mode === "edit" ? "Upload only if you want to replace the current preview." : "Required for new components."}
-                        </p>
+                        <h4 className="text-xs font-bold leading-none text-white">Figma Payload</h4>
+                        <p className="text-[10px] text-neutral-300 mt-0.5">Paste copied component data</p>
                       </div>
                     </div>
-                    <label className="group flex min-h-[88px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-3 py-3 text-center transition hover:border-[#238B45] hover:bg-[#f8fcf6]">
-                      {previewUrl ? (
-                        <span className="relative block h-[70px] w-full overflow-hidden rounded-lg">
+
+                    {figmaDataBase64 ? (
+                      <span className="inline-flex items-center gap-1 rounded-[5px] bg-[#ECFDF5] px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-[#059669]">
+                        <CheckCircle2 size={10} />
+                        READY
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[9.5px] font-extrabold uppercase tracking-wider bg-[#FFF4ED] text-[#EA580C]">
+                        REQUIRED
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Paste Box Area */}
+                  <div className="relative min-h-[135px] flex-1 overflow-hidden rounded-xl border border-white/10 bg-black/50 flex flex-col justify-center items-center">
+                    {isLoading ? (
+                      <div className="flex flex-col items-center justify-center min-h-[135px] gap-2 text-center text-white/80">
+                        <Loader2 className="h-5 w-5 animate-spin text-[#F97316]" />
+                        <span className="text-xs font-semibold">Loading payload...</span>
+                      </div>
+                    ) : figmaDataBase64 ? (
+                      <div className="h-full w-full p-3 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between pb-1.5 border-b border-white/10 text-[10px] font-mono text-neutral-300">
+                            <span className="text-emerald-400 font-bold">✓ Payload Captured</span>
+                            <span>{Math.round(figmaDataBase64.length / 1024)} KB</span>
+                          </div>
+                          <pre className="mt-1.5 max-h-[50px] overflow-hidden whitespace-pre-wrap break-all font-mono text-[9.5px] leading-relaxed text-emerald-400">
+                            {samplePayload}
+                          </pre>
+                        </div>
+                        
+                        <div className="pt-2 mt-1 border-t border-white/10 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setFigmaDataBase64("")}
+                            className="flex-1 h-6 rounded-md bg-white/15 text-[10.5px] font-bold text-white transition hover:bg-white/25 cursor-pointer flex items-center justify-center gap-1"
+                          >
+                            <Trash2 size={11} />
+                            <span>Replace Payload</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex min-h-[135px] flex-col items-center justify-center p-3 text-center">
+                        <MonitorSmartphone className="mb-1.5 text-neutral-300" size={22} />
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                          <span>Click here & press</span>
+                          <kbd className="rounded bg-white/20 px-1.5 py-0.5 font-mono text-[10px] text-orange-300 font-bold border border-white/10">
+                            Ctrl + V
+                          </kbd>
+                        </div>
+                        <p className="mt-1 max-w-[220px] text-[10.5px] text-neutral-300 leading-relaxed font-medium">
+                          Copy any layer or component from Figma and paste here.
+                        </p>
+                        <textarea
+                          id="figmaPaste"
+                          value=""
+                          onChange={() => {}}
+                          className="absolute inset-0 h-full w-full cursor-pointer resize-none opacity-0"
+                          aria-label="Paste Figma component payload"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Preview Image Dropzone Card */}
+                <div className="rounded-xl border border-gray-200 dark:border-neutral-800 bg-[#F8F9FA] dark:bg-neutral-900/60 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-50 text-[#F97316]">
+                        <ImageIcon size={13} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold leading-none text-gray-800 dark:text-neutral-100">
+                          Preview Screenshot <span className="text-[#EA580C] dark:text-[#FB923C]">{mode === "create" ? "*" : ""}</span>
+                        </h4>
+                        <p className="text-[10px] text-gray-500 dark:text-neutral-400 mt-0.5 font-medium">PNG, JPG, or WebP</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <label className="group relative flex min-h-[96px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-2.5 text-center transition hover:border-[#F97316] hover:bg-orange-50/20 dark:hover:bg-orange-950/20">
+                    {previewUrl ? (
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-md border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800">
                           <Image
                             src={previewUrl}
                             alt="Component preview"
@@ -397,139 +594,93 @@ export function ComponentEditorModal({
                             unoptimized
                             className="object-contain"
                           />
-                        </span>
-                      ) : (
-                        <>
-                          <ImageIcon className="mb-2 text-slate-400 transition group-hover:text-[#238B45]" size={22} />
-                          <span className="text-sm font-bold text-slate-700">Drop or choose an image</span>
-                          <span className="text-xs font-medium text-slate-400">PNG, JPG, or WebP</span>
-                        </>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => setPreviewFile(event.target.files?.[0] || null)}
-                        className="sr-only"
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-950 p-3 text-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#9FE870] text-[#0f1d16]">
-                          <Clipboard size={17} />
-                        </span>
-                        <div>
-                          <p className="text-xs font-extrabold">Figma payload</p>
-                          <p className="text-xs font-semibold text-white/50">Paste copied component data</p>
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="flex items-center gap-1 text-[#059669] dark:text-emerald-400 text-[10.5px] font-bold">
+                            <FileCheck size={12} />
+                            <span>Preview Attached</span>
+                          </div>
+                          <p className="text-[10px] text-gray-500 dark:text-neutral-400 truncate mt-0.5 font-medium">
+                            {previewFile ? previewFile.name : "Current image active"}
+                          </p>
+                          <span className="text-[9.5px] text-[#EA580C] dark:text-[#FB923C] font-bold hover:underline mt-0.5 inline-block">
+                            Click to replace image
+                          </span>
                         </div>
                       </div>
-                      {figmaDataBase64 && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#9FE870]/15 px-3 py-1 text-xs font-extrabold text-[#9FE870]">
-                          <CheckCircle2 size={14} />
-                          Captured
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-1">
+                        <div className="mb-1 flex h-6 w-6 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-950/80 text-[#F97316] transition group-hover:scale-110">
+                          <UploadCloud size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800 dark:text-neutral-200 group-hover:text-[#F97316]">
+                          Choose or drop image
                         </span>
-                      )}
-                    </div>
-
-                    <div className="relative min-h-[176px] overflow-hidden rounded-xl border border-white/10 bg-black/35">
-                      {isLoading ? (
-                        <div className="flex flex-col items-center justify-center min-h-[176px] gap-2 text-center text-white/70">
-                          <Loader2 className="h-6 w-6 animate-spin text-[#9FE870]" />
-                          <span className="text-xs font-semibold">Loading payload...</span>
-                        </div>
-                      ) : figmaDataBase64 ? (
-                        <div className="h-full p-4">
-                          <pre className="max-h-[130px] overflow-hidden whitespace-pre-wrap break-all font-mono text-[10px] leading-5 text-[#9FE870]/70">
-                            {samplePayload}
-                          </pre>
-                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-4 pt-16">
-                            <button
-                              type="button"
-                              onClick={() => setFigmaDataBase64("")}
-                              className="h-10 w-full rounded-xl bg-white/10 text-xs font-extrabold text-white transition hover:bg-white/15"
-                            >
-                              Replace Payload
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex min-h-[176px] flex-col items-center justify-center p-5 text-center">
-                          <MonitorSmartphone className="mb-3 text-white/35" size={30} />
-                          <p className="text-sm font-extrabold">Click here, then press Ctrl + V</p>
-                          <p className="mt-2 max-w-[250px] text-xs font-medium leading-5 text-white/45">
-                            Copy a component from Figma and paste it into this capture area.
-                          </p>
-                          <textarea
-                            id="figmaPaste"
-                            value=""
-                            onChange={() => {}}
-                            className="absolute inset-0 h-full w-full cursor-pointer resize-none opacity-0"
-                            aria-label="Paste Figma component payload"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2 rounded-2xl border border-slate-200 bg-white p-3">
-                    <div className="flex items-center gap-3 text-sm font-extrabold text-slate-800">
-                      <Layers3 size={18} className="text-[#238B45]" />
-                      Submission Summary
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs font-bold text-slate-500">
-                      <span className="rounded-xl bg-slate-50 p-2.5">
-                        <span className="mb-1 block text-slate-400">Design</span>
-                        {designType}
-                      </span>
-                      <span className="rounded-xl bg-slate-50 p-2.5">
-                        <span className="mb-1 block text-slate-400">Access</span>
-                        <span className="inline-flex items-center gap-1">
-                          <span className="inline-grid h-[13px] w-[13px] place-items-center">
-                            <Crown
-                              size={13}
-                              className={`text-[#238B45] transition-opacity ${
-                                pricingType === "Pro" ? "opacity-100" : "opacity-0"
-                              }`}
-                              aria-hidden={pricingType !== "Pro"}
-                            />
-                          </span>
-                          {pricingType}
+                        <span className="text-[10px] text-gray-500 dark:text-neutral-400 mt-0.5 font-medium">
+                          Drag file here or click to browse
                         </span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {visibleStatus && (
-                    <p className={`rounded-xl border px-3 py-2 text-xs font-bold ${getStatusTone(visibleStatus)}`}>
-                      {visibleStatus}
-                    </p>
-                  )}
-
-                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#238B45] px-5 text-sm font-extrabold text-white shadow-lg shadow-[#238B45]/20 transition hover:bg-[#2a9d50] disabled:cursor-wait disabled:opacity-70"
-                    >
-                      {isSubmitting && <Loader2 size={17} className="animate-spin" />}
-                      {isSubmitting ? "Saving..." : mode === "create" ? "Save Component" : "Save Changes"}
-                    </button>
-                  </div>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => setPreviewFile(event.target.files?.[0] || null)}
+                      className="sr-only"
+                    />
+                  </label>
                 </div>
+
               </div>
-            </form>
-        </section>
+
+            </div>
+          </div>
+
+          {/* Modal Footer Actions & Status Bar (Conceptzilla bottom bar style) */}
+          <div className="shrink-0 border-t border-gray-100 dark:border-neutral-800/80 bg-white dark:bg-[#121316] px-5 sm:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="w-full sm:w-auto">
+              {visibleStatus ? (
+                <div
+                  className={`inline-flex items-center gap-1.5 rounded-[5px] border px-2 py-0.5 text-[11px] font-semibold ${getStatusTone(
+                    visibleStatus
+                  )}`}
+                >
+                  <AlertCircle size={12} className="shrink-0" />
+                  <span>{visibleStatus}</span>
+                </div>
+              ) : (
+                <span className="text-[10.5px] text-gray-500 dark:text-neutral-400 font-medium hidden sm:inline">
+                  * Components are verified automatically before publication.
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="h-8 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3.5 text-xs font-semibold text-gray-700 dark:text-neutral-200 shadow-xs transition hover:bg-gray-100 dark:hover:bg-neutral-700 hover:text-gray-900 dark:hover:text-white cursor-pointer disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#F97316] px-4 text-xs font-semibold text-white shadow-xs transition hover:bg-[#EA580C] cursor-pointer disabled:cursor-wait disabled:opacity-70"
+              >
+                {isSubmitting && <Loader2 size={12} className="animate-spin" />}
+                <span>
+                  {isSubmitting
+                    ? "Saving..."
+                    : mode === "create"
+                    ? "Save Component"
+                    : "Save Changes"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

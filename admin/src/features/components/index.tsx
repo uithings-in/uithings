@@ -11,13 +11,16 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { copyToFigma } from '@/lib/clipboard'
-import { Copy, Eye } from 'lucide-react'
+import { Copy, Eye, AlertTriangle } from 'lucide-react'
 import { API_URL } from '@/lib/api-url'
 
 export function ComponentsModeration() {
@@ -28,6 +31,19 @@ export function ComponentsModeration() {
   const [totalPages, setTotalPages] = useState(1)
   const [copyingId, setCopyingId] = useState<string | null>(null)
   const [actions, setActions] = useState<Record<string, string>>({})
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean
+    compId: string
+    compName: string
+    reason: string
+    submitting: boolean
+  }>({
+    open: false,
+    compId: '',
+    compName: '',
+    reason: '',
+    submitting: false,
+  })
   const { accessToken } = useAuthStore.getState().auth
 
   const fetchComponents = async (pageNum = 1) => {
@@ -76,6 +92,19 @@ export function ComponentsModeration() {
     const action = actions[id]
     if (!action) return
 
+    const targetComp = components.find((c) => c._id === id)
+
+    if (action === 'rejected') {
+      setRejectDialog({
+        open: true,
+        compId: id,
+        compName: targetComp?.name || 'Component',
+        reason: targetComp?.rejectionReason || '',
+        submitting: false,
+      })
+      return
+    }
+
     try {
       if (action === 'delete') {
         if (!confirm('Are you sure you want to delete this component permanently?')) return
@@ -93,6 +122,41 @@ export function ComponentsModeration() {
       }
     } catch (error) {
       toast.error('Failed to perform action')
+    }
+  }
+
+  const handleConfirmReject = async () => {
+    if (!rejectDialog.compId) return
+    try {
+      setRejectDialog(prev => ({ ...prev, submitting: true }))
+      await axios.patch(
+        `${API_URL}/components/${rejectDialog.compId}/status`,
+        {
+          status: 'rejected',
+          rejectionReason: rejectDialog.reason.trim(),
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      )
+      setComponents(prev =>
+        prev.map(c =>
+          c._id === rejectDialog.compId
+            ? { ...c, status: 'rejected', rejectionReason: rejectDialog.reason.trim() }
+            : c
+        )
+      )
+      toast.success('Component rejected with message')
+      setRejectDialog({
+        open: false,
+        compId: '',
+        compName: '',
+        reason: '',
+        submitting: false,
+      })
+    } catch (error) {
+      toast.error('Failed to reject component')
+      setRejectDialog(prev => ({ ...prev, submitting: false }))
     }
   }
 
@@ -271,6 +335,65 @@ export function ComponentsModeration() {
           </div>
         )}
       </Main>
+
+      {/* Component Rejection Reason Modal */}
+      <Dialog
+        open={rejectDialog.open}
+        onOpenChange={(open) => {
+          if (!rejectDialog.submitting) {
+            setRejectDialog((prev) => ({ ...prev, open }))
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+              Reject Component
+            </DialogTitle>
+            <DialogDescription>
+              Provide a rejection reason or feedback for <strong>{rejectDialog.compName}</strong>. This message will be sent to the creator on their dashboard.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2">
+            <Label htmlFor="rejection-reason" className="text-sm font-semibold text-foreground">
+              Rejection Message / Feedback
+            </Label>
+            <Textarea
+              id="rejection-reason"
+              rows={4}
+              placeholder="e.g. Preview image is low resolution, contains broken layers, or doesn't meet design guidelines..."
+              value={rejectDialog.reason}
+              onChange={(e) => setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))}
+              className="resize-none"
+              autoFocus
+            />
+            <p className="text-[11.5px] text-muted-foreground leading-relaxed">
+              The author will be immediately notified with this message so they can adjust and resubmit.
+            </p>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRejectDialog((prev) => ({ ...prev, open: false }))}
+              disabled={rejectDialog.submitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={rejectDialog.submitting}
+            >
+              {rejectDialog.submitting ? 'Submitting...' : 'Reject Component'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

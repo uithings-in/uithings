@@ -36,8 +36,9 @@ export const metadata: Metadata = {
   title: "ui things - Streamline Design with Components",
   description: "Accelerate your workflow with highly adaptable, accessible and consistent components built for modern design systems.",
   icons: {
-    icon: "/assets/logo.svg",
-    shortcut: "/assets/logo.svg",
+    icon: "/assets/icon.svg",
+    shortcut: "/assets/icon.svg",
+    apple: "/assets/icon.svg",
   },
 };
 
@@ -64,7 +65,24 @@ export default async function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){function u(){if(window.scrollY>20){document.documentElement.classList.add('scrolled')}else{document.documentElement.classList.remove('scrolled')}}u();window.addEventListener('scroll',u,{passive:true})})();`,
+            __html: `(function(){
+              try {
+                var theme = localStorage.getItem('theme');
+                var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.backgroundColor = '#000000';
+                  document.documentElement.style.colorScheme = 'dark';
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.backgroundColor = '#FAFAFB';
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              } catch(e){}
+              function u(){if(window.scrollY>20){document.documentElement.classList.add('scrolled')}else{document.documentElement.classList.remove('scrolled')}}
+              u();
+              window.addEventListener('scroll',u,{passive:true});
+            })();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -74,7 +92,7 @@ export default async function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased bg-black text-white selection:bg-[#4343D5] selection:text-white">
+      <body className="font-sans antialiased bg-[#FAFAFB] dark:bg-black text-slate-900 dark:text-white selection:bg-[#4343D5] selection:text-white">
         <Providers initialUser={initialUser}>
           {children}
         </Providers>

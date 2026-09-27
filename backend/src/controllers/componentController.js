@@ -418,7 +418,7 @@ const createComponent = asyncHandler(async (req, res) => {
 
 // ─── PATCH /api/components/:id/status ─────────────────────────────────────────
 const updateComponentStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
+  const { status, rejectionReason } = req.body;
   const userRole = req.user.role || "user";
 
   if (userRole !== "admin") {
@@ -431,9 +431,16 @@ const updateComponentStatus = asyncHandler(async (req, res) => {
     throw new Error("Invalid status");
   }
 
+  const updateFields = { status };
+  if (status === "rejected") {
+    updateFields.rejectionReason = typeof rejectionReason === "string" ? rejectionReason.trim() : "";
+  } else if (status === "approved") {
+    updateFields.rejectionReason = "";
+  }
+
   const component = await Component.findByIdAndUpdate(
     req.params.id,
-    { status },
+    updateFields,
     { new: true }
   );
 
