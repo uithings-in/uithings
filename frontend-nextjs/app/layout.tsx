@@ -36,8 +36,9 @@ export const metadata: Metadata = {
   title: "ui things - Streamline Design with Components",
   description: "Accelerate your workflow with highly adaptable, accessible and consistent components built for modern design systems.",
   icons: {
-    icon: "/assets/logo.svg",
-    shortcut: "/assets/logo.svg",
+    icon: "/assets/icon.svg",
+    shortcut: "/assets/icon.svg",
+    apple: "/assets/icon.svg",
   },
 };
 

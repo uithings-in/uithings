@@ -28,7 +28,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 function normalizeUser(user: User): User {
   return {
-    id: user.id || (user as any)._id,
+    id: user.id || (user as User & { _id?: string })._id || "",
     name: user.name,
     email: user.email,
     profilePicture: user.profilePicture,
