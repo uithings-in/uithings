@@ -1177,6 +1177,16 @@ function formatDate(value?: string) {
   });
 }
 
+function formatDDMMYYYY(value?: string | Date) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 function formatCurrency(amount?: number, currency = "INR") {
   if (typeof amount !== "number") return "Free";
   return new Intl.NumberFormat(undefined, {
@@ -1677,7 +1687,7 @@ function OverviewPanel({
             {isPro && subscription?.endDate ? (
               <span className="flex items-center gap-1.5 text-emerald-600 text-[11px] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Active subscription expires {new Date(subscription.endDate).toLocaleDateString()}
+                Active subscription expires {formatDDMMYYYY(subscription.endDate)}
               </span>
             ) : (
               <span className="text-[11px]">No active subscription</span>
