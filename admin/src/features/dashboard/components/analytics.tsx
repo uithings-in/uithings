@@ -6,23 +6,101 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { AnalyticsChart } from './analytics-chart'
+import { Download, Users, Layers } from 'lucide-react'
 
-export function Analytics() {
+interface AnalyticsProps {
+  stats?: {
+    metrics?: {
+      totalDownloads: number
+      totalUsers: number
+      proUsers: number
+      totalComponents: number
+      approvedComponents: number
+    }
+    analytics?: {
+      past7DaysData: {
+        name: string
+        date: string
+        clicks: number
+        uniques: number
+        signups: number
+        componentsAdded: number
+      }[]
+      topTags: {
+        name: string
+        value: number
+      }[]
+      userTierDistribution: {
+        name: string
+        value: number
+        count: number
+      }[]
+    }
+  }
+}
+
+export function Analytics({ stats }: AnalyticsProps) {
+  const past7DaysData = stats?.analytics?.past7DaysData || []
+  const totalClicksThisWeek = past7DaysData.reduce((acc, d) => acc + d.clicks, 0)
+  const totalUniquesThisWeek = past7DaysData.reduce((acc, d) => acc + d.uniques, 0)
+
+  const topTags =
+    stats?.analytics?.topTags && stats.analytics.topTags.length > 0
+      ? stats.analytics.topTags
+      : [
+          { name: 'Navbar', value: 12 },
+          { name: 'Hero Section', value: 10 },
+          { name: 'Card', value: 8 },
+          { name: 'Button', value: 7 },
+          { name: 'Footer', value: 5 },
+        ]
+
+  const userTiers = stats?.analytics?.userTierDistribution || [
+    { name: 'Free Users', value: 85, count: 0 },
+    { name: 'Pro Subscribers', value: 15, count: 0 },
+  ]
+
   return (
     <div className='space-y-4'>
       <Card>
         <CardHeader>
-          <CardTitle>Traffic Overview</CardTitle>
-          <CardDescription>Weekly clicks and unique visitors</CardDescription>
+          <CardTitle>Traffic & Activity Overview</CardTitle>
+          <CardDescription>Weekly visitor engagement and interactions</CardDescription>
         </CardHeader>
         <CardContent className='px-6'>
-          <AnalyticsChart />
+          <AnalyticsChart data={past7DaysData} />
         </CardContent>
       </Card>
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Clicks</CardTitle>
+            <CardTitle className='text-sm font-medium'>Total Downloads</CardTitle>
+            <Download className='h-4 w-4 text-muted-foreground' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>
+              {stats?.metrics?.totalDownloads?.toLocaleString() ?? 0}
+            </div>
+            <p className='text-xs text-muted-foreground'>Across all components</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Total Registered Users</CardTitle>
+            <Users className='h-4 w-4 text-muted-foreground' />
+          </CardHeader>
+          <CardContent>
+            <div className='text-2xl font-bold'>
+              {stats?.metrics?.totalUsers?.toLocaleString() ?? 0}
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              {stats?.metrics?.proUsers ?? 0} Pro members
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Est. Weekly Clicks</CardTitle>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 24 24'
@@ -38,110 +116,53 @@ export function Analytics() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>1,248</div>
-            <p className='text-xs text-muted-foreground'>+12.4% vs last week</p>
+            <div className='text-2xl font-bold'>{totalClicksThisWeek.toLocaleString()}</div>
+            <p className='text-xs text-muted-foreground'>
+              ~{totalUniquesThisWeek.toLocaleString()} unique visitors
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Unique Visitors
-            </CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <circle cx='12' cy='7' r='4' />
-              <path d='M6 21v-2a6 6 0 0 1 12 0v2' />
-            </svg>
+            <CardTitle className='text-sm font-medium'>Total Components</CardTitle>
+            <Layers className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>832</div>
-            <p className='text-xs text-muted-foreground'>+5.8% vs last week</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Bounce Rate</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <path d='M3 12h6l3 6 3-6h6' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>42%</div>
-            <p className='text-xs text-muted-foreground'>-3.2% vs last week</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Avg. Session</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <circle cx='12' cy='12' r='10' />
-              <path d='M12 6v6l4 2' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>3m 24s</div>
-            <p className='text-xs text-muted-foreground'>+18s vs last week</p>
+            <div className='text-2xl font-bold'>
+              {stats?.metrics?.totalComponents?.toLocaleString() ?? 0}
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              {stats?.metrics?.approvedComponents ?? 0} approved in store
+            </p>
           </CardContent>
         </Card>
       </div>
       <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
         <Card className='col-span-1 lg:col-span-4'>
           <CardHeader>
-            <CardTitle>Referrers</CardTitle>
-            <CardDescription>Top sources driving traffic</CardDescription>
+            <CardTitle>Top Categories & Tags</CardTitle>
+            <CardDescription>Most popular tags by component count</CardDescription>
           </CardHeader>
           <CardContent>
             <SimpleBarList
-              items={[
-                { name: 'Direct', value: 512 },
-                { name: 'Product Hunt', value: 238 },
-                { name: 'Twitter', value: 174 },
-                { name: 'Blog', value: 104 },
-              ]}
+              items={topTags}
               barClass='bg-primary'
-              valueFormatter={(n) => `${n}`}
+              valueFormatter={(n) => `${n} components`}
             />
           </CardContent>
         </Card>
         <Card className='col-span-1 lg:col-span-3'>
           <CardHeader>
-            <CardTitle>Devices</CardTitle>
-            <CardDescription>How users access your app</CardDescription>
+            <CardTitle>User Subscription Tiers</CardTitle>
+            <CardDescription>Breakdown of free vs pro user accounts</CardDescription>
           </CardHeader>
           <CardContent>
             <SimpleBarList
-              items={[
-                { name: 'Desktop', value: 74 },
-                { name: 'Mobile', value: 22 },
-                { name: 'Tablet', value: 4 },
-              ]}
-              barClass='bg-muted-foreground'
+              items={userTiers.map((u) => ({
+                name: `${u.name} (${u.count ?? 0})`,
+                value: u.value,
+              }))}
+              barClass='bg-emerald-500'
               valueFormatter={(n) => `${n}%`}
             />
           </CardContent>
@@ -162,23 +183,23 @@ function SimpleBarList({
 }) {
   const max = Math.max(...items.map((i) => i.value), 1)
   return (
-    <ul className='space-y-3'>
+    <ul className='space-y-4'>
       {items.map((i) => {
         const width = `${Math.round((i.value / max) * 100)}%`
         return (
           <li key={i.name} className='flex items-center justify-between gap-3'>
             <div className='min-w-0 flex-1'>
-              <div className='mb-1 truncate text-xs text-muted-foreground'>
+              <div className='mb-1.5 truncate text-xs font-medium text-foreground'>
                 {i.name}
               </div>
-              <div className='h-2.5 w-full rounded-full bg-muted'>
+              <div className='h-2 w-full rounded-full bg-muted'>
                 <div
-                  className={`h-2.5 rounded-full ${barClass}`}
+                  className={`h-2 rounded-full transition-all duration-500 ${barClass}`}
                   style={{ width }}
                 />
               </div>
             </div>
-            <div className='ps-2 text-xs font-medium tabular-nums'>
+            <div className='ps-2 text-xs font-semibold tabular-nums text-muted-foreground'>
               {valueFormatter(i.value)}
             </div>
           </li>

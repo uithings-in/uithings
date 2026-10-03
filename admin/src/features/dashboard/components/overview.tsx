@@ -1,60 +1,42 @@
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-const data = [
-  {
-    name: 'Jan',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Feb',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Mar',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Apr',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'May',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Jun',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Jul',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Aug',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Sep',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Oct',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Nov',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: 'Dec',
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-]
+interface OverviewProps {
+  data?: {
+    name: string
+    total: number
+  }[]
+  currencySymbol?: string
+}
 
-export function Overview() {
+export function Overview({ data = [], currencySymbol = '₹' }: OverviewProps) {
+  const chartData =
+    data.length > 0
+      ? data
+      : [
+          { name: 'Jan', total: 0 },
+          { name: 'Feb', total: 0 },
+          { name: 'Mar', total: 0 },
+          { name: 'Apr', total: 0 },
+          { name: 'May', total: 0 },
+          { name: 'Jun', total: 0 },
+          { name: 'Jul', total: 0 },
+          { name: 'Aug', total: 0 },
+          { name: 'Sep', total: 0 },
+          { name: 'Oct', total: 0 },
+          { name: 'Nov', total: 0 },
+          { name: 'Dec', total: 0 },
+        ]
+
   return (
     <ResponsiveContainer width='100%' height={350}>
-      <BarChart data={data}>
+      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <XAxis
           dataKey='name'
           stroke='#888888'
@@ -63,12 +45,28 @@ export function Overview() {
           axisLine={false}
         />
         <YAxis
-          direction='ltr'
           stroke='#888888'
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `${currencySymbol}${value.toLocaleString()}`}
+        />
+        <Tooltip
+          cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+          content={({ active, payload, label }) => {
+            if (active && payload && payload.length) {
+              return (
+                <div className='rounded-lg border border-border bg-card p-2 shadow-md'>
+                  <p className='text-xs font-semibold text-foreground'>{label}</p>
+                  <p className='text-xs font-medium text-primary'>
+                    Revenue: {currencySymbol}
+                    {Number(payload[0].value).toLocaleString()}
+                  </p>
+                </div>
+              )
+            }
+            return null
+          }}
         />
         <Bar
           dataKey='total'
