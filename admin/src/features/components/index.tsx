@@ -356,26 +356,41 @@ export function ComponentsModeration() {
                               {comp.description || 'No description provided.'}
                             </p>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
-                            <div>
+                          <div className="flex flex-wrap sm:flex-nowrap items-start gap-[60px]">
+                            <div className="shrink-0">
                               <h4 className="text-sm font-semibold mb-1">Design Type</h4>
                               <p className="text-sm text-muted-foreground">{comp.designType || 'UI Design'}</p>
                             </div>
-                            <div>
+                            <div className="shrink-0">
+                              <h4 className="text-sm font-semibold mb-1">Platform</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {comp.platform
+                                  ? comp.platform.charAt(0).toUpperCase() + comp.platform.slice(1).toLowerCase()
+                                  : comp.tags?.some((t: string) => t.toLowerCase() === 'app')
+                                  ? 'App'
+                                  : 'Web'}
+                              </p>
+                            </div>
+                            <div className="shrink-0">
                               <h4 className="text-sm font-semibold mb-1">Pricing</h4>
                               <p className="text-sm text-muted-foreground capitalize">{comp.pricingType}</p>
                             </div>
-                            <div>
+                            <div className="min-w-0 flex-1">
                               <h4 className="text-sm font-semibold mb-1">Tags</h4>
-                              {comp.tags && comp.tags.length > 0 ? (
-                                <div className="flex flex-wrap gap-1.5">
-                                  {comp.tags.map((tag: string, i: number) => (
-                                    <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground">None</p>
-                              )}
+                              {(() => {
+                                const displayTags = (comp.tags || []).filter(
+                                  (tag: string) => !['web', 'app'].includes(tag.toLowerCase())
+                                )
+                                return displayTags.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5 items-center">
+                                    {displayTags.map((tag: string, i: number) => (
+                                      <Badge key={i} variant="secondary" className="text-xs whitespace-nowrap">{tag}</Badge>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-muted-foreground">None</p>
+                                )
+                              })()}
                             </div>
                           </div>
                         </div>
