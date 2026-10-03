@@ -9,21 +9,18 @@ const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const josefinSans = Josefin_Sans({
   subsets: ["latin"],
   variable: "--font-josefin",
   display: "swap",
-  weight: ["400", "500", "600"],
 });
 
 const inter = Inter({
