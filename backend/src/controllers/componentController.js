@@ -322,7 +322,7 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
     throw new Error("Admin access required");
   }
 
-  const { page = 1, limit = 50, createdBy, userId, status } = req.query;
+  const { page = 1, limit = 50, createdBy, userId, status, q } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 50, 1), 100);
   const skip = (pageNumber - 1) * perPage;
@@ -334,6 +334,15 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
   }
   if (status) {
     query.status = status;
+  }
+  if (q && q.trim()) {
+    const safeSearch = escapeRegex(q.trim());
+    query.$or = [
+      { name: { $regex: safeSearch, $options: "i" } },
+      { tags: { $regex: safeSearch, $options: "i" } },
+      { description: { $regex: safeSearch, $options: "i" } },
+      { designType: { $regex: safeSearch, $options: "i" } },
+    ];
   }
 
   const [items, total] = await Promise.all([
