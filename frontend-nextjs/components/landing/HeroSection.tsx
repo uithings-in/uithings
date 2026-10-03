@@ -40,16 +40,11 @@ export default function HeroSection() {
       />
 
       <StarField showShootingStars={true} className="z-0" />
-      <img
-        src="/landing/noise.png"
-        alt=""
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-25 mix-blend-overlay"
-      />
+      <div className="pointer-events-none absolute inset-0 z-0 h-full w-full bg-noise-overlay opacity-20" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6 lg:px-8">
         <h1
-          className="mx-auto max-w-4xl text-4xl font-bold leading-[1.12] tracking-[-0.06em] text-[#F7F7FD] sm:text-6xl md:text-[75px] md:leading-[94px]"
-          style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+          className="mx-auto max-w-4xl text-4xl font-bold leading-[1.12] tracking-[-0.06em] text-[#F7F7FD] sm:text-6xl md:text-[75px] md:leading-[94px] font-heading"
         >
           Streamline Design with <br className="hidden sm:block" />
           Components
@@ -63,8 +58,7 @@ export default function HeroSection() {
         <div className="mt-10 flex justify-center">
           <Link
             href="/components"
-            className="group relative inline-flex items-center justify-center rounded-full bg-[#4343D5]/70 backdrop-blur-md px-8 py-3.5 text-base font-semibold text-[#F7F7FD] border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] animate-subtle-glow hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 transition-all duration-300 cursor-pointer"
-            style={{ fontFamily: "Inter, sans-serif" }}
+            className="group relative inline-flex items-center justify-center rounded-full bg-[#4343D5]/70 backdrop-blur-md px-8 py-3.5 text-base font-semibold text-[#F7F7FD] border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] animate-subtle-glow hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 transition-all duration-300 cursor-pointer font-inter"
           >
             Download Now
           </Link>
@@ -75,8 +69,7 @@ export default function HeroSection() {
             <a
               key={link.label}
               href={link.href}
-              className="transition-colors duration-200 hover:text-[#F7F7FD]"
-              style={{ fontFamily: "'Maven Pro', sans-serif" }}
+              className="transition-colors duration-200 hover:text-[#F7F7FD] font-maven"
             >
               {link.label}
             </a>

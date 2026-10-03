@@ -462,7 +462,9 @@ function PreviewModal({
 }
 
 // ── ComponentCard ─────────────────────────────────────────────────────────────
-function ComponentCard({
+import { memo } from "react";
+
+const ComponentCard = memo(function ComponentCard({
   item,
   isCopying,
   onCopy,
@@ -507,7 +509,7 @@ function ComponentCard({
 
   return (
     <article
-      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
+      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope gpu-accel"
       style={{
         background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
       }}
@@ -613,7 +615,7 @@ function ComponentCard({
       </div>
     </article>
   );
-}
+});
 
 // ── QUERY CONFIG (shared) ─────────────────────────────────────────────────────
 const STALE_TIME = 5 * 60 * 1000;  // 5 minutes — cached data treated as fresh
@@ -1324,7 +1326,7 @@ export default function ComponentsClient({
                   <ComponentCard
                     key={item._id}
                     item={item}
-                    priority={index < 15}
+                    priority={index < 4}
                     isCopying={activeId === item._id}
                     onCopy={() => onCopy(item)}
                     onDownloadRecorded={() => recordDownload(item)}

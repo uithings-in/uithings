@@ -155,16 +155,21 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    let lastScrolled = window.scrollY > 20;
+    setScrolled(lastScrolled);
+
     const handleScroll = () => {
       const isPast = window.scrollY > 20;
-      setScrolled(isPast);
-      if (isPast) {
-        document.documentElement.classList.add("scrolled");
-      } else {
-        document.documentElement.classList.remove("scrolled");
+      if (isPast !== lastScrolled) {
+        lastScrolled = isPast;
+        setScrolled(isPast);
+        if (isPast) {
+          document.documentElement.classList.add("scrolled");
+        } else {
+          document.documentElement.classList.remove("scrolled");
+        }
       }
     };
-    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
