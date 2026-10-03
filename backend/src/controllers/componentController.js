@@ -3,6 +3,7 @@ const { Component } = require("../models/Component");
 const { User } = require("../models/User");
 const { Subscription } = require("../models/Subscription");
 const { Tag } = require("../models/Tag");
+const { Notification } = require("../models/Notification");
 const { autoActivateNextQueued } = require("./paymentController");
 const {
   cacheGet,
@@ -415,6 +416,30 @@ const createComponent = asyncHandler(async (req, res) => {
     createdBy: req.user.userId,
     status: userRole === "admin" ? "approved" : "pending",
   });
+
+  // Create admin notification for new component upload
+  try {
+    const author = await User.findById(req.user.userId).select("name email");
+    await Notification.create({
+      type: "component_uploaded",
+      title: "New Component Uploaded",
+      message: `${author?.name || "A user"} uploaded "${name}" (${component.status})`,
+      data: {
+        componentId: component._id,
+        userId: req.user.userId,
+        componentName: name,
+        previewImageUrl,
+        status: component.status,
+        pricingType: component.pricingType,
+        authorName: author?.name || "Anonymous",
+        authorEmail: author?.email || "",
+      },
+      read: false,
+      recipientRole: "admin",
+    });
+  } catch (notifErr) {
+    console.error("Failed to create upload notification:", notifErr);
+  }
 
   // Invalidate all list caches (bump version)
   await bumpListVersion();
