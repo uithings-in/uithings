@@ -1,4 +1,3 @@
-import { GoogleLogin } from '@react-oauth/google'
 import axios from 'axios'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -52,35 +51,6 @@ export function UserAuthForm({
       password: '',
     },
   })
-
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    setIsLoading(true)
-    try {
-      const response = await axios.post(`${API_URL}/auth/google`, {
-        idToken: credentialResponse.credential,
-      })
-      const { token, user } = response.data.data
-
-      if (user.role !== 'admin') {
-        toast.error('Access denied. Admin only.')
-        return
-      }
-
-      auth.setUser(user)
-      auth.setAccessToken(token)
-
-      toast.success(`Welcome back, ${user.name}!`)
-      const targetPath = redirectTo || '/'
-      navigate({ to: targetPath, replace: true })
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.message ||
-          (error.message ? `Login failed: ${error.message}` : 'Google login failed')
-      )
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -152,27 +122,6 @@ export function UserAuthForm({
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
           Sign in
         </Button>
-
-        <div className='relative my-2'>
-          <div className='absolute inset-0 flex items-center'>
-            <span className='w-full border-t' />
-          </div>
-          <div className='relative flex justify-center text-xs uppercase'>
-            <span className='bg-background px-2 text-muted-foreground'>
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className='flex flex-col items-center gap-2'>
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => toast.error('Google Login Failed')}
-            useOneTap
-            width='100%'
-            theme='outline'
-          />
-        </div>
       </form>
     </Form>
   )
