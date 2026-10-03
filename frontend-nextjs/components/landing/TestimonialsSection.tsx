@@ -71,27 +71,26 @@ const row2Repeated = [
 
 function TestimonialCard({ quote, author, role, rating }: TestimonialItem) {
   return (
-    <div className="relative flex min-h-[215px] sm:min-h-[225px] w-[350px] sm:w-[380px] shrink-0 flex-col justify-between rounded-[16px] border border-[rgba(247,247,253,0.1)] bg-[rgba(248,246,253,0.03)] p-5 sm:p-6 backdrop-blur-[10px] transition-all duration-300 hover:border-[rgba(209,216,255,0.25)] hover:bg-[rgba(248,246,253,0.05)]">
+    <div className="relative flex min-h-[215px] sm:min-h-[225px] w-[350px] sm:w-[380px] shrink-0 flex-col justify-between rounded-[16px] border border-white/10 bg-[#0e0c18] p-5 sm:p-6 transition-all duration-200 hover:border-white/20 hover:bg-[#141224] gpu-accel">
       <p
-        className="text-[14px] font-normal leading-[22px] text-[#F7F7FD] sm:text-[15px] sm:leading-[23px]"
-        style={{ fontFamily: "Inter, sans-serif" }}
+        className="text-[14px] font-normal leading-[22px] text-[#F7F7FD] sm:text-[15px] sm:leading-[23px] font-inter"
       >
         {quote}
       </p>
 
       <div className="flex items-center justify-between pt-3 sm:pt-4">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-[#C4C4C4] shrink-0" />
+          <div className="size-10 rounded-full bg-gradient-to-br from-[#4343D5] to-[#7C5CFF] shrink-0 flex items-center justify-center font-bold text-xs text-white">
+            {author.split(" ").map(n => n[0]).join("")}
+          </div>
           <div className="flex flex-col">
             <span
-              className="text-[14px] font-medium leading-tight text-[#F7F7FD]"
-              style={{ fontFamily: "Inter, sans-serif" }}
+              className="text-[14px] font-medium leading-tight text-[#F7F7FD] font-inter"
             >
               {author}
             </span>
             <span
-              className="mt-0.5 text-[12px] leading-tight text-[#9389A8]"
-              style={{ fontFamily: "Inter, sans-serif" }}
+              className="mt-0.5 text-[12px] leading-tight text-[#9389A8] font-inter"
             >
               {role}
             </span>
@@ -100,8 +99,7 @@ function TestimonialCard({ quote, author, role, rating }: TestimonialItem) {
 
         <div className="flex items-center gap-1.5">
           <span
-            className="text-[13px] font-medium text-[#9389A8]"
-            style={{ fontFamily: "Inter, sans-serif" }}
+            className="text-[13px] font-medium text-[#9389A8] font-inter"
           >
             {rating}
           </span>
@@ -109,6 +107,8 @@ function TestimonialCard({ quote, author, role, rating }: TestimonialItem) {
             <img
               src="/landing/star-solid.svg"
               alt=""
+              loading="lazy"
+              decoding="async"
               className="size-3.5 shrink-0"
             />
           </span>
@@ -127,25 +127,29 @@ export default function TestimonialsSection() {
       <style>{`
         @keyframes scrollRight {
           0% {
-            transform: translateX(-50%);
+            transform: translate3d(-50%, 0, 0);
           }
           100% {
-            transform: translateX(0%);
+            transform: translate3d(0%, 0, 0);
           }
         }
         @keyframes scrollLeft {
           0% {
-            transform: translateX(0%);
+            transform: translate3d(0%, 0, 0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translate3d(-50%, 0, 0);
           }
         }
         .animate-scroll-right {
           animation: scrollRight 28s linear infinite;
+          will-change: transform;
+          transform: translate3d(0, 0, 0);
         }
         .animate-scroll-left {
           animation: scrollLeft 28s linear infinite;
+          will-change: transform;
+          transform: translate3d(0, 0, 0);
         }
         .animate-scroll-right:hover,
         .animate-scroll-left:hover {

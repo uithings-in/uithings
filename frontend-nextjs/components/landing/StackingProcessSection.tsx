@@ -183,12 +183,12 @@ export default function StackingProcessSection() {
         <div className="relative flex flex-col gap-16 md:gap-24">
           {/* Card 1: Step Taken */}
           <div
-            className="sticky top-[80px] z-10 transition-all duration-300"
+            className="sticky top-[80px] z-10 transition-transform duration-200 gpu-accel"
             style={{
               top: "calc(72px + 0px)",
             }}
           >
-            <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] px-6 py-8 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] backdrop-blur-md sm:px-16 sm:py-10 md:min-h-[583px]">
+            <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] px-6 py-8 shadow-[0_-12px_30px_rgba(0,0,0,0.6)] sm:px-16 sm:py-10 md:min-h-[583px]">
               <CosmicAtmosphere />
               <div className="relative z-10">
                 <div className="mb-10 flex flex-col items-center gap-5 text-center">
@@ -222,12 +222,13 @@ export default function StackingProcessSection() {
                         <img
                           src={step.icon}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           className="absolute inset-0 size-full max-w-none"
                         />
                       </span>
                       <h3
-                        className="mt-2 text-[64px] font-normal leading-[80px] tracking-[-3.84px] text-white"
-                        style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+                        className="mt-2 text-[64px] font-normal leading-[80px] tracking-[-3.84px] text-white font-heading"
                       >
                         {step.title}
                       </h3>
@@ -250,13 +251,13 @@ export default function StackingProcessSection() {
               <div
                 key={card.id}
                 id={idx === 0 ? "components" : undefined}
-                className="sticky transition-all duration-300"
+                className="sticky transition-transform duration-200 gpu-accel"
                 style={{
                   top: `calc(${topOffset}px)`,
                   zIndex: zIndex,
                 }}
               >
-                <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] shadow-[0_-20px_50px_rgba(0,0,0,0.85)] backdrop-blur-md md:min-h-[583px]">
+                <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[583px]">
                   <CosmicAtmosphere />
                   <div className="relative z-10">
                     <div

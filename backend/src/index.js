@@ -19,7 +19,7 @@ if (!process.env.VERCEL) {
 }
 
 const { connectDatabase } = require("./config/database");
-const { getRedisClient } = require("./config/redis");
+const { getRedisClient, verifyRedisConnection } = require("./config/redis");
 const authRoutes = require("./routes/authRoutes");
 const componentRoutes = require("./routes/componentRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
@@ -144,13 +144,10 @@ if (!process.env.VERCEL) {
     }
 
     // Log Redis connection status
-    const redis = getRedisClient();
-    if (redis) {
+    const status = await verifyRedisConnection();
+    if (status.connected) {
       // eslint-disable-next-line no-console
-      console.log("✅ Redis connected (Upstash)");
-    } else {
-      // eslint-disable-next-line no-console
-      console.warn("⚠️  Redis disabled – UPSTASH_REDIS_REST_URL not set. Running without cache.");
+      console.log(`✅ Redis connected (${status.type === "cloud" ? "Upstash Cloud" : "In-Memory Engine"})`);
     }
   }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans, Josefin_Sans, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans, Josefin_Sans, Inter, Maven_Pro } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import type { User } from "../lib/types";
@@ -9,26 +9,29 @@ const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const josefinSans = Josefin_Sans({
   subsets: ["latin"],
   variable: "--font-josefin",
   display: "swap",
-  weight: ["400", "500", "600"],
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const mavenPro = Maven_Pro({
+  subsets: ["latin"],
+  variable: "--font-maven",
   display: "swap",
 });
 
@@ -60,7 +63,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${josefinSans.variable} ${inter.variable}`}
+      className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${josefinSans.variable} ${inter.variable} ${mavenPro.variable}`}
     >
       <head>
         <script
@@ -79,17 +82,8 @@ export default async function RootLayout({
                   document.documentElement.style.colorScheme = 'light';
                 }
               } catch(e){}
-              function u(){if(window.scrollY>20){document.documentElement.classList.add('scrolled')}else{document.documentElement.classList.remove('scrolled')}}
-              u();
-              window.addEventListener('scroll',u,{passive:true});
             })();`,
           }}
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Josefin+Sans:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400..800&family=Inter:wght@400;500;600;700&family=Maven+Pro:wght@500;600;700&display=swap"
-          rel="stylesheet"
         />
       </head>
       <body className="font-sans antialiased bg-[#FAFAFB] dark:bg-black text-slate-900 dark:text-white selection:bg-[#4343D5] selection:text-white">
