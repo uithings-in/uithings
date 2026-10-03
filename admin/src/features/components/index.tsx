@@ -31,6 +31,32 @@ import { copyToFigma } from '@/lib/clipboard'
 import { Copy, Eye, AlertTriangle, Search, X } from 'lucide-react'
 import { API_URL } from '@/lib/api-url'
 
+const REJECTION_PRESETS = [
+  {
+    id: 'copied',
+    title: 'Copied / Unoriginal Work',
+    message:
+      'This submission was rejected because it appears to be copied. We require all components to be completely original, and third-party designs are not permitted. Please only submit your own unique work.',
+  },
+  {
+    id: 'layer-structure',
+    title: 'Disorganized Layers & Naming',
+    message:
+      'This component was rejected because the layer structure is disorganized and lacks proper naming conventions. Please organize your layers into a clean hierarchy and ensure all elements are clearly labeled.',
+  },
+  {
+    id: 'auto-layout',
+    title: 'Auto Layout & Responsiveness',
+    message:
+      'This component was rejected because it does not respond correctly to resizing. Please ensure you are using proper auto layout constraints and responsive grid systems so the design adapts smoothly.',
+  },
+  {
+    id: 'custom',
+    title: 'Custom Message',
+    message: '',
+  },
+]
+
 export function ComponentsModeration() {
   const [components, setComponents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,13 +72,17 @@ export function ComponentsModeration() {
     open: boolean
     compId: string
     compName: string
+    selectedPreset: string
+    customReason: string
     reason: string
     submitting: boolean
   }>({
     open: false,
     compId: '',
     compName: '',
-    reason: '',
+    selectedPreset: 'copied',
+    customReason: '',
+    reason: REJECTION_PRESETS[0].message,
     submitting: false,
   })
   const { accessToken } = useAuthStore.getState().auth
@@ -121,11 +151,26 @@ export function ComponentsModeration() {
     const targetComp = components.find((c) => c._id === id)
 
     if (action === 'rejected') {
+      const existingReason = targetComp?.rejectionReason || ''
+      const matchingPreset = REJECTION_PRESETS.find(
+        (p) => p.id !== 'custom' && p.message === existingReason
+      )
+      const defaultPresetId = matchingPreset
+        ? matchingPreset.id
+        : existingReason
+        ? 'custom'
+        : 'copied'
+      const defaultReason = matchingPreset
+        ? matchingPreset.message
+        : existingReason || REJECTION_PRESETS[0].message
+
       setRejectDialog({
         open: true,
         compId: id,
         compName: targetComp?.name || 'Component',
-        reason: targetComp?.rejectionReason || '',
+        selectedPreset: defaultPresetId,
+        customReason: defaultPresetId === 'custom' ? existingReason : '',
+        reason: defaultReason,
         submitting: false,
       })
       return
@@ -153,13 +198,18 @@ export function ComponentsModeration() {
 
   const handleConfirmReject = async () => {
     if (!rejectDialog.compId) return
+    const finalReason = rejectDialog.reason.trim()
+    if (!finalReason) {
+      toast.error('Please select or enter a rejection reason')
+      return
+    }
     try {
       setRejectDialog(prev => ({ ...prev, submitting: true }))
       await axios.patch(
         `${API_URL}/components/${rejectDialog.compId}/status`,
         {
           status: 'rejected',
-          rejectionReason: rejectDialog.reason.trim(),
+          rejectionReason: finalReason,
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -168,7 +218,7 @@ export function ComponentsModeration() {
       setComponents(prev =>
         prev.map(c =>
           c._id === rejectDialog.compId
-            ? { ...c, status: 'rejected', rejectionReason: rejectDialog.reason.trim() }
+            ? { ...c, status: 'rejected', rejectionReason: finalReason }
             : c
         )
       )
@@ -177,7 +227,9 @@ export function ComponentsModeration() {
         open: false,
         compId: '',
         compName: '',
-        reason: '',
+        selectedPreset: 'copied',
+        customReason: '',
+        reason: REJECTION_PRESETS[0].message,
         submitting: false,
       })
     } catch (error) {
@@ -452,39 +504,96 @@ export function ComponentsModeration() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
+        <DialogContent className="sm:max-w-[580px] max-h-[92vh] overflow-y-auto rounded-2xl p-6">
+          <DialogHeader className="pb-1">
+            <DialogTitle className="flex items-center gap-2 text-destructive text-lg font-bold">
               <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
               Reject Component
             </DialogTitle>
-            <DialogDescription>
-              Provide a rejection reason or feedback for <strong>{rejectDialog.compName}</strong>. This message will be sent to the creator on their dashboard.
+            <DialogDescription className="text-sm text-muted-foreground pt-1">
+              Provide a rejection reason or feedback for <strong className="text-foreground">{rejectDialog.compName}</strong>. This message will be sent to the creator on their dashboard.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 py-2">
-            <Label htmlFor="rejection-reason" className="text-sm font-semibold text-foreground">
-              Rejection Message / Feedback
-            </Label>
-            <Textarea
-              id="rejection-reason"
-              rows={4}
-              placeholder="e.g. Preview image is low resolution, contains broken layers, or doesn't meet design guidelines..."
-              value={rejectDialog.reason}
-              onChange={(e) => setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))}
-              className="resize-none"
-              autoFocus
-            />
+          <div className="flex flex-col gap-4 py-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="rejection-preset-select" className="text-sm font-semibold text-foreground">
+                Rejection Reason
+              </Label>
+              <Select
+                value={rejectDialog.selectedPreset}
+                onValueChange={(val) => {
+                  const preset = REJECTION_PRESETS.find((p) => p.id === val)
+                  if (preset) {
+                    if (preset.id === 'custom') {
+                      setRejectDialog((prev) => ({
+                        ...prev,
+                        selectedPreset: 'custom',
+                        reason: prev.customReason || '',
+                      }))
+                    } else {
+                      setRejectDialog((prev) => ({
+                        ...prev,
+                        selectedPreset: preset.id,
+                        reason: preset.message,
+                      }))
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger id="rejection-preset-select" className="w-full h-11 px-3.5 rounded-xl bg-card border-border shadow-xs text-sm">
+                  <SelectValue placeholder="Select a rejection reason..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {REJECTION_PRESETS.map((preset) => (
+                    <SelectItem key={preset.id} value={preset.id} className="cursor-pointer py-2.5">
+                      <span className="font-medium text-sm">{preset.title}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="rejection-message" className="text-sm font-semibold text-foreground">
+                  Rejection Message / Feedback
+                </Label>
+                {rejectDialog.selectedPreset !== 'custom' && (
+                  <span className="text-xs text-muted-foreground">Editable</span>
+                )}
+              </div>
+              <Textarea
+                id="rejection-message"
+                rows={4}
+                placeholder="Enter or customize rejection message..."
+                value={rejectDialog.reason}
+                onChange={(e) => {
+                  const newText = e.target.value
+                  const matchingPreset = REJECTION_PRESETS.find(
+                    (p) => p.id !== 'custom' && p.message === newText
+                  )
+                  setRejectDialog((prev) => ({
+                    ...prev,
+                    reason: newText,
+                    customReason: newText,
+                    selectedPreset: matchingPreset ? matchingPreset.id : 'custom',
+                  }))
+                }}
+                className="w-full resize-none text-sm rounded-xl border-border bg-card/60 p-3.5 leading-relaxed focus-visible:ring-1 focus-visible:ring-destructive/50"
+              />
+            </div>
+
             <p className="text-[11.5px] text-muted-foreground leading-relaxed">
               The author will be immediately notified with this message so they can adjust and resubmit.
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="pt-3 border-t border-border flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5">
             <Button
               type="button"
               variant="outline"
+              className="h-10 px-5 rounded-xl border-border bg-background hover:bg-muted font-medium text-sm transition-all"
               onClick={() => setRejectDialog((prev) => ({ ...prev, open: false }))}
               disabled={rejectDialog.submitting}
             >
@@ -492,11 +601,12 @@ export function ComponentsModeration() {
             </Button>
             <Button
               type="button"
-              variant="destructive"
+              className="h-10 px-5 rounded-xl bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold text-sm shadow-md shadow-red-600/20 hover:shadow-red-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none"
               onClick={handleConfirmReject}
-              disabled={rejectDialog.submitting}
+              disabled={rejectDialog.submitting || !rejectDialog.reason.trim()}
             >
-              {rejectDialog.submitting ? 'Submitting...' : 'Reject Component'}
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              {rejectDialog.submitting ? 'Rejecting...' : 'Reject Component'}
             </Button>
           </DialogFooter>
         </DialogContent>
