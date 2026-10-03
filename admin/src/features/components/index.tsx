@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -7,6 +7,14 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { useAuthStore } from '@/stores/auth-store'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { copyToFigma } from '@/lib/clipboard'
-import { Copy, Eye, AlertTriangle } from 'lucide-react'
+import { Copy, Eye, AlertTriangle, Search, X } from 'lucide-react'
 import { API_URL } from '@/lib/api-url'
 
 export function ComponentsModeration() {
@@ -31,6 +39,9 @@ export function ComponentsModeration() {
   const [totalPages, setTotalPages] = useState(1)
   const [copyingId, setCopyingId] = useState<string | null>(null)
   const [actions, setActions] = useState<Record<string, string>>({})
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [rejectDialog, setRejectDialog] = useState<{
     open: boolean
     compId: string
@@ -46,22 +57,37 @@ export function ComponentsModeration() {
   })
   const { accessToken } = useAuthStore.getState().auth
 
-  const fetchComponents = async (pageNum = 1) => {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+    }, 300)
+    return () => clearTimeout(handler)
+  }, [searchTerm])
+
+  const fetchComponents = useCallback(async (pageNum = 1, searchQuery = debouncedSearch, status = statusFilter) => {
     try {
       if (pageNum === 1) setLoading(true)
       else setLoadingMore(true)
       
-      const response = await axios.get(`${API_URL}/components/admin?page=${pageNum}&limit=20`, {
+      let url = `${API_URL}/components/admin?page=${pageNum}&limit=20`
+      if (searchQuery.trim()) {
+        url += `&q=${encodeURIComponent(searchQuery.trim())}`
+      }
+      if (status !== 'all') {
+        url += `&status=${status}`
+      }
+
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
       
-      const fetchedItems = response.data.data.items
+      const fetchedItems = response.data.data.items || []
       if (pageNum === 1) {
         setComponents(fetchedItems)
       } else {
         setComponents(prev => [...prev, ...fetchedItems])
       }
-      setTotalPages(response.data.data.pagination.totalPages)
+      setTotalPages(response.data.data.pagination.totalPages || 1)
       setPage(pageNum)
     } catch (error) {
       toast.error('Failed to fetch components')
@@ -69,24 +95,24 @@ export function ComponentsModeration() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }
+  }, [accessToken, debouncedSearch, statusFilter])
 
   useEffect(() => {
-    fetchComponents(1)
-  }, [])
+    fetchComponents(1, debouncedSearch, statusFilter)
+  }, [debouncedSearch, statusFilter, fetchComponents])
 
   useEffect(() => {
     const handleScroll = () => {
       // Check if user scrolled near the bottom
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
         if (!loading && !loadingMore && page < totalPages) {
-          fetchComponents(page + 1)
+          fetchComponents(page + 1, debouncedSearch, statusFilter)
         }
       }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [page, totalPages, loading, loadingMore])
+  }, [page, totalPages, loading, loadingMore, debouncedSearch, statusFilter, fetchComponents])
 
   const handleSaveAction = async (id: string) => {
     const action = actions[id]
@@ -182,17 +208,81 @@ export function ComponentsModeration() {
       </Header>
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
-        <div>
-          <h2 className='text-2xl font-bold tracking-tight'>Component Moderation</h2>
-          <p className='text-muted-foreground'>
-            Review and approve components submitted by users.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className='text-2xl font-bold tracking-tight'>Component Moderation</h2>
+            <p className='text-muted-foreground text-sm'>
+              Review and approve components submitted by users.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-72 lg:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Search components, tags, design..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-8 h-10 w-full rounded-xl bg-card border-border shadow-xs focus-visible:ring-1"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <Select
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val as any)}
+            >
+              <SelectTrigger className="h-10 w-[140px] rounded-xl bg-card border-border shadow-xs">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12">Loading...</div>
+          <div className="flex justify-center py-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
         ) : components.length === 0 ? (
-          <div className="flex justify-center py-12 text-muted-foreground">No components found.</div>
+          <div className="flex flex-col items-center justify-center py-16 text-center border rounded-2xl bg-card/50">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Search className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <p className="text-base font-medium">No components found</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+              {searchTerm || statusFilter !== 'all'
+                ? 'Try adjusting your search query or status filter to find what you are looking for.'
+                : 'There are currently no components available to moderate.'}
+            </p>
+            {(searchTerm || statusFilter !== 'all') && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => {
+                  setSearchTerm('')
+                  setStatusFilter('all')
+                }}
+              >
+                Clear search & filters
+              </Button>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {components.map((comp) => (
@@ -243,20 +333,20 @@ export function ComponentsModeration() {
                           View
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[600px]">
+                      <DialogContent className="sm:max-w-[800px] overflow-hidden">
                         <DialogHeader>
                           <DialogTitle>{comp.name}</DialogTitle>
                           <DialogDescription>
                             Submitted by {comp.createdBy?.name || 'Unknown'}
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="flex flex-col gap-4 py-4">
+                        <div className="flex flex-col gap-4 py-3">
                           {comp.previewImageUrl && (
-                            <div className="rounded-md overflow-hidden border bg-[#F3F3F6] p-4 dark:border-white/10">
+                            <div className="rounded-md overflow-hidden border bg-[#F3F3F6] p-3 dark:border-white/10 flex items-center justify-center min-h-[340px] max-h-[380px]">
                               <img 
                                 src={comp.previewImageUrl} 
                                 alt={comp.name} 
-                                className="w-full h-auto object-contain max-h-[300px]"
+                                className="w-full h-full object-contain max-h-[350px]"
                               />
                             </div>
                           )}
@@ -266,26 +356,28 @@ export function ComponentsModeration() {
                               {comp.description || 'No description provided.'}
                             </p>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
                             <div>
                               <h4 className="text-sm font-semibold mb-1">Design Type</h4>
-                              <p className="text-sm">{comp.designType || 'UI Design'}</p>
+                              <p className="text-sm text-muted-foreground">{comp.designType || 'UI Design'}</p>
                             </div>
                             <div>
                               <h4 className="text-sm font-semibold mb-1">Pricing</h4>
-                              <p className="text-sm">{comp.pricingType}</p>
+                              <p className="text-sm text-muted-foreground capitalize">{comp.pricingType}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold mb-1">Tags</h4>
+                              {comp.tags && comp.tags.length > 0 ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {comp.tags.map((tag: string, i: number) => (
+                                    <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">None</p>
+                              )}
                             </div>
                           </div>
-                          {comp.tags && comp.tags.length > 0 && (
-                            <div>
-                              <h4 className="text-sm font-semibold mb-2">Tags</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {comp.tags.map((tag: string, i: number) => (
-                                  <Badge key={i} variant="secondary">{tag}</Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </DialogContent>
                     </Dialog>
