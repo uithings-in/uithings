@@ -68,7 +68,7 @@ type ViewMode = "wireframe" | "ui-design";
 type PriceMode = "free" | "pro" | "all";
 type PlatformMode = "all" | "web" | "app";
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 25;
 const INITIAL_VIEW_MODE: ViewMode = "ui-design";
 const INITIAL_PRICE_MODE: PriceMode = "all";
 const INITIAL_PLATFORM_MODE: PlatformMode = "all";
@@ -654,7 +654,7 @@ function buildQueryOptions(search: string, tag: string, viewMode: ViewMode, pric
     initialPageParam: { skip: 0, limit: PAGE_SIZE },
     getNextPageParam: (lastPage: PaginatedComponentResponse, allPages: PaginatedComponentResponse[]) => {
       const totalLoaded = allPages.reduce((acc, p) => acc + p.items.length, 0);
-      return totalLoaded < lastPage.pagination.total ? { skip: totalLoaded, limit: 30 } : undefined;
+      return totalLoaded < lastPage.pagination.total ? { skip: totalLoaded, limit: PAGE_SIZE } : undefined;
     },
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -763,7 +763,7 @@ export default function ComponentsClient({
     initialData: isInitialQuery && initialPage
       ? {
         pages: [initialPage],
-        pageParams: [{ skip: 0, limit: 15 }],
+        pageParams: [{ skip: 0, limit: PAGE_SIZE }],
       }
       : undefined,
   });
@@ -954,7 +954,7 @@ export default function ComponentsClient({
 
   // How many skeleton cards to show
   const SKELETON_COUNT = PAGE_SIZE;
-  const showSkeletons = isLoading || !isInitialized;
+  const showSkeletons = isLoading && items.length === 0;
   // isFetching (but not initial load) = stale re-fetch in background — keep old data, no skeleton
   const showStaleIndicator = isFetching && !isLoading;
 

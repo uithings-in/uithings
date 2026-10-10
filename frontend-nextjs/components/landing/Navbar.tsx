@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, User, LayoutDashboard, CreditCard, LogOut } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import { useAuth } from "../../context/AuthContext";
@@ -148,6 +148,7 @@ function ProfileDropdown({ user, logout }: { user: UserType; logout: () => void 
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
   const pathname = usePathname();
   const isComponentsPage = pathname === "/components" || pathname?.startsWith("/components");
   const isHomePage = pathname === "/";
@@ -155,8 +156,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    let lastScrolled = window.scrollY > 20;
-    setScrolled(lastScrolled);
+    let lastScrolled = false;
 
     const handleScroll = () => {
       const isPast = window.scrollY > 20;
@@ -170,8 +170,13 @@ export default function Navbar() {
         }
       }
     };
+
+    const rafId = requestAnimationFrame(handleScroll);
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const navLinks = [
@@ -207,6 +212,8 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
+                prefetch={true}
+                onMouseEnter={() => router.prefetch(link.href)}
                 className="transition-colors duration-200 hover:text-white"
               >
                 {link.name}
@@ -250,6 +257,8 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
+                prefetch={true}
+                onMouseEnter={() => router.prefetch(link.href)}
                 className="transition-colors duration-200 hover:text-white"
               >
                 {link.name}
@@ -289,6 +298,7 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className="text-[18px] font-medium text-[#D4D4D8] hover:text-white"
             >
