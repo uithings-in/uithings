@@ -372,10 +372,22 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
 
 // ─── POST /api/components ─────────────────────────────────────────────────────
 const createComponent = asyncHandler(async (req, res) => {
-  const { name, description = "", tags = [], previewImageUrl, figmaDataBase64, designType, pricingType } = req.body;
+  const {
+    name,
+    description = "",
+    tags = [],
+    previewImageUrl,
+    lightPreviewImageUrl = "",
+    darkPreviewImageUrl = "",
+    figmaDataBase64,
+    designType,
+    pricingType,
+  } = req.body;
   const userRole = req.user.role || "user";
 
-  if (!name || !previewImageUrl || !figmaDataBase64) {
+  const resolvedPreviewUrl = previewImageUrl || darkPreviewImageUrl || lightPreviewImageUrl;
+
+  if (!name || !resolvedPreviewUrl || !figmaDataBase64) {
     res.status(400);
     throw new Error("name, previewImageUrl, and figmaDataBase64 are required");
   }
@@ -409,7 +421,9 @@ const createComponent = asyncHandler(async (req, res) => {
     description,
     tags: activeTags,
     tagOrder,
-    previewImageUrl,
+    previewImageUrl: resolvedPreviewUrl,
+    lightPreviewImageUrl: lightPreviewImageUrl || resolvedPreviewUrl,
+    darkPreviewImageUrl: darkPreviewImageUrl || resolvedPreviewUrl,
     figmaDataBase64,
     designType,
     pricingType: userRole === "admin" ? pricingType : "Free",
@@ -475,7 +489,7 @@ const updateComponentStatus = asyncHandler(async (req, res) => {
   const component = await Component.findByIdAndUpdate(
     req.params.id,
     updateFields,
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!component) {
@@ -616,7 +630,7 @@ const recordComponentDownload = asyncHandler(async (req, res) => {
   const component = await Component.findByIdAndUpdate(
     req.params.id,
     { $inc: { downloadCount: 1 } },
-    { new: true, select: "downloadCount" }
+    { returnDocument: "after", select: "downloadCount" }
   ).lean();
 
   if (!component) {
@@ -665,7 +679,7 @@ const updateComponent = asyncHandler(async (req, res) => {
     updates.tagOrder = matchedTags.length > 0 ? Math.min(...matchedTags.map(t => t.order)) : 999999;
   }
 
-  const updated = await Component.findByIdAndUpdate(req.params.id, updates, { new: true });
+  const updated = await Component.findByIdAndUpdate(req.params.id, updates, { returnDocument: "after" });
 
   // Invalidate this component's cache + all list caches
   await Promise.all([

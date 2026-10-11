@@ -15,6 +15,7 @@ import {
   ComponentEditorModal,
   type ComponentEditorValues,
 } from "../../components/ComponentEditorModal";
+import { AddComponentPanel } from "../../components/AddComponentPanel";
 import {
   LayoutDashboard,
   Package,
@@ -28,6 +29,7 @@ import {
   ArrowLeft,
   LogOut,
   ChevronDown,
+  ChevronRight,
   ArrowUpRight,
   Copy,
   ShieldCheck,
@@ -408,7 +410,7 @@ function ToastPopup({
 // ==========================================
 // MY COMPONENTS PANEL (CONCEPTZILLA STYLE)
 // ==========================================
-function MyComponentsPanel() {
+function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void } = {}) {
   const MY_COMPONENTS_PAGE_SIZE = 12;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -422,8 +424,7 @@ function MyComponentsPanel() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  
-  const editorMode = searchParams.get("modal") === "add" ? "create" : searchParams.get("edit") ? "edit" : null;
+  const editorMode = searchParams.get("edit") ? "edit" : null;
   const editId = searchParams.get("edit");
 
   const {
@@ -520,11 +521,6 @@ function MyComponentsPanel() {
     router.replace(`/dashboard?${params.toString()}`, { scroll: false });
   }
 
-  function openAddEditor() {
-    setEditorStatus("");
-    updatePanelQuery({ modal: "add", edit: null });
-  }
-
   function openEditEditor(id: string) {
     setEditorStatus("");
     updatePanelQuery({ modal: null, edit: id });
@@ -541,29 +537,6 @@ function MyComponentsPanel() {
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
       setDeleteTarget(null);
       setSelectedIds((prev) => prev.filter((i) => i !== deleteTarget?.id));
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (input: ComponentEditorValues) => {
-      if (!input.previewFile) {
-        throw new Error("Please select a preview image file.");
-      }
-
-      const previewImageUrl = await uploadApi.uploadImage(input.previewFile);
-      return componentsApi.create({
-        name: input.name,
-        description: input.description,
-        tags: input.tags,
-        previewImageUrl,
-        figmaDataBase64: input.figmaDataBase64,
-        designType: input.designType,
-        pricingType: input.pricingType,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["components"] });
-      queryClient.invalidateQueries({ queryKey: ["my-components"] });
     },
   });
 
@@ -598,13 +571,6 @@ function MyComponentsPanel() {
     }
 
     try {
-      if (editorMode === "create") {
-        setEditorStatus("Uploading preview image...");
-        await createMutation.mutateAsync(values);
-        closeEditor();
-        return;
-      }
-
       if (editorMode === "edit" && editId) {
         setEditorStatus(values.previewFile ? "Uploading new preview image..." : "Updating component...");
         await updateMutation.mutateAsync({ ...values, id: editId });
@@ -702,11 +668,11 @@ function MyComponentsPanel() {
 
           <button
             type="button"
-            onClick={openAddEditor}
+            onClick={onNavigateToAdd ? onNavigateToAdd : () => router.push("/dashboard?page=add-components")}
             className="flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3 text-xs font-semibold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
           >
             <Plus size={14} strokeWidth={2.5} />
-            <span>Add Component</span>
+            <span>Add Components</span>
           </button>
         </div>
       </div>
@@ -738,11 +704,11 @@ function MyComponentsPanel() {
           </p>
           <button
             type="button"
-            onClick={openAddEditor}
+            onClick={onNavigateToAdd ? onNavigateToAdd : () => router.push("/dashboard?page=add-components")}
             className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3.5 text-xs font-semibold text-white transition hover:bg-[#EA580C] cursor-pointer"
           >
             <Plus size={14} strokeWidth={2.5} />
-            Upload first component
+            <span>Add Components</span>
           </button>
         </div>
       )}
@@ -756,7 +722,7 @@ function MyComponentsPanel() {
                 className="group relative overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
               >
                 <div
-                  className="relative h-[150px] bg-[#F8F9FA] bg-contain bg-center bg-no-repeat border-b border-gray-100"
+                  className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
                   style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
                   aria-label={item.name}
                 >
@@ -960,17 +926,6 @@ function MyComponentsPanel() {
         />
       )}
 
-      {editorMode === "create" && (
-        <ComponentEditorModal
-          mode="create"
-          status={editorStatus}
-          isSubmitting={createMutation.isPending}
-          allowPro={user?.role === "admin"}
-          onClose={closeEditor}
-          onSubmit={handleEditorSubmit}
-        />
-      )}
-
       {editorMode === "edit" && editId && (
         <ComponentEditorModal
           key={editId}
@@ -986,6 +941,18 @@ function MyComponentsPanel() {
         />
       )}
     </div>
+  );
+}
+
+// ==========================================
+// ADD COMPONENT DASHBOARD PANEL (FULL WIDTH)
+// ==========================================
+function AddComponentDashboardPanel({ onSuccess, onCancel }: { onSuccess?: () => void; onCancel?: () => void }) {
+  return (
+    <AddComponentPanel
+      onSuccess={onSuccess}
+      onCancel={onCancel}
+    />
   );
 }
 
@@ -1103,7 +1070,7 @@ function FavoriteComponentsPanel() {
               className="overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
             >
               <div
-                className="relative h-[150px] bg-[#F8F9FA] bg-contain bg-center bg-no-repeat border-b border-gray-100"
+                className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
                 style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
                 aria-label={item.name}
               >
@@ -1937,6 +1904,8 @@ function DashboardContent() {
     const page = searchParams.get("page");
     if (page === "my-components" || searchParams.get("tab") === "my-components") {
       window.setTimeout(() => setActiveTab("My Components"), 0);
+    } else if (page === "add-components" || page === "add-component") {
+      window.setTimeout(() => setActiveTab("Add Components"), 0);
     } else if (page === "favorites") {
       window.setTimeout(() => setActiveTab("Favorites"), 0);
     } else if (page === "plans-billing") {
@@ -1957,6 +1926,8 @@ function DashboardContent() {
 
     if (label === "My Components") {
       params.set("page", "my-components");
+    } else if (label === "Add Components") {
+      params.set("page", "add-components");
     } else if (label === "Favorites") {
       params.set("page", "favorites");
     } else if (label === "Plans & Billing") {
@@ -2009,10 +1980,11 @@ function DashboardContent() {
   }
 
   // Sidebar links requested:
-  // Overview, My Components, Favorites, Plans & Billing, Contact Us
+  // Overview, My Components, Add Components, Favorites, Plans & Billing, Contact Us
   const mainNavItems = [
     { label: "Overview", icon: LayoutDashboard },
     { label: "My Components", icon: Package },
+    { label: "Add Components", icon: Plus },
     { label: "Favorites", icon: Heart },
   ];
 
@@ -2025,6 +1997,7 @@ function DashboardContent() {
   const getHeaderTitle = () => {
     if (activeTab === "Overview") return { title: "Overview", count: isPro ? "Pro Member" : "Free Plan" };
     if (activeTab === "My Components") return { title: "My Components", count: "Library" };
+    if (activeTab === "Add Components") return { title: "Add Components", count: "New" };
     if (activeTab === "Favorites") return { title: "Favorites", count: "Saved" };
     if (activeTab === "Plans & Billing") return { title: "Plans & Billing", count: isPro ? "Pro" : "Free" };
     if (activeTab === "Contact Us") return { title: "Contact Us", count: "Support" };
@@ -2337,7 +2310,7 @@ function DashboardContent() {
       {/* ==========================================
           LEFT SIDEBAR (CONCEPTZILLA STYLE)
           ========================================== */}
-      <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] border-r border-gray-200/90 p-4 flex flex-col justify-between shrink-0 select-none md:h-full overflow-y-auto">
+      <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] dark:bg-[#08080A] border-r border-gray-200/90 dark:border-white/[0.08] p-4 flex flex-col justify-between shrink-0 select-none md:h-full overflow-y-auto">
         <div>
           {/* Brand Logo & Name */}
           <div className="flex items-center justify-between gap-2.5 pb-4 mb-3 border-b border-gray-100">
@@ -2491,17 +2464,24 @@ function DashboardContent() {
       {/* ==========================================
           MAIN CONTENT AREA (WITH FIXED NAVBAR)
           ========================================== */}
-      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#FAFAFB]">
+      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#FAFAFB] dark:bg-[#000000]">
         
         {/* FIXED TOPBAR HEADER */}
-        <header className="sticky top-0 z-30 shrink-0 bg-white/95 backdrop-blur-md border-b border-gray-200/80 px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          {/* Title & Count */}
-          <div className="flex items-baseline gap-2">
-            <h1 className="text-lg font-black text-gray-900 tracking-tight">{headerInfo.title}</h1>
-            {headerInfo.count && (
-              <span className="text-xs font-semibold text-gray-400">{headerInfo.count}</span>
-            )}
-          </div>
+        <header className="sticky top-0 z-30 shrink-0 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-md border-b border-gray-200/80 dark:border-white/[0.08] px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#A1A1AA]">
+            <button
+              type="button"
+              onClick={() => handleSidebarSelect("Overview")}
+              className="hover:text-gray-900 dark:hover:text-white transition font-medium cursor-pointer"
+            >
+              Dashboard
+            </button>
+            <ChevronRight size={13} className="text-gray-400 dark:text-[#71717A]" />
+            <span className="font-semibold text-gray-900 dark:text-[#F5F5F5]">
+              {headerInfo.title}
+            </span>
+          </nav>
 
           {/* Right Tools & Stacked Avatars & Share CTA */}
           <div className="flex items-center gap-3">
@@ -2813,6 +2793,17 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => {
+                        handleSidebarSelect("Add Components");
+                        setUserMenuOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                    >
+                      <Plus size={14} className="text-gray-400" />
+                      <span>Add Components</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
                         handleSidebarSelect("Plans & Billing");
                         setUserMenuOpen(false);
                       }}
@@ -2843,9 +2834,18 @@ function DashboardContent() {
         </header>
 
         {/* SCROLLABLE MAIN CONTENT AREA */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 min-h-0">
-          {activeTab === "My Components" ? (
-            <MyComponentsPanel />
+        <main
+          className={`flex-1 overflow-y-auto min-h-0 ${
+            activeTab === "Add Components" ? "p-4 lg:p-6 pb-0 lg:pb-0" : "p-4 lg:p-6"
+          }`}
+        >
+          {activeTab === "Add Components" ? (
+            <AddComponentDashboardPanel
+              onSuccess={() => handleSidebarSelect("My Components")}
+              onCancel={() => handleSidebarSelect("My Components")}
+            />
+          ) : activeTab === "My Components" ? (
+            <MyComponentsPanel onNavigateToAdd={() => handleSidebarSelect("Add Components")} />
           ) : activeTab === "Favorites" ? (
             <FavoriteComponentsPanel />
           ) : activeTab === "Plans & Billing" ? (

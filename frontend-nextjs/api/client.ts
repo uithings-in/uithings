@@ -22,8 +22,39 @@ export const apiClient = axios.create({
   baseURL,
 });
 
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+
+  // 1. Direct keys
+  const directToken = localStorage.getItem("accessToken") || localStorage.getItem("token");
+  if (directToken) return directToken;
+
+  // 2. Auth user object in localStorage
+  try {
+    const rawAuth = localStorage.getItem("authUser") || localStorage.getItem("user");
+    if (rawAuth) {
+      const parsed = JSON.parse(rawAuth);
+      const token = parsed?.token || parsed?.accessToken;
+      if (token && typeof token === "string") {
+        try {
+          localStorage.setItem("accessToken", token);
+        } catch {}
+        return token;
+      }
+    }
+  } catch {}
+
+  // 3. Cookie fallback
+  if (typeof document !== "undefined") {
+    const match = document.cookie.match(/(^|;\s*)accessToken=([^;]*)/);
+    if (match) return decodeURIComponent(match[2]);
+  }
+
+  return null;
+}
+
 apiClient.interceptors.request.use((config) => {
-  const token = (typeof window !== 'undefined' ? localStorage.getItem("accessToken") : null);
+  const token = getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

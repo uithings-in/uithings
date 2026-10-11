@@ -28,6 +28,14 @@ const componentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    lightPreviewImageUrl: {
+      type: String,
+      default: "",
+    },
+    darkPreviewImageUrl: {
+      type: String,
+      default: "",
+    },
     designType: {
       type: String,
       enum: ["Wireframe", "UI Design"],

@@ -1,27 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, LockKeyhole } from "lucide-react";
-import { componentsApi } from "../../api/components";
-import { uploadApi } from "../../api/upload";
+import { ArrowLeft, Loader2, LockKeyhole } from "lucide-react";
+import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import {
-  ComponentEditorModal,
-  type ComponentEditorValues,
-} from "../../components/ComponentEditorModal";
+import { AddComponentPanel } from "../../components/AddComponentPanel";
 
 function AuthRequiredCard({ onLogin }: { onLogin: () => void }) {
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#FAFAFB] px-4 py-12 flex items-center justify-center">
-      <div className="w-full max-w-[460px] rounded-2xl border border-gray-200/90 bg-white p-8 text-center shadow-xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#F97316]">
+    <div className="min-h-[calc(100vh-80px)] bg-[#FAFAFB] dark:bg-black px-4 py-12 flex items-center justify-center">
+      <div className="w-full max-w-[460px] rounded-2xl border border-gray-200/90 dark:border-neutral-800 bg-white dark:bg-[#121316] p-8 text-center shadow-xl">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-950/80 text-[#F97316]">
           <LockKeyhole size={26} strokeWidth={2} />
         </div>
-        <h1 className="text-xl font-black tracking-tight text-gray-900">Authentication Required</h1>
-        <p className="mx-auto mt-2 max-w-sm text-xs font-medium leading-5 text-gray-500">
-          Sign in to submit components to the FigComponents library.
+        <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Authentication Required</h1>
+        <p className="mx-auto mt-2 max-w-sm text-xs font-medium leading-5 text-gray-500 dark:text-neutral-400">
+          Sign in to submit components to the library.
         </p>
         <button
           type="button"
@@ -37,78 +32,41 @@ function AuthRequiredCard({ onLogin }: { onLogin: () => void }) {
 
 export default function AddComponentPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { user, isInitialized, setLoginModalOpen } = useAuth();
-  const [status, setStatus] = useState("");
-
-  const addComponentMutation = useMutation({
-    mutationFn: async (input: ComponentEditorValues) => {
-      if (!input.previewFile) {
-        throw new Error("Please select a preview image file.");
-      }
-
-      const previewImageUrl = await uploadApi.uploadImage(input.previewFile);
-      return componentsApi.create({
-        name: input.name,
-        description: input.description,
-        tags: input.tags,
-        previewImageUrl,
-        figmaDataBase64: input.figmaDataBase64,
-        designType: input.designType,
-        pricingType: input.pricingType,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["components"] });
-      queryClient.invalidateQueries({ queryKey: ["my-components"] });
-    },
-  });
-
-  async function handleSubmit(values: ComponentEditorValues) {
-    if (!values.figmaDataBase64.trim()) {
-      setStatus("Paste a Figma component in the payload area first.");
-      return;
-    }
-
-    setStatus("Uploading preview image...");
-
-    try {
-      await addComponentMutation.mutateAsync(values);
-
-      if (user?.role === "admin") {
-        setStatus("Component added successfully.");
-        router.push("/components");
-        return;
-      }
-
-      setStatus("Component submitted. It will be public after admin review.");
-      window.setTimeout(() => router.push("/dashboard?tab=my-components"), 1600);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not add component.");
-    }
-  }
 
   if (!isInitialized) {
     return (
-      <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center gap-3 bg-[#FAFAFB]">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#FAFAFB] dark:bg-black">
         <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
-        <p className="text-xs font-semibold text-gray-500">Loading...</p>
+        <p className="text-xs font-semibold text-gray-500 dark:text-neutral-400">Loading...</p>
       </div>
     );
   }
 
-  if (!user) {
-    return <AuthRequiredCard onLogin={() => setLoginModalOpen(true)} />;
-  }
-
   return (
-    <ComponentEditorModal
-      mode="create"
-      status={status}
-      isSubmitting={addComponentMutation.isPending}
-      allowPro={user.role === "admin"}
-      onClose={() => router.back()}
-      onSubmit={handleSubmit}
-    />
+    <div className="min-h-screen bg-[#FAFAFB] dark:bg-black text-slate-900 dark:text-white flex flex-col">
+      <Navbar />
+
+      {!user ? (
+        <AuthRequiredCard onLogin={() => setLoginModalOpen(true)} />
+      ) : (
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/dashboard?page=my-components"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white transition"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to My Components</span>
+            </Link>
+          </div>
+
+          <AddComponentPanel
+            onSuccess={() => router.push(user.role === "admin" ? "/components" : "/dashboard?page=my-components")}
+            onCancel={() => router.push("/dashboard?page=my-components")}
+          />
+        </main>
+      )}
+    </div>
   );
 }

@@ -65,7 +65,7 @@ const seedPlans = async () => {
     await Plan.findOneAndUpdate(
       { name: planData.name },
       planData,
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     );
     console.log(`Seeded/Updated plan: ${planData.displayName}`);
   }

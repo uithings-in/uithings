@@ -68,7 +68,7 @@ const markNotificationRead = asyncHandler(async (req, res) => {
   const notification = await Notification.findByIdAndUpdate(
     id,
     { read: true },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!notification) {

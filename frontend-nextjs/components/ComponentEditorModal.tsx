@@ -38,7 +38,8 @@ export interface ComponentEditorValues {
 }
 
 interface ComponentEditorModalProps {
-  mode: "create" | "edit";
+  mode?: "create" | "edit";
+  isPage?: boolean;
   initialValues?: Partial<ComponentEditorValues>;
   currentPreviewImageUrl?: string;
   isSubmitting: boolean;
@@ -90,7 +91,8 @@ function getStatusTone(status: string) {
 }
 
 export function ComponentEditorModal({
-  mode,
+  mode = "edit",
+  isPage = false,
   initialValues,
   currentPreviewImageUrl,
   isSubmitting,
@@ -187,11 +189,11 @@ export function ComponentEditorModal({
   }, []);
 
   const visibleStatus = status || localStatus;
-  const title = mode === "create" ? "Add Component" : "Edit Component";
-  const subtitle =
-    mode === "create"
-      ? "Create and publish a component to your workspace library."
-      : "Update component details, classification, or figma asset payload.";
+  const isCreate = mode === "create";
+  const title = isCreate ? "Add Component" : "Edit Component";
+  const subtitle = isCreate
+    ? "Create and publish a component to your workspace library."
+    : "Update component details, classification, or figma asset payload.";
 
   function toggleTag(tagToToggle: string) {
     setTags((current) => {
@@ -239,31 +241,30 @@ export function ComponentEditorModal({
     });
   }
 
-  return (
-    <div
-      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-150"
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !isSubmitting) onClose();
-      }}
+  const sectionContent = (
+    <section
+      className={`relative flex flex-col w-full ${
+        isPage
+          ? "rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#121316] text-gray-900 dark:text-neutral-100 shadow-sm"
+          : "max-w-[840px] max-h-[92vh] overflow-hidden rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#121316] text-gray-900 dark:text-neutral-100 shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-150"
+      }`}
+      onClick={(e) => e.stopPropagation()}
     >
-      <section
-        className="relative flex flex-col w-full max-w-[840px] max-h-[92vh] overflow-hidden rounded-2xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#121316] text-gray-900 dark:text-neutral-100 shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Conceptzilla Header */}
-        <div className="shrink-0 border-b border-gray-100 dark:border-neutral-800/80 bg-white dark:bg-[#121316] px-5 sm:px-6 py-4 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-                {title}
-              </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[9.5px] font-extrabold uppercase tracking-wider bg-[#FFF4ED] dark:bg-orange-950/80 text-[#EA580C] dark:text-[#FB923C] border border-[#FED7AA]/60 dark:border-orange-900/60">
-                {mode === "create" ? "NEW" : "EDIT"}
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+      {/* Conceptzilla Header */}
+      <div className="shrink-0 border-b border-gray-100 dark:border-neutral-800/80 bg-white dark:bg-[#121316] px-5 sm:px-6 py-4 flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+              {title}
+            </h2>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-[5px] text-[9.5px] font-extrabold uppercase tracking-wider bg-[#FFF4ED] dark:bg-orange-950/80 text-[#EA580C] dark:text-[#FB923C] border border-[#FED7AA]/60 dark:border-orange-900/60">
+              {isCreate ? "NEW" : "EDIT"}
+            </span>
           </div>
+          <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">{subtitle}</p>
+        </div>
 
+        {!isPage && (
           <button
             type="button"
             onClick={onClose}
@@ -272,11 +273,12 @@ export function ComponentEditorModal({
           >
             <X size={14} />
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+      {/* Modal Form */}
+      <form onSubmit={handleSubmit} className={`flex flex-col flex-1 ${isPage ? "" : "overflow-hidden"}`}>
+        <div className={`flex-1 p-5 sm:p-6 space-y-4 ${isPage ? "" : "overflow-y-auto"}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
               
               {/* LEFT COLUMN: Metadata & Classification */}
@@ -576,7 +578,7 @@ export function ComponentEditorModal({
                       </div>
                       <div>
                         <h4 className="text-xs font-bold leading-none text-gray-800 dark:text-neutral-100">
-                          Preview Screenshot <span className="text-[#EA580C] dark:text-[#FB923C]">{mode === "create" ? "*" : ""}</span>
+                          Preview Screenshot <span className="text-[#EA580C] dark:text-[#FB923C]">{isCreate ? "*" : ""}</span>
                         </h4>
                         <p className="text-[10px] text-gray-500 dark:text-neutral-400 mt-0.5 font-medium">PNG, JPG, or WebP</p>
                       </div>
@@ -672,7 +674,7 @@ export function ComponentEditorModal({
                 <span>
                   {isSubmitting
                     ? "Saving..."
-                    : mode === "create"
+                    : isCreate
                     ? "Save Component"
                     : "Save Changes"}
                 </span>
@@ -681,6 +683,20 @@ export function ComponentEditorModal({
           </div>
         </form>
       </section>
+  );
+
+  if (isPage) {
+    return sectionContent;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-150"
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !isSubmitting) onClose();
+      }}
+    >
+      {sectionContent}
     </div>
   );
 }

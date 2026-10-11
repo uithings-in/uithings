@@ -9,7 +9,7 @@ import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Database, Search, SquarePen } from "lucide-react";
+import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Database, Search, SquarePen, Moon, Sun } from "lucide-react";
 
 
 
@@ -327,6 +327,67 @@ function PreviewModal({
   onDownloadRecorded: (item: ComponentItem) => Promise<number | null>;
 }) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Compute carousel slides from darkPreviewImageUrl, lightPreviewImageUrl, previewImageUrl
+  const slides = useMemo(() => {
+    const list: { url: string; mode: "dark" | "light" | "default"; label: string }[] = [];
+
+    if (item.darkPreviewImageUrl) {
+      list.push({ url: item.darkPreviewImageUrl, mode: "dark", label: "Dark" });
+    }
+
+    if (item.lightPreviewImageUrl && item.lightPreviewImageUrl !== item.darkPreviewImageUrl) {
+      list.push({ url: item.lightPreviewImageUrl, mode: "light", label: "Light" });
+    }
+
+    // Fallbacks if one or neither is explicitly set
+    if (list.length === 0 && item.previewImageUrl) {
+      list.push({ url: item.previewImageUrl, mode: "default", label: "Preview" });
+    } else if (
+      list.length === 1 &&
+      item.previewImageUrl &&
+      !list.some((s) => s.url === item.previewImageUrl)
+    ) {
+      const mode = list[0].mode === "dark" ? "light" : "dark";
+      const label = mode === "dark" ? "Light" : "Dark";
+      list.push({ url: item.previewImageUrl, mode, label });
+    }
+
+    return list;
+  }, [item.darkPreviewImageUrl, item.lightPreviewImageUrl, item.previewImageUrl]);
+
+  // Reset to first slide when item changes
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [item._id]);
+
+  const hasMultiple = slides.length > 1;
+  const currentSlide = slides[currentIndex] || slides[0];
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  }, [slides.length]);
+
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  }, [slides.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!hasMultiple) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handlePrev();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleNext();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [hasMultiple, handlePrev, handleNext]);
 
   async function handleCopy() {
     if (isCopying || isSuccess) return;
@@ -372,22 +433,31 @@ function PreviewModal({
           </button>
         </div>
 
-        {/* Content - Image Preview */}
+        {/* Content - Image Preview Carousel */}
         <div className="px-6 py-4 relative overflow-hidden flex flex-col items-center">
-          <div className="relative group/preview w-full h-[35vh] sm:h-[42vh] md:h-[46vh] max-h-[460px] min-h-[240px] rounded-xl border border-gray-100 overflow-hidden bg-[#FAFBFD] flex items-center justify-center">
-            {item.previewImageUrl ? (
-              <Image
-                src={item.previewImageUrl}
-                alt={item.name}
-                fill
-                priority
-                className="object-contain p-2"
-              />
+          <div
+            className={`relative group/preview w-full h-[35vh] sm:h-[42vh] md:h-[46vh] max-h-[460px] min-h-[240px] rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center transition-colors duration-300 select-none ${
+              currentSlide?.mode === "dark" ? "bg-[#090A0E]" : "bg-[#FAFBFD]"
+            }`}
+          >
+            {/* Image Slide */}
+            {currentSlide?.url ? (
+              <div key={currentSlide.url} className="relative w-full h-full animate-in fade-in duration-200">
+                <Image
+                  src={currentSlide.url}
+                  alt={`${item.name} ${currentSlide.label || "preview"}`}
+                  fill
+                  priority
+                  className="object-contain p-2 sm:p-4"
+                />
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                 No preview available
               </div>
             )}
+
+            {/* Favorite Button (Top Right) */}
             <button
               type="button"
               onClick={(event) => {
@@ -398,11 +468,32 @@ function PreviewModal({
               aria-pressed={isFavorite}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-                }`}
+              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${
+                isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
+              }`}
             >
               <Heart size={18} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
             </button>
+
+            {/* Dots Indicator */}
+            {hasMultiple && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full">
+                {slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentIndex(idx);
+                    }}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                      currentIndex === idx ? "w-5 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -422,12 +513,46 @@ function PreviewModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            {/* Dark & Light Mode Switcher */}
+            {hasMultiple && (
+              <div className="flex items-center gap-1 rounded-xl bg-gray-100 p-1 border border-gray-200/80">
+                {slides.map((slide, idx) => {
+                  const isActive = currentIndex === idx;
+                  const isDark = slide.mode === "dark";
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentIndex(idx);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? isDark
+                            ? "bg-[#18181B] text-white shadow-xs"
+                            : "bg-white text-gray-900 shadow-xs border border-gray-200/60"
+                          : "text-gray-500 hover:text-gray-900"
+                      }`}
+                    >
+                      {isDark ? (
+                        <Moon size={12} className={isActive ? "text-indigo-400" : "text-gray-400"} />
+                      ) : (
+                        <Sun size={12} className={isActive ? "text-amber-500" : "text-gray-400"} />
+                      )}
+                      <span>{slide.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <button
               type="button"
               onClick={handleCopy}
               disabled={isCopying || isSuccess}
-              className={`ml-2 w-[120px] shrink-0 py-2 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
+              className={`w-[120px] shrink-0 py-2 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
                 ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
                 : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
                 }`}
@@ -527,7 +652,7 @@ const ComponentCard = memo(function ComponentCard({
             fill
             priority={priority}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1920px) 25vw, 20vw"
-            className="object-contain transition-transform duration-300 group-hover/preview:scale-[1.02]"
+            className="object-cover w-full h-full transition-transform duration-300 group-hover/preview:scale-[1.02]"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
