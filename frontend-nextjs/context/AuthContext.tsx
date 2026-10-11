@@ -84,7 +84,19 @@ export function AuthProvider({
   useEffect(() => {
     setIsMounted(true);
     const stored = getStoredUser();
-    const token = localStorage.getItem("accessToken") || getCookie("accessToken");
+    let token = localStorage.getItem("accessToken") || localStorage.getItem("token") || getCookie("accessToken");
+    if (!token && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("authUser") || localStorage.getItem("user");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.token || parsed?.accessToken) {
+            token = parsed.token || parsed.accessToken;
+            localStorage.setItem("accessToken", token!);
+          }
+        }
+      } catch {}
+    }
     if (stored && token) {
       queryClient.setQueryData(["auth", "me"], stored);
       setAuthCookies(token, stored);
@@ -92,7 +104,7 @@ export function AuthProvider({
   }, [queryClient]);
 
   const hasToken = isMounted
-    ? Boolean(localStorage.getItem("accessToken") || getCookie("accessToken"))
+    ? Boolean(localStorage.getItem("accessToken") || localStorage.getItem("token") || getCookie("accessToken"))
     : Boolean(initialUser);
 
   const authQuery = useQuery({

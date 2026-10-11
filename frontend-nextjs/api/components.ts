@@ -88,6 +88,8 @@ export const componentsApi = {
     description: string;
     tags: string[];
     previewImageUrl: string;
+    lightPreviewImageUrl?: string;
+    darkPreviewImageUrl?: string;
     figmaDataBase64: string;
     designType?: "Wireframe" | "UI Design";
     pricingType?: "Free" | "Pro";
@@ -101,6 +103,8 @@ export const componentsApi = {
     description?: string;
     tags?: string[];
     previewImageUrl?: string;
+    lightPreviewImageUrl?: string;
+    darkPreviewImageUrl?: string;
     figmaDataBase64?: string;
     designType?: "Wireframe" | "UI Design";
     pricingType?: "Free" | "Pro";
