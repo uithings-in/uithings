@@ -652,7 +652,7 @@ const ComponentCard = memo(function ComponentCard({
             fill
             priority={priority}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1920px) 25vw, 20vw"
-            className="object-contain transition-transform duration-300 group-hover/preview:scale-[1.02]"
+            className="object-cover w-full h-full transition-transform duration-300 group-hover/preview:scale-[1.02]"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">

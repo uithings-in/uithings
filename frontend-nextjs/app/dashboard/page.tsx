@@ -722,7 +722,7 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
                 className="group relative overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
               >
                 <div
-                  className="relative h-[150px] bg-[#F8F9FA] bg-contain bg-center bg-no-repeat border-b border-gray-100"
+                  className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
                   style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
                   aria-label={item.name}
                 >
@@ -1070,7 +1070,7 @@ function FavoriteComponentsPanel() {
               className="overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
             >
               <div
-                className="relative h-[150px] bg-[#F8F9FA] bg-contain bg-center bg-no-repeat border-b border-gray-100"
+                className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
                 style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
                 aria-label={item.name}
               >

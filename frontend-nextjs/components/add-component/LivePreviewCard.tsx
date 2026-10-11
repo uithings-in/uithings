@@ -94,7 +94,7 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
               alt={name || `${activeTheme} component preview`}
               fill
               unoptimized
-              className="object-contain p-2"
+              className="object-cover w-full h-full"
             />
           ) : (
             <div className="flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-[#71717A] p-3 text-center">
