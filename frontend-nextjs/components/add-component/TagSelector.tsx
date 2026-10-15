@@ -75,11 +75,10 @@ export function TagSelector({
       <div className="relative">
         <div
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`flex min-h-[38px] w-full items-center justify-between rounded-lg border bg-white dark:bg-[#17171A] px-3 py-1.5 text-xs transition-all cursor-pointer ${
-            isOpen
+          className={`flex min-h-[38px] w-full items-center justify-between rounded-lg border bg-white dark:bg-[#17171A] px-3 py-1.5 text-xs transition-all cursor-pointer ${isOpen
               ? "border-[#F97316] ring-1 ring-[#F97316]/20 shadow-2xs"
               : "border-gray-300 dark:border-white/[0.08] hover:border-gray-400 dark:hover:border-white/[0.15]"
-          }`}
+            }`}
         >
           <div className="flex flex-wrap gap-1 items-center min-w-0 pr-2">
             {selectedTags.length === 0 ? (
@@ -109,9 +108,8 @@ export function TagSelector({
 
           <ChevronDown
             size={14}
-            className={`text-gray-400 dark:text-[#71717A] shrink-0 transition-transform duration-150 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`text-gray-400 dark:text-[#71717A] shrink-0 transition-transform duration-150 ${isOpen ? "rotate-180" : ""
+              }`}
           />
         </div>
 
@@ -143,11 +141,10 @@ export function TagSelector({
                       type="button"
                       disabled={isMaxReached}
                       onClick={() => toggleTag(tag)}
-                      className={`rounded-md px-2 py-1 text-[11px] font-medium transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                        isSelected
+                      className={`rounded-md px-2 py-1 text-[11px] font-medium transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isSelected
                           ? "bg-orange-500/20 text-[#EA580C] dark:text-[#FB923C] ring-1 ring-[#EA580C] font-semibold"
                           : "bg-gray-100 dark:bg-white/[0.06] text-gray-700 dark:text-[#A1A1AA] hover:bg-gray-200 dark:hover:bg-white/[0.1] hover:text-gray-900 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       {tag}
                     </button>

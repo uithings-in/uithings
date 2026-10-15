@@ -103,6 +103,20 @@ export function AuthProvider({
     }
   }, [queryClient]);
 
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("authUser");
+        clearAuthCookies();
+      }
+      queryClient.setQueryData(["auth", "me"], null);
+    };
+
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  }, [queryClient]);
+
   const hasToken = isMounted
     ? Boolean(localStorage.getItem("accessToken") || localStorage.getItem("token") || getCookie("accessToken"))
     : Boolean(initialUser);

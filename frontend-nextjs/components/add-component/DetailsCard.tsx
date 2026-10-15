@@ -66,11 +66,10 @@ export function DetailsCard({
           onChange={(e) => onNameChange(e.target.value)}
           onBlur={onNameBlur}
           maxLength={60}
-          className={`h-9 w-full rounded-lg border bg-white dark:bg-[#17171A] px-3 text-xs font-medium text-gray-900 dark:text-[#F5F5F5] placeholder-gray-400 dark:placeholder-[#71717A] outline-none transition-all ${
-            nameError
+          className={`h-9 w-full rounded-lg border bg-white dark:bg-[#17171A] px-3 text-xs font-medium text-gray-900 dark:text-[#F5F5F5] placeholder-gray-400 dark:placeholder-[#71717A] outline-none transition-all ${nameError
               ? "border-rose-400 ring-2 ring-rose-500/20"
               : "border-gray-300 dark:border-white/[0.08] hover:border-gray-400 dark:hover:border-white/[0.15] focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]/20 shadow-2xs"
-          }`}
+            }`}
         />
 
         {nameError && (

@@ -54,11 +54,10 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
           <button
             type="button"
             onClick={() => setActiveTheme("dark")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
-              activeTheme === "dark"
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${activeTheme === "dark"
                 ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
                 : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-            }`}
+              }`}
             title="Preview Dark Mode"
           >
             <Moon size={9.5} />
@@ -67,11 +66,10 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
           <button
             type="button"
             onClick={() => setActiveTheme("light")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
-              activeTheme === "light"
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${activeTheme === "light"
                 ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
                 : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-            }`}
+              }`}
             title="Preview Light Mode"
           >
             <Sun size={9.5} />
@@ -84,9 +82,8 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
       <article className="group relative overflow-hidden rounded-lg border border-gray-200/90 dark:border-white/[0.1] bg-white dark:bg-[#17171A] shadow-2xs flex flex-col transition-all">
         {/* Screenshot Container */}
         <div
-          className={`relative aspect-[16/10] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${
-            activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
-          }`}
+          className={`relative aspect-[16/10] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
+            }`}
         >
           {activeUrl ? (
             <Image

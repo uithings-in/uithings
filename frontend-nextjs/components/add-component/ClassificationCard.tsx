@@ -61,11 +61,10 @@ export function ClassificationCard({
             <button
               type="button"
               onClick={() => onDesignTypeChange("UI Design")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                designType === "UI Design"
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${designType === "UI Design"
                   ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
                   : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <Layout size={12} />
               <span>UI Design</span>
@@ -73,11 +72,10 @@ export function ClassificationCard({
             <button
               type="button"
               onClick={() => onDesignTypeChange("Wireframe")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                designType === "Wireframe"
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${designType === "Wireframe"
                   ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
                   : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <PenTool size={12} />
               <span>Wireframe</span>
@@ -94,11 +92,10 @@ export function ClassificationCard({
             <button
               type="button"
               onClick={() => onPlatformTagChange("web")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                platformTag === "web"
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${platformTag === "web"
                   ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
                   : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <Monitor size={12} />
               <span>Web</span>
@@ -106,11 +103,10 @@ export function ClassificationCard({
             <button
               type="button"
               onClick={() => onPlatformTagChange("app")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                platformTag === "app"
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${platformTag === "app"
                   ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
                   : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <Smartphone size={12} />
               <span>App</span>
@@ -139,11 +135,10 @@ export function ClassificationCard({
             <button
               type="button"
               onClick={() => onPricingTypeChange("Free")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                pricingType === "Free"
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${pricingType === "Free"
                   ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
                   : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-              }`}
+                }`}
             >
               <Sparkles size={12} />
               <span>Free</span>
@@ -155,13 +150,12 @@ export function ClassificationCard({
               disabled={!allowPro}
               onClick={() => allowPro && onPricingTypeChange("Pro")}
               title={!allowPro ? "Upgrade to Pro to publish premium components" : undefined}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${
-                !allowPro
+              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${!allowPro
                   ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-[#71717A]"
                   : pricingType === "Pro"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold cursor-pointer"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white cursor-pointer"
-              }`}
+                    ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold cursor-pointer"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                }`}
             >
               {!allowPro ? <Lock size={11} /> : <Crown size={12} />}
               <span>Pro</span>
