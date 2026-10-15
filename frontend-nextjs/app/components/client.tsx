@@ -9,7 +9,7 @@ import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Database, Search, SquarePen, Moon, Sun } from "lucide-react";
+import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Layers, Search, SquarePen, Moon, Sun } from "lucide-react";
 
 
 
@@ -405,14 +405,14 @@ function PreviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden font-manrope animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden font-manrope animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 shrink-0 border-b border-gray-50">
           <div className="flex items-center gap-2.5">
             <div className="text-[#238B45] w-5 h-5 flex items-center justify-center">
-              <Database size={18} strokeWidth={2.25} />
+              <Layers size={18} strokeWidth={2.25} />
             </div>
             <span className="font-bold text-[0.95rem] text-gray-900 tracking-tight">{item.name}</span>
             {isProComponent(item) && (
@@ -434,11 +434,9 @@ function PreviewModal({
         </div>
 
         {/* Content - Image Preview Carousel */}
-        <div className="px-6 py-4 relative overflow-hidden flex flex-col items-center">
+        <div className="px-6 py-4 relative overflow-hidden flex flex-col items-center flex-1 min-h-0">
           <div
-            className={`relative group/preview w-full h-[35vh] sm:h-[42vh] md:h-[46vh] max-h-[460px] min-h-[240px] rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center transition-colors duration-300 select-none ${
-              currentSlide?.mode === "dark" ? "bg-[#090A0E]" : "bg-[#FAFBFD]"
-            }`}
+            className="relative group/preview w-full h-[50vh] sm:h-[58vh] md:h-[62vh] max-h-[580px] min-h-[350px] rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center bg-[#FAFBFD] select-none"
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
@@ -516,7 +514,7 @@ function PreviewModal({
           <div className="flex items-center gap-2.5">
             {/* Dark & Light Mode Switcher */}
             {hasMultiple && (
-              <div className="flex items-center gap-1 rounded-xl bg-gray-100 p-1 border border-gray-200/80">
+              <div className="flex items-center h-9 rounded-xl bg-gray-100 p-1 border border-gray-200/80">
                 {slides.map((slide, idx) => {
                   const isActive = currentIndex === idx;
                   const isDark = slide.mode === "dark";
@@ -528,12 +526,12 @@ function PreviewModal({
                         e.stopPropagation();
                         setCurrentIndex(idx);
                       }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 h-full px-3 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
                         isActive
                           ? isDark
-                            ? "bg-[#18181B] text-white shadow-xs"
-                            : "bg-white text-gray-900 shadow-xs border border-gray-200/60"
-                          : "text-gray-500 hover:text-gray-900"
+                            ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
+                            : "bg-white text-gray-900 shadow-xs border-gray-200/60"
+                          : "text-gray-500 hover:text-gray-900 border-transparent"
                       }`}
                     >
                       {isDark ? (
@@ -552,7 +550,7 @@ function PreviewModal({
               type="button"
               onClick={handleCopy}
               disabled={isCopying || isSuccess}
-              className={`w-[120px] shrink-0 py-2 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
+              className={`w-[120px] h-9 shrink-0 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
                 ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
                 : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
                 }`}
@@ -1253,7 +1251,7 @@ export default function ComponentsClient({
 
           {/* Components section (Fixed in Position) */}
           <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-            <span className="text-[#d66a04]" ><Database size={20} strokeWidth={2.25} /></span>
+            <span className="text-[#d66a04]"><Layers size={20} strokeWidth={2.25} /></span>
             <span className="font-bold text-white text-[15px]">Components</span>
             <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
               {total}
