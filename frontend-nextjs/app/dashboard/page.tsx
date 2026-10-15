@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import { paymentsApi, type CurrentSubscriptionData, type PurchasedSubscriptionRecord } from "../../api/payments";
 import { componentsApi } from "../../api/components";
@@ -11,11 +12,8 @@ import { uploadApi } from "../../api/upload";
 import { contactApi, type ContactInput } from "../../api/contact";
 import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse } from "../../lib/types";
-import {
-  ComponentEditorModal,
-  type ComponentEditorValues,
-} from "../../components/ComponentEditorModal";
 import { AddComponentPanel } from "../../components/AddComponentPanel";
+import { EditComponentView } from "../../components/add-component/EditComponentPage";
 import {
   LayoutDashboard,
   Package,
@@ -51,6 +49,7 @@ import {
   Sparkles,
   XCircle,
   AlertTriangle,
+  LockKeyhole,
 } from "lucide-react";
 
 // ==========================================
@@ -356,13 +355,12 @@ function ToastPopup({
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-start gap-3 rounded-2xl bg-white p-3.5 shadow-[0_15px_40px_rgba(0,0,0,0.16)] border border-gray-200 text-xs animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5 ${
-          isError
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5 ${isError
             ? "bg-rose-50 text-rose-600 border border-rose-100"
             : isWarning
-            ? "bg-amber-50 text-amber-600 border border-amber-100"
-            : "bg-emerald-50 text-emerald-600 border border-emerald-100"
-        }`}
+              ? "bg-amber-50 text-amber-600 border border-amber-100"
+              : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+          }`}
       >
         {isError ? (
           <XCircle size={16} />
@@ -410,41 +408,47 @@ function ToastPopup({
 // ==========================================
 // MY COMPONENTS PANEL (CONCEPTZILLA STYLE)
 // ==========================================
-function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void } = {}) {
+function MyComponentsPanel({
+  onNavigateToAdd,
+  onNavigateToEdit,
+}: {
+  onNavigateToAdd?: () => void;
+  onNavigateToEdit?: (id: string) => void;
+} = {}) {
   const MY_COMPONENTS_PAGE_SIZE = 12;
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, setLoginModalOpen } = useAuth();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState("");
   const [copyingId, setCopyingId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
-  const [editorStatus, setEditorStatus] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const editorMode = searchParams.get("edit") ? "edit" : null;
-  const editId = searchParams.get("edit");
 
   const {
     data,
     isLoading,
     isError,
+    error,
+    refetch,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["my-components", search, MY_COMPONENTS_PAGE_SIZE],
+    queryKey: ["my-components", user?.id, search, MY_COMPONENTS_PAGE_SIZE],
     queryFn: ({ pageParam }: { pageParam: { skip: number; limit: number } }) =>
       componentsApi.listMine(search, 1, pageParam.limit, pageParam.skip),
     initialPageParam: { skip: 0, limit: MY_COMPONENTS_PAGE_SIZE },
     getNextPageParam: (lastPage: PaginatedComponentResponse, allPages: PaginatedComponentResponse[]) => {
-      const totalLoaded = allPages.reduce((acc, page) => acc + page.items.length, 0);
-      return totalLoaded < lastPage.pagination.total
+      const totalLoaded = allPages.reduce((acc, page) => acc + (page?.items?.length || 0), 0);
+      return totalLoaded < (lastPage?.pagination?.total ?? 0)
         ? { skip: totalLoaded, limit: MY_COMPONENTS_PAGE_SIZE }
         : undefined;
     },
+    enabled: !!user,
     staleTime: 0,
     refetchInterval: 3000,
     refetchIntervalInBackground: true,
@@ -471,64 +475,15 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  const { data: editingComponent, isLoading: isEditorLoading } = useQuery({
-    queryKey: ["components", "editor", editId],
-    queryFn: async () => {
-      if (!editId) return null;
-      const component = await componentsApi.getById(editId);
-      if (!component.figmaDataBase64) {
-        try {
-          const data = await componentsApi.getComponentData(editId);
-          component.figmaDataBase64 = data.figmaDataBase64;
-        } catch (err) {
-          console.error("Failed to fetch figma component data:", err);
-        }
-      }
-      return component;
-    },
-    enabled: !!editId,
-  });
-
-  const editingInitialValues = useMemo<Partial<ComponentEditorValues> | undefined>(() => {
-    if (!editingComponent) return undefined;
-    const existingTags = editingComponent.tags || [];
-    const platformTag = existingTags.some((tag) => tag.toLowerCase() === "app") ? "app" : "web";
-
-    return {
-      name: editingComponent.name || "",
-      description: editingComponent.description || "",
-      tags: existingTags.filter((tag) => !["web", "app"].includes(tag.toLowerCase())),
-      figmaDataBase64: editingComponent.figmaDataBase64 || "",
-      designType: editingComponent.designType || "UI Design",
-      pricingType: editingComponent.pricingType || "Free",
-      platformTag,
-    };
-  }, [editingComponent]);
-
-  function updatePanelQuery(next: Record<string, string | null>) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", "my-components");
-    params.delete("tab");
-
-    Object.entries(next).forEach(([key, value]) => {
-      if (value === null) {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
-    });
-
-    router.replace(`/dashboard?${params.toString()}`, { scroll: false });
-  }
-
   function openEditEditor(id: string) {
-    setEditorStatus("");
-    updatePanelQuery({ modal: null, edit: id });
-  }
-
-  function closeEditor() {
-    setEditorStatus("");
-    updatePanelQuery({ modal: null, edit: null });
+    if (onNavigateToEdit) {
+      onNavigateToEdit(id);
+    } else {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", "my-components");
+      params.set("edit", id);
+      router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+    }
   }
 
   const deleteMutation = useMutation({
@@ -539,47 +494,6 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
       setSelectedIds((prev) => prev.filter((i) => i !== deleteTarget?.id));
     },
   });
-
-  const updateMutation = useMutation({
-    mutationFn: async (input: ComponentEditorValues & { id: string }) => {
-      let previewImageUrl: string | undefined;
-      if (input.previewFile) {
-        previewImageUrl = await uploadApi.uploadImage(input.previewFile);
-      }
-
-      return componentsApi.update(input.id, {
-        name: input.name,
-        description: input.description,
-        tags: input.tags,
-        ...(previewImageUrl ? { previewImageUrl } : {}),
-        figmaDataBase64: input.figmaDataBase64,
-        designType: input.designType,
-        pricingType: input.pricingType,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["components"] });
-      queryClient.invalidateQueries({ queryKey: ["my-components"] });
-      queryClient.invalidateQueries({ queryKey: ["components", "editor", editId] });
-    },
-  });
-
-  async function handleEditorSubmit(values: ComponentEditorValues) {
-    if (!values.figmaDataBase64.trim()) {
-      setEditorStatus("Paste a Figma component in the payload area first.");
-      return;
-    }
-
-    try {
-      if (editorMode === "edit" && editId) {
-        setEditorStatus(values.previewFile ? "Uploading new preview image..." : "Updating component...");
-        await updateMutation.mutateAsync({ ...values, id: editId });
-        closeEditor();
-      }
-    } catch (error) {
-      setEditorStatus(error instanceof Error ? error.message : "Could not save component.");
-    }
-  }
 
   async function handleCopy(id: string, name: string, figmaDataBase64?: string) {
     setCopyStatus("");
@@ -650,17 +564,15 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
           <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-sm">
             <button
               onClick={() => setViewMode("table")}
-              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${
-                viewMode === "table" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
-              }`}
+              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${viewMode === "table" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
+                }`}
             >
               <List size={13} />
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${
-                viewMode === "grid" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
-              }`}
+              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${viewMode === "grid" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
+                }`}
             >
               <LayoutGrid size={13} />
             </button>
@@ -688,8 +600,37 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
       )}
 
       {isError && (
-        <div className="flex items-center justify-center rounded-2xl border border-red-100 bg-red-50 py-16 text-xs font-medium text-red-500">
-          Could not load your components.
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/70 p-10 text-center">
+          <AlertTriangle className="mb-2 h-6 w-6 text-red-500" />
+          <p className="text-sm font-semibold text-red-700">
+            {axios.isAxiosError(error) && error.response?.status === 401
+              ? "Your session has expired. Please sign in again."
+              : "Could not load your components."}
+          </p>
+          <p className="mt-1 text-xs text-red-500/90 max-w-sm">
+            {axios.isAxiosError(error) && error.response?.data?.message
+              ? error.response.data.message
+              : (error as Error)?.message || "Please check your network connection or try again."}
+          </p>
+          <div className="mt-4 flex items-center gap-2">
+            {axios.isAxiosError(error) && error.response?.status === 401 ? (
+              <button
+                type="button"
+                onClick={() => setLoginModalOpen(true)}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
+              >
+                Sign In Again
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition cursor-pointer"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -733,13 +674,12 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
                   )}
                   {item.status && (
                     <span
-                      className={`absolute right-2.5 top-2.5 rounded px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm ${
-                        item.status === "approved"
+                      className={`absolute right-2.5 top-2.5 rounded px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm ${item.status === "approved"
                           ? "bg-emerald-500"
                           : item.status === "rejected"
-                          ? "bg-rose-500"
-                          : "bg-amber-500"
-                      }`}
+                            ? "bg-rose-500"
+                            : "bg-amber-500"
+                        }`}
                     >
                       {item.status}
                     </span>
@@ -872,13 +812,12 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
                     <td className="px-4 py-3 text-gray-500 font-medium">{item.designType || "UI Design"}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${
-                          item.status === "approved"
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${item.status === "approved"
                             ? "bg-emerald-50 text-emerald-700"
                             : item.status === "rejected"
-                            ? "bg-rose-50 text-rose-700"
-                            : "bg-amber-50 text-amber-700"
-                        }`}
+                              ? "bg-rose-50 text-rose-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
                       >
                         {item.status || "Approved"}
                       </span>
@@ -925,21 +864,6 @@ function MyComponentsPanel({ onNavigateToAdd }: { onNavigateToAdd?: () => void }
           isDeleting={deleteMutation.isPending}
         />
       )}
-
-      {editorMode === "edit" && editId && (
-        <ComponentEditorModal
-          key={editId}
-          mode="edit"
-          isLoading={isEditorLoading || !editingComponent || !editingInitialValues}
-          initialValues={editingInitialValues}
-          currentPreviewImageUrl={editingComponent?.previewImageUrl}
-          status={editorStatus}
-          isSubmitting={updateMutation.isPending}
-          allowPro={user?.role === "admin"}
-          onClose={closeEditor}
-          onSubmit={handleEditorSubmit}
-        />
-      )}
     </div>
   );
 }
@@ -957,17 +881,40 @@ function AddComponentDashboardPanel({ onSuccess, onCancel }: { onSuccess?: () =>
 }
 
 // ==========================================
+// EDIT COMPONENT DASHBOARD PANEL (FULL WIDTH)
+// ==========================================
+function EditComponentDashboardPanel({
+  componentId,
+  onSuccess,
+  onCancel,
+}: {
+  componentId: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
+  return (
+    <EditComponentView
+      componentId={componentId}
+      onSuccess={onSuccess}
+      onCancel={onCancel}
+    />
+  );
+}
+
+// ==========================================
 // FAVORITE COMPONENTS PANEL
 // ==========================================
 function FavoriteComponentsPanel() {
   const queryClient = useQueryClient();
+  const { user, setLoginModalOpen } = useAuth();
   const [search, setSearch] = useState("");
   const [copyingId, setCopyingId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["favorite-components", search],
+  const { data, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["favorite-components", user?.id, search],
     queryFn: () => componentsApi.listFavorites(search),
+    enabled: !!user,
     staleTime: 60 * 1000,
   });
 
@@ -1038,8 +985,37 @@ function FavoriteComponentsPanel() {
       )}
 
       {isError && (
-        <div className="flex items-center justify-center rounded-2xl border border-red-100 bg-red-50 py-16 text-xs font-medium text-red-500">
-          Could not load your favorites.
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/70 p-10 text-center">
+          <AlertTriangle className="mb-2 h-6 w-6 text-red-500" />
+          <p className="text-sm font-semibold text-red-700">
+            {axios.isAxiosError(error) && error.response?.status === 401
+              ? "Your session has expired. Please sign in again."
+              : "Could not load your favorites."}
+          </p>
+          <p className="mt-1 text-xs text-red-500/90 max-w-sm">
+            {axios.isAxiosError(error) && error.response?.data?.message
+              ? error.response.data.message
+              : (error as Error)?.message || "Please check your network connection or try again."}
+          </p>
+          <div className="mt-4 flex items-center gap-2">
+            {axios.isAxiosError(error) && error.response?.status === 401 ? (
+              <button
+                type="button"
+                onClick={() => setLoginModalOpen(true)}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
+              >
+                Sign In Again
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 text-xs font-semibold text-white shadow-sm hover:bg-black transition cursor-pointer"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -1268,9 +1244,8 @@ function BillingPanel() {
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                    currentSub?.status === "active" ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${currentSub?.status === "active" ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {currentSub?.status === "active" ? "Active" : "Free Plan"}
                 </span>
@@ -1370,13 +1345,12 @@ function BillingPanel() {
                         </td>
                         <td className="px-5 py-3">
                           <span
-                            className={`px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${
-                              purchase.status === "active"
+                            className={`px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${purchase.status === "active"
                                 ? "bg-emerald-50 text-emerald-600"
                                 : purchase.status === "queued"
-                                ? "bg-blue-50 text-blue-600"
-                                : "bg-gray-100 text-gray-500"
-                            }`}
+                                  ? "bg-blue-50 text-blue-600"
+                                  : "bg-gray-100 text-gray-500"
+                              }`}
                           >
                             {purchase.status}
                           </span>
@@ -1592,7 +1566,7 @@ function OverviewPanel({
   durationDays,
   queuedCount,
 }: {
-  user: { name: string; email: string };
+  user: { name?: string; email?: string } | null;
   subscription: CurrentSubscriptionData | null;
   isPro: boolean;
   isPremiumPlus: boolean;
@@ -1607,7 +1581,7 @@ function OverviewPanel({
 
   return (
     <div className="space-y-4">
-      
+
       {/* Queued plans notification banner */}
       {queuedCount > 0 && (
         <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 shadow-sm">
@@ -1628,7 +1602,7 @@ function OverviewPanel({
 
       {/* TOP ROW: ACTIVE PLAN & TEAM DETAILS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-        
+
         {/* Active Plan Card */}
         <div className="rounded-xl border border-gray-200/90 bg-white p-4 shadow-sm flex flex-col justify-between min-h-[140px]">
           <div className="flex justify-between items-start">
@@ -1638,9 +1612,9 @@ function OverviewPanel({
                 {isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Plan"}
               </h2>
             </div>
-            
+
             {!isPremiumPlus && (
-              <Link 
+              <Link
                 href="/pricing"
                 className="flex items-center gap-1 text-xs font-bold text-[#F97316] hover:text-[#EA580C] transition"
               >
@@ -1667,7 +1641,7 @@ function OverviewPanel({
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                {user.name.split(" ")[0]}&apos;s Team
+                {(user?.name ? user.name.split(" ")[0] : "My")}&apos;s Team
               </span>
             </div>
             <span className="text-[9.5px] font-extrabold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
@@ -1700,26 +1674,24 @@ function OverviewPanel({
         <div className="flex gap-1 p-0.5 bg-white border border-gray-200 rounded-lg w-fit shadow-sm">
           <button
             onClick={() => setSelectedPeriod("current")}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
-              selectedPeriod === "current"
+            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${selectedPeriod === "current"
                 ? "bg-[#F97316]/10 text-[#F97316]"
                 : "text-gray-400 hover:text-gray-700"
-            }`}
+              }`}
           >
             Current Period
           </button>
           <button
             onClick={() => setSelectedPeriod("lifetime")}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
-              selectedPeriod === "lifetime"
+            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${selectedPeriod === "lifetime"
                 ? "bg-[#F97316]/10 text-[#F97316]"
                 : "text-gray-400 hover:text-gray-700"
-            }`}
+              }`}
           >
             Lifetime Total
           </button>
         </div>
-        
+
         {isPro && subscription?.endDate && (
           <span className="text-[11px] text-gray-400 font-medium italic">
             * Limits reset on {new Date(subscription.endDate).toLocaleDateString(undefined, {
@@ -1733,7 +1705,7 @@ function OverviewPanel({
 
       {/* 4 USAGE METRIC CARDS WITH SPARKLINE CHARTS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        
+
         {/* Metric 1: Components Copied */}
         <div className="rounded-xl border border-gray-200/90 bg-white p-3.5 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
@@ -1823,14 +1795,13 @@ function OverviewPanel({
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-1 p-0.5 bg-gray-50 border border-gray-200 rounded-lg w-fit">
             {(["7 d", "30 d", "90 d", "Month"] as const).map((d) => (
-              <button 
+              <button
                 key={d}
                 onClick={() => setChartRange(d)}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
-                  chartRange === d
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${chartRange === d
                     ? "bg-[#F97316]/10 text-[#F97316]"
                     : "text-gray-400 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 {d}
               </button>
@@ -1841,7 +1812,7 @@ function OverviewPanel({
 
         {/* SVG line chart mimic with orange theme */}
         <div className="h-44 w-full relative flex flex-col justify-between pt-2">
-          
+
           {/* grid lines */}
           <div className="w-full border-b border-gray-100 flex justify-between text-[10px] text-gray-300 font-bold pb-1">
             <span>4</span>
@@ -1855,7 +1826,7 @@ function OverviewPanel({
           <div className="w-full border-b border-gray-100 flex justify-between text-[10px] text-gray-300 font-bold pb-1">
             <span>1</span>
           </div>
-          
+
           {/* Orange graph line with data dots */}
           <div className="absolute inset-x-0 bottom-6 h-0.5 bg-[#F97316]">
             <div className="absolute left-[5%] bottom-[-3px] w-2 h-2 rounded-full bg-[#F97316] border-2 border-white shadow-sm" />
@@ -1896,13 +1867,17 @@ function DashboardContent() {
   const { user, loading: authLoading, isInitialized, setLoginModalOpen, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Sidebar tab state: Overview, My Components, Favorites, Plans & Billing, Contact Us
   const [activeTab, setActiveTab] = useState("Overview");
 
   useEffect(() => {
     const page = searchParams.get("page");
-    if (page === "my-components" || searchParams.get("tab") === "my-components") {
+    const editId = searchParams.get("edit") || (page === "edit-component" ? searchParams.get("id") : null);
+
+    if (editId || page === "edit-component") {
+      window.setTimeout(() => setActiveTab("Edit Component"), 0);
+    } else if (page === "my-components" || searchParams.get("tab") === "my-components") {
       window.setTimeout(() => setActiveTab("My Components"), 0);
     } else if (page === "add-components" || page === "add-component") {
       window.setTimeout(() => setActiveTab("Add Components"), 0);
@@ -1923,6 +1898,7 @@ function DashboardContent() {
     params.delete("tab");
     params.delete("modal");
     params.delete("edit");
+    params.delete("id");
 
     if (label === "My Components") {
       params.set("page", "my-components");
@@ -1997,6 +1973,7 @@ function DashboardContent() {
   const getHeaderTitle = () => {
     if (activeTab === "Overview") return { title: "Overview", count: isPro ? "Pro Member" : "Free Plan" };
     if (activeTab === "My Components") return { title: "My Components", count: "Library" };
+    if (activeTab === "Edit Component") return { title: "Edit Component", count: "Edit" };
     if (activeTab === "Add Components") return { title: "Add Components", count: "New" };
     if (activeTab === "Favorites") return { title: "Favorites", count: "Saved" };
     if (activeTab === "Plans & Billing") return { title: "Plans & Billing", count: isPro ? "Pro" : "Free" };
@@ -2099,16 +2076,16 @@ function DashboardContent() {
   >([
     ...(queuedCount > 0
       ? [
-          {
-            id: "queued-plan",
-            title: "Queued Plan Ready",
-            message: `You have ${queuedCount} plan(s) waiting to be activated.`,
-            time: "Just now",
-            read: false,
-            type: "plan" as const,
-            link: "/dashboard?page=plans-billing",
-          },
-        ]
+        {
+          id: "queued-plan",
+          title: "Queued Plan Ready",
+          message: `You have ${queuedCount} plan(s) waiting to be activated.`,
+          time: "Just now",
+          read: false,
+          type: "plan" as const,
+          link: "/dashboard?page=plans-billing",
+        },
+      ]
       : []),
     {
       id: "active-plan-status",
@@ -2173,9 +2150,8 @@ function DashboardContent() {
         title: "Component Verification Notice",
         message: firstRejected.rejectionReason
           ? `"${firstRejected.name}" was rejected: ${firstRejected.rejectionReason}`
-          : `${rejectedItems.length} of your uploaded component${
-              rejectedItems.length > 1 ? "s were" : " was"
-            } rejected during verification.`,
+          : `${rejectedItems.length} of your uploaded component${rejectedItems.length > 1 ? "s were" : " was"
+          } rejected during verification.`,
         type: "warning",
         actionLabel: "Review in Library",
         actionLink: `/dashboard?page=my-components&edit=${firstRejected._id}`,
@@ -2258,8 +2234,18 @@ function DashboardContent() {
     return notifications;
   }, [notifications, notificationFilter]);
 
-  // Loading States
-  if (!isInitialized || authLoading || (user && subLoading)) {
+  // Redirect unauthenticated users to home and open existing login modal
+  useEffect(() => {
+    if (isInitialized && !authLoading && !user) {
+      const currentQuery = searchParams.toString();
+      const redirectPath = currentQuery ? `/dashboard?${currentQuery}` : "/dashboard";
+      router.replace(`/?redirect=${encodeURIComponent(redirectPath)}`);
+      setLoginModalOpen(true);
+    }
+  }, [isInitialized, authLoading, user, router, searchParams, setLoginModalOpen]);
+
+  // Loading or redirecting states - dashboard is only rendered when logged in
+  if (!isInitialized || authLoading || !user || (user && subLoading)) {
     return (
       <div
         className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors duration-150 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
@@ -2272,41 +2258,16 @@ function DashboardContent() {
     );
   }
 
-  // Not logged in state
-  if (!user) {
-    return (
-      <div
-        className="min-h-screen h-screen w-screen fixed inset-0 z-[999] flex items-center justify-center p-6 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
-      >
-        <div className="max-w-md w-full rounded-2xl bg-white dark:bg-[#121316] p-8 shadow-xl border border-gray-200 dark:border-neutral-800 text-center">
-          <div className="w-14 h-14 bg-orange-50 dark:bg-orange-950/80 rounded-2xl flex items-center justify-center text-[#F97316] mx-auto mb-4">
-            <ShieldCheck size={28} />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sign in to Access Dashboard</h1>
-          <p className="text-gray-500 dark:text-neutral-400 text-xs mb-6 leading-relaxed">
-            Please log in to manage your components, access saved favorites, manage billing tiers, and copy assets.
-          </p>
-          <button
-            type="button"
-            onClick={() => setLoginModalOpen(true)}
-            className="w-full bg-[#F97316] text-white py-2.5 rounded-xl text-xs font-bold hover:bg-[#EA580C] transition shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
-          >
-            Sign In with Account
-          </button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div
-      className={`dashboard-container h-screen max-h-screen w-full flex flex-col md:flex-row font-sans antialiased overflow-hidden transition-colors duration-200 ${
-        isDarkMode
+      className={`dashboard-container h-screen max-h-screen w-full flex flex-col md:flex-row font-sans antialiased overflow-hidden transition-colors duration-200 ${isDarkMode
           ? "dark bg-[#000000] text-[#EDEDED]"
           : "bg-[#FAFAFB] text-[#1E293B]"
-      }`}
+        }`}
     >
-      
+
       {/* ==========================================
           LEFT SIDEBAR (CONCEPTZILLA STYLE)
           ========================================== */}
@@ -2334,17 +2295,16 @@ function DashboardContent() {
             <nav className="mt-1 space-y-0.5">
               {mainNavItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = activeTab === item.label;
+                const isActive = activeTab === item.label || (item.label === "My Components" && activeTab === "Edit Component");
                 return (
                   <button
                     key={item.label}
                     type="button"
                     onClick={() => handleSidebarSelect(item.label)}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      isActive
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${isActive
                         ? "bg-[#F3F4F6] text-gray-900 font-bold"
                         : "text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon
@@ -2373,11 +2333,10 @@ function DashboardContent() {
                     key={item.label}
                     type="button"
                     onClick={() => handleSidebarSelect(item.label)}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      isActive
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${isActive
                         ? "bg-[#F3F4F6] text-gray-900 font-bold"
                         : "text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon
@@ -2425,39 +2384,49 @@ function DashboardContent() {
 
         {/* BOTTOM PROFILE CARD (EXACT USER AVATAR + ONLINE BADGE) */}
         <div className="pt-4 border-t border-gray-100 mt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <div className="h-8 w-8 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-xs overflow-hidden">
-                  {user.profilePicture ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={user.profilePicture}
-                      alt={user.name}
-                      className="h-full w-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    user.name.slice(0, 2).toUpperCase()
-                  )}
+          {user ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <div className="h-8 w-8 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-xs overflow-hidden">
+                    {user.profilePicture ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={user.profilePicture}
+                        alt={user.name || "User"}
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      (user.name || "U").slice(0, 2).toUpperCase()
+                    )}
+                  </div>
+                  {/* Green online indicator */}
+                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
                 </div>
-                {/* Green online indicator */}
-                <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+                <div className="truncate max-w-[130px]">
+                  <p className="text-xs font-bold text-gray-900 truncate leading-tight">{user.name}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+                </div>
               </div>
-              <div className="truncate max-w-[130px]">
-                <p className="text-xs font-bold text-gray-900 truncate leading-tight">{user.name}</p>
-                <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
-              </div>
-            </div>
 
+              <button
+                onClick={logout}
+                title="Log Out"
+                className="p-1 text-gray-400 hover:text-rose-500 rounded transition cursor-pointer"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={logout}
-              title="Log Out"
-              className="p-1 text-gray-400 hover:text-rose-500 rounded transition cursor-pointer"
+              type="button"
+              onClick={() => setLoginModalOpen(true)}
+              className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-[#F97316] py-2 px-3 text-xs font-bold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
             >
-              <LogOut size={14} />
+              <span>Sign In</span>
             </button>
-          </div>
+          )}
         </div>
       </aside>
 
@@ -2465,7 +2434,7 @@ function DashboardContent() {
           MAIN CONTENT AREA (WITH FIXED NAVBAR)
           ========================================== */}
       <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#FAFAFB] dark:bg-[#000000]">
-        
+
         {/* FIXED TOPBAR HEADER */}
         <header className="sticky top-0 z-30 shrink-0 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-md border-b border-gray-200/80 dark:border-white/[0.08] px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
           {/* Breadcrumb Navigation */}
@@ -2501,11 +2470,10 @@ function DashboardContent() {
                 <button
                   type="button"
                   onClick={() => setNotificationsOpen((prev) => !prev)}
-                  className={`relative p-1.5 rounded-lg transition cursor-pointer ${
-                    notificationsOpen
+                  className={`relative p-1.5 rounded-lg transition cursor-pointer ${notificationsOpen
                       ? "bg-orange-50 text-[#F97316]"
                       : "hover:text-gray-700 hover:bg-gray-100 text-gray-400"
-                  }`}
+                    }`}
                   title="Notifications"
                   aria-label="Toggle notifications"
                 >
@@ -2547,21 +2515,19 @@ function DashboardContent() {
                     <div className="flex items-center gap-2 px-4 pt-2.5 pb-1.5 border-b border-gray-100 bg-white">
                       <button
                         onClick={() => setNotificationFilter("all")}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
-                          notificationFilter === "all"
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${notificationFilter === "all"
                             ? "bg-gray-100 text-gray-900"
                             : "text-gray-400 hover:text-gray-600"
-                        }`}
+                          }`}
                       >
                         All ({notifications.length})
                       </button>
                       <button
                         onClick={() => setNotificationFilter("unread")}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
-                          notificationFilter === "unread"
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${notificationFilter === "unread"
                             ? "bg-gray-100 text-gray-900"
                             : "text-gray-400 hover:text-gray-600"
-                        }`}
+                          }`}
                       >
                         Unread ({unreadCount})
                       </button>
@@ -2595,20 +2561,18 @@ function DashboardContent() {
                                   setNotificationsOpen(false);
                                 }
                               }}
-                              className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${
-                                isRejection && !n.read
+                              className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${isRejection && !n.read
                                   ? "bg-rose-50/50 hover:bg-rose-50/80 border-l-2 border-rose-500"
                                   : isRejection
-                                  ? "bg-rose-50/20 hover:bg-rose-50/50"
-                                  : !n.read
-                                  ? "bg-orange-50/20 hover:bg-orange-50/40"
-                                  : "hover:bg-gray-50/80"
-                              }`}
+                                    ? "bg-rose-50/20 hover:bg-rose-50/50"
+                                    : !n.read
+                                      ? "bg-orange-50/20 hover:bg-orange-50/40"
+                                      : "hover:bg-gray-50/80"
+                                }`}
                             >
                               <div
-                                className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                                  isRejection ? "bg-rose-100/70" : "bg-gray-100"
-                                }`}
+                                className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isRejection ? "bg-rose-100/70" : "bg-gray-100"
+                                  }`}
                               >
                                 {getIcon()}
                               </div>
@@ -2617,13 +2581,12 @@ function DashboardContent() {
                                 <div className="flex items-center justify-between gap-1">
                                   <div className="flex items-center gap-1.5 min-w-0">
                                     <h4
-                                      className={`text-xs truncate ${
-                                        isRejection
+                                      className={`text-xs truncate ${isRejection
                                           ? "font-bold text-rose-950"
                                           : !n.read
-                                          ? "font-bold text-gray-900"
-                                          : "font-semibold text-gray-700"
-                                      }`}
+                                            ? "font-bold text-gray-900"
+                                            : "font-semibold text-gray-700"
+                                        }`}
                                     >
                                       {n.title}
                                     </h4>
@@ -2636,9 +2599,8 @@ function DashboardContent() {
                                   <span className="text-[10px] text-gray-400 shrink-0">{n.time}</span>
                                 </div>
                                 <p
-                                  className={`text-[11px] mt-0.5 leading-snug line-clamp-2 ${
-                                    isRejection ? "text-rose-800/80" : "text-gray-500"
-                                  }`}
+                                  className={`text-[11px] mt-0.5 leading-snug line-clamp-2 ${isRejection ? "text-rose-800/80" : "text-gray-500"
+                                    }`}
                                 >
                                   {n.message}
                                 </p>
@@ -2647,9 +2609,8 @@ function DashboardContent() {
                               <div className="flex items-center gap-1.5 shrink-0 self-center">
                                 {!n.read && (
                                   <span
-                                    className={`h-2 w-2 rounded-full ${
-                                      isRejection ? "bg-rose-500" : "bg-[#F97316]"
-                                    }`}
+                                    className={`h-2 w-2 rounded-full ${isRejection ? "bg-rose-500" : "bg-[#F97316]"
+                                      }`}
                                   />
                                 )}
                                 <button
@@ -2710,142 +2671,167 @@ function DashboardContent() {
             <div className="h-4 w-px bg-gray-200 hidden sm:block" />
 
             {/* User Profile Pill in Navbar */}
-            <div ref={userMenuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setUserMenuOpen((prev) => !prev)}
-                className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition cursor-pointer border ${
-                  userMenuOpen
-                    ? "bg-gray-100/90 border-gray-300 shadow-sm"
-                    : "hover:bg-gray-50/90 border-gray-200/90 bg-white shadow-xs"
-                }`}
-                aria-label="User Profile Menu"
-              >
-                <div className="relative shrink-0">
-                  <div className="h-7 w-7 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-[11px] overflow-hidden shadow-inner">
-                    {user.profilePicture ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={user.profilePicture}
-                        alt={user.name}
-                        className="h-full w-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      user.name.slice(0, 2).toUpperCase()
-                    )}
+            {user ? (
+              <div ref={userMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition cursor-pointer border ${userMenuOpen
+                      ? "bg-gray-100/90 border-gray-300 shadow-sm"
+                      : "hover:bg-gray-50/90 border-gray-200/90 bg-white shadow-xs"
+                    }`}
+                  aria-label="User Profile Menu"
+                >
+                  <div className="relative shrink-0">
+                    <div className="h-7 w-7 rounded-full bg-[#1E293B] text-white flex items-center justify-center font-bold text-[11px] overflow-hidden shadow-inner">
+                      {user.profilePicture ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={user.profilePicture}
+                          alt={user.name || "User"}
+                          className="h-full w-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        (user.name || "U").slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white" />
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white" />
-                </div>
 
-                <div className="text-left hidden sm:block">
-                  <p className="text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">
-                    {user.name}
-                  </p>
-                  <span className="text-[9.5px] font-semibold text-gray-400 leading-none mt-0.5 block">
-                    {isPro ? "Pro Member" : "Free Plan"}
-                  </span>
-                </div>
+                  <div className="text-left hidden sm:block">
+                    <p className="text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">
+                      {user.name}
+                    </p>
+                    <span className="text-[9.5px] font-semibold text-gray-400 leading-none mt-0.5 block">
+                      {isPro ? "Pro Member" : "Free Plan"}
+                    </span>
+                  </div>
 
-                <ChevronDown
-                  size={12}
-                  className={`text-gray-400 transition-transform duration-200 ${
-                    userMenuOpen ? "rotate-180 text-gray-700" : ""
-                  }`}
-                />
-              </button>
+                  <ChevronDown
+                    size={12}
+                    className={`text-gray-400 transition-transform duration-200 ${userMenuOpen ? "rotate-180 text-gray-700" : ""
+                      }`}
+                  />
+                </button>
 
-              {/* Profile Dropdown Menu */}
-              {userMenuOpen && (
-                <div className="absolute right-0 top-11 z-50 w-56 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-200/90 py-2 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
-                  <div className="px-3.5 py-2 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-900 truncate">{user.name}</p>
-                    <p className="text-[11px] text-gray-400 truncate mt-0.5">{user.email}</p>
-                    <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-[#EA580C]">
-                      <Sparkles size={11} />
-                      <span>{isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Tier"}</span>
+                {/* Profile Dropdown Menu */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-11 z-50 w-56 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-200/90 py-2 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
+                    <div className="px-3.5 py-2 border-b border-gray-100">
+                      <p className="text-xs font-bold text-gray-900 truncate">{user.name}</p>
+                      <p className="text-[11px] text-gray-400 truncate mt-0.5">{user.email}</p>
+                      <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-[#EA580C]">
+                        <Sparkles size={11} />
+                        <span>{isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Tier"}</span>
+                      </div>
+                    </div>
+
+                    <div className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSidebarSelect("Overview");
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                      >
+                        <LayoutDashboard size={14} className="text-gray-400" />
+                        <span>Overview</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSidebarSelect("My Components");
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                      >
+                        <Package size={14} className="text-gray-400" />
+                        <span>My Components</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSidebarSelect("Add Components");
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                      >
+                        <Plus size={14} className="text-gray-400" />
+                        <span>Add Components</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleSidebarSelect("Plans & Billing");
+                          setUserMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                      >
+                        <CreditCard size={14} className="text-gray-400" />
+                        <span>Billing & Plans</span>
+                      </button>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                      >
+                        <LogOut size={14} className="text-rose-500" />
+                        <span>Log Out</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="py-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleSidebarSelect("Overview");
-                        setUserMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-                    >
-                      <LayoutDashboard size={14} className="text-gray-400" />
-                      <span>Overview</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleSidebarSelect("My Components");
-                        setUserMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-                    >
-                      <Package size={14} className="text-gray-400" />
-                      <span>My Components</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleSidebarSelect("Add Components");
-                        setUserMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-                    >
-                      <Plus size={14} className="text-gray-400" />
-                      <span>Add Components</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleSidebarSelect("Plans & Billing");
-                        setUserMenuOpen(false);
-                      }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-                    >
-                      <CreditCard size={14} className="text-gray-400" />
-                      <span>Billing & Plans</span>
-                    </button>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                    >
-                      <LogOut size={14} className="text-rose-500" />
-                      <span>Log Out</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setLoginModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-[#F97316] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </header>
 
         {/* SCROLLABLE MAIN CONTENT AREA */}
         <main
           className={`flex-1 overflow-y-auto min-h-0 ${
-            activeTab === "Add Components" ? "p-4 lg:p-6 pb-0 lg:pb-0" : "p-4 lg:p-6"
+            activeTab === "Add Components" || activeTab === "Edit Component"
+              ? "p-4 lg:p-6 pb-0 lg:pb-0"
+              : "p-4 lg:p-6"
           }`}
         >
-          {activeTab === "Add Components" ? (
+          {activeTab === "Edit Component" ? (
+            <EditComponentDashboardPanel
+              componentId={searchParams.get("edit") || searchParams.get("id") || ""}
+              onSuccess={() => handleSidebarSelect("My Components")}
+              onCancel={() => handleSidebarSelect("My Components")}
+            />
+          ) : activeTab === "Add Components" ? (
             <AddComponentDashboardPanel
               onSuccess={() => handleSidebarSelect("My Components")}
               onCancel={() => handleSidebarSelect("My Components")}
             />
           ) : activeTab === "My Components" ? (
-            <MyComponentsPanel onNavigateToAdd={() => handleSidebarSelect("Add Components")} />
+            <MyComponentsPanel
+              onNavigateToAdd={() => handleSidebarSelect("Add Components")}
+              onNavigateToEdit={(id) => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.set("page", "my-components");
+                params.set("edit", id);
+                router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+                setActiveTab("Edit Component");
+              }}
+            />
           ) : activeTab === "Favorites" ? (
             <FavoriteComponentsPanel />
           ) : activeTab === "Plans & Billing" ? (

@@ -172,13 +172,12 @@ export function FigmaPayloadZone({
           <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`relative min-h-[130px] flex flex-col items-center justify-center rounded-xl border border-dashed transition-all duration-150 p-4 text-center cursor-pointer ${
-              isHovered
+            className={`relative min-h-[130px] flex flex-col items-center justify-center rounded-xl border border-dashed transition-all duration-150 p-4 text-center cursor-pointer ${isHovered
                 ? "border-[#F97316] bg-orange-500/[0.03] dark:bg-orange-500/[0.05]"
                 : error || localError
-                ? "border-rose-400 bg-rose-500/[0.03]"
-                : "border-gray-300 dark:border-white/[0.12] bg-gray-50/60 dark:bg-[#17171A]/70 hover:border-[#F97316]"
-            }`}
+                  ? "border-rose-400 bg-rose-500/[0.03]"
+                  : "border-gray-300 dark:border-white/[0.12] bg-gray-50/60 dark:bg-[#17171A]/70 hover:border-[#F97316]"
+              }`}
             onClick={() => textareaRef.current?.focus()}
           >
             {isProcessing ? (
@@ -191,11 +190,10 @@ export function FigmaPayloadZone({
             ) : (
               <>
                 <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-transform ${
-                    isHovered
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg transition-transform ${isHovered
                       ? "scale-105 bg-orange-500/15 text-[#F97316]"
                       : "bg-gray-200/80 dark:bg-white/[0.06] text-gray-500 dark:text-[#A1A1AA]"
-                  }`}
+                    }`}
                 >
                   <MonitorSmartphone size={18} />
                 </div>

@@ -7,11 +7,13 @@ interface StickyActionBarProps {
   canPublish: boolean;
   missingFields: string[];
   isSubmitting: boolean;
-  lastSavedTime: number | null;
+  lastSavedTime?: number | null;
   onPublish: () => void;
   onCancel: () => void;
-  onClearDraft: () => void;
-  isDirty: boolean;
+  onClearDraft?: () => void;
+  isDirty?: boolean;
+  publishLabel?: string;
+  publishingLabel?: string;
 }
 
 export function StickyActionBar({
@@ -23,6 +25,8 @@ export function StickyActionBar({
   onCancel,
   onClearDraft,
   isDirty,
+  publishLabel,
+  publishingLabel,
 }: StickyActionBarProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -82,7 +86,7 @@ export function StickyActionBar({
               }`}
             >
               {isSubmitting && <Loader2 size={13} className="animate-spin text-white" />}
-              <span>{isSubmitting ? "Publishing..." : "Publish Component"}</span>
+              <span>{isSubmitting ? (publishingLabel || "Publishing...") : (publishLabel || "Publish Component")}</span>
             </button>
 
             {/* Tooltip listing what's missing when disabled */}

@@ -21,6 +21,13 @@ export function LoginModal() {
     try {
       await login({ email, password });
       setLoginModalOpen(false);
+      const redirectUrl =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("redirect")
+          : null;
+      if (redirectUrl) {
+        navigate.push(redirectUrl);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");
     } finally {
@@ -33,47 +40,61 @@ export function LoginModal() {
       if (credentialResponse.credential) {
         await loginWithGoogle(credentialResponse.credential);
         setLoginModalOpen(false);
+        const redirectUrl =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("redirect")
+            : null;
+        if (redirectUrl) {
+          navigate.push(redirectUrl);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google Auth failed.");
     }
   };
 
+  const handleClose = () => {
+    setLoginModalOpen(false);
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("redirect")) {
+      navigate.replace(window.location.pathname);
+    }
+  };
+
   // Close modal when clicking the backdrop
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      setLoginModalOpen(false);
+      handleClose();
     }
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[220] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
       <div className="relative w-full max-w-[850px] min-h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Close Button */}
-        <button 
-          onClick={() => setLoginModalOpen(false)}
+        <button
+          onClick={handleClose}
           className="absolute right-3 top-3 z-10 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
           aria-label="Close modal"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12"/>
+            <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
 
         {/* Left Pane - Figma Layout with loginbg.png */}
         <div className="hidden md:flex w-[50%] relative border-r border-[#E5E7EB] overflow-hidden flex-col items-center justify-end text-white pb-12 pt-8">
           <img src={loginBg} alt="Background layout" className="absolute inset-0 w-full h-full object-cover" />
-          
+
           {/* Logo at Top Left */}
           <div className="absolute top-8 left-10 z-10 flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full border-[2px] border-white"></div>
             <span className="font-semibold tracking-wide text-[14px]">Figcomponents</span>
           </div>
-          
+
           <div className="relative z-10 w-full max-w-[280px] px-4 self-center mt-auto">
             <div className="text-center mb-6">
               <h2 className="text-[22px] font-semibold mb-2 tracking-tight text-white">Your space is waiting</h2>
@@ -133,10 +154,10 @@ export function LoginModal() {
               </div>
 
               {error ? <p className="text-red-500 text-xs font-medium bg-red-50 p-2 rounded">{error}</p> : null}
-              
-              <button 
-                className="w-full bg-[#8A2BE2] text-white rounded-lg py-2 font-bold mt-2 shadow-sm shadow-purple-500/20 hover:bg-[#7b22cc] hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0 font-syne text-sm" 
-                type="submit" 
+
+              <button
+                className="w-full bg-[#8A2BE2] text-white rounded-lg py-2 font-bold mt-2 shadow-sm shadow-purple-500/20 hover:bg-[#7b22cc] hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:translate-y-0 font-syne text-sm"
+                type="submit"
                 disabled={submitting}
               >
                 {submitting ? "Processing..." : "Sign In"}
@@ -163,7 +184,7 @@ export function LoginModal() {
 
             <p className="text-center text-gray-500 text-[0.8rem] mt-6 pb-2">
               Don't have an account?{" "}
-              <button 
+              <button
                 type="button"
                 onClick={() => { setLoginModalOpen(false); setRegisterModalOpen(true); }}
                 className="text-[#8A2BE2] hover:text-[#7b22cc] font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"

@@ -57,11 +57,10 @@ export function PublishChecklist({
                 <Circle size={13} className="text-gray-300 dark:text-[#71717A] shrink-0" />
               )}
               <span
-                className={`text-xs ${
-                  item.completed
+                className={`text-xs ${item.completed
                     ? "font-medium text-gray-900 dark:text-[#F5F5F5]"
                     : "text-gray-500 dark:text-[#71717A]"
-                }`}
+                  }`}
               >
                 {item.label}
               </span>

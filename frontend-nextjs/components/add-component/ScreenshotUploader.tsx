@@ -102,11 +102,10 @@ function ThemeDropzone({
       <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-gray-200/60 dark:border-white/[0.06]">
         <div className="flex items-center gap-2">
           <div
-            className={`flex h-6 w-6 items-center justify-center rounded-md ${
-              isDarkMode
+            className={`flex h-6 w-6 items-center justify-center rounded-md ${isDarkMode
                 ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400"
                 : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-            }`}
+              }`}
           >
             {isDarkMode ? <Moon size={13} /> : <Sun size={13} />}
           </div>
@@ -185,22 +184,20 @@ function ThemeDropzone({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`flex-1 group relative flex min-h-[130px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-3.5 text-center transition-all duration-150 ${
-            isDragOver
+          className={`flex-1 group relative flex min-h-[130px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-3.5 text-center transition-all duration-150 ${isDragOver
               ? "border-[#F97316] bg-orange-500/[0.06] shadow-2xs"
               : error
-              ? "border-rose-400 bg-rose-500/[0.03]"
-              : "border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#111113] hover:border-[#F97316] hover:bg-orange-500/[0.02]"
-          }`}
+                ? "border-rose-400 bg-rose-500/[0.03]"
+                : "border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#111113] hover:border-[#F97316] hover:bg-orange-500/[0.02]"
+            }`}
         >
           <div
-            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${
-              isDragOver
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${isDragOver
                 ? "scale-105 bg-orange-500/20 text-[#F97316]"
                 : isDarkMode
-                ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:scale-105"
-                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105"
-            }`}
+                  ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:scale-105"
+                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105"
+              }`}
           >
             <UploadCloud size={16} />
           </div>
@@ -258,11 +255,11 @@ export function ScreenshotUploader({
   // Fallbacks for backwards compatibility if caller only provided single preview
   const resolvedDarkFile = darkPreviewFile ?? previewFile ?? null;
   const resolvedDarkUrl = darkPreviewUrl || previewUrl || "";
-  const handleDarkSelect = onDarkFileSelect ?? onFileSelect ?? (() => {});
+  const handleDarkSelect = onDarkFileSelect ?? onFileSelect ?? (() => { });
 
   const resolvedLightFile = lightPreviewFile ?? null;
   const resolvedLightUrl = lightPreviewUrl || "";
-  const handleLightSelect = onLightFileSelect ?? (() => {});
+  const handleLightSelect = onLightFileSelect ?? (() => { });
 
   const totalUploaded = (resolvedDarkFile ? 1 : 0) + (resolvedLightFile ? 1 : 0);
 
