@@ -30,7 +30,15 @@ interface ScreenshotUploaderProps {
 
 const MAX_SIZE_MB = 10;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ALLOWED_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/avif",
+];
+const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+const ALLOWED_TYPES = ALLOWED_MIME_TYPES;
+const ACCEPT_FILE_ATTR = [...ALLOWED_MIME_TYPES, ".avif"].join(",");
 
 interface SingleDropzoneProps {
   mode: "dark" | "light";
@@ -57,8 +65,13 @@ function ThemeDropzone({
 
   const validateAndSet = (selected: File) => {
     setError(null);
-    if (!ALLOWED_TYPES.includes(selected.type)) {
-      setError("PNG, JPG, or WebP only.");
+    const hasValidType = Boolean(selected.type && ALLOWED_MIME_TYPES.includes(selected.type));
+    const hasValidExt = ALLOWED_EXTENSIONS.some((ext) =>
+      selected.name.toLowerCase().endsWith(ext)
+    );
+
+    if (!hasValidType && !hasValidExt) {
+      setError("PNG, JPG, WebP, or AVIF only.");
       return;
     }
     if (selected.size > MAX_SIZE_BYTES) {
@@ -207,7 +220,7 @@ function ThemeDropzone({
           </span>
 
           <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#A1A1AA]">
-            PNG, JPG, WebP up to {MAX_SIZE_MB}MB
+            PNG, JPG, WebP, AVIF up to {MAX_SIZE_MB}MB
           </p>
 
           <span className="mt-2 inline-flex items-center gap-1 rounded bg-gray-200/70 dark:bg-white/[0.08] px-2 py-0.5 text-[9.5px] font-medium text-gray-700 dark:text-neutral-300 group-hover:bg-orange-500/10 group-hover:text-[#EA580C] dark:group-hover:text-[#FB923C] transition-colors">
@@ -225,7 +238,10 @@ function ThemeDropzone({
       <input
         ref={fileInputRef}
         type="file"
-        accept={ALLOWED_TYPES.join(",")}
+        accept={ACCEPT_FILE_ATTR}
+        onClick={(e) => {
+          (e.target as HTMLInputElement).value = "";
+        }}
         onChange={(e) => {
           if (e.target.files && e.target.files[0]) {
             validateAndSet(e.target.files[0]);
