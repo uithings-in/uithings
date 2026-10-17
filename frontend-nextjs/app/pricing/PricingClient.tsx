@@ -305,15 +305,32 @@ export default function PricingClient({ initialPlans }: { initialPlans: Plan[] }
           id="pricing"
           className="relative w-full overflow-hidden bg-[#080605] pt-[72px] pb-[108px] text-white"
         >
-          {/* Exact Tube Light SVG Asset from Figma */}
-          <div className="pointer-events-none absolute top-0 left-1/2 z-0 flex -translate-x-1/2 justify-center">
+          {/* Ambient soft backlight glow for extra-smooth diffusion */}
+          <div
+            className="pointer-events-none absolute -top-8 left-1/2 z-0 -translate-x-1/2 h-[380px] w-[860px] rounded-full blur-[100px] opacity-40"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 10%, rgba(76, 85, 223, 0.5) 0%, rgba(50, 30, 168, 0.25) 45%, transparent 75%)",
+            }}
+          />
+
+          {/* Exact Tube Light SVG Asset from Figma with ultra-smooth radial falloff mask and screen blend */}
+          <div
+            className="pointer-events-none absolute top-0 left-1/2 z-0 flex -translate-x-1/2 justify-center"
+            style={{
+              maskImage:
+                "radial-gradient(ellipse 80% 75% at 50% 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.2) 65%, rgba(0,0,0,0) 85%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 80% 75% at 50% 0%, rgba(0,0,0,1) 15%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.2) 65%, rgba(0,0,0,0) 85%)",
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/tube-light.svg"
               alt=""
               width={1050}
               height={486}
-              className="pointer-events-none h-[486px] w-[1050px] max-w-none select-none"
+              className="pointer-events-none h-[486px] w-[1050px] max-w-none select-none mix-blend-screen opacity-95"
             />
           </div>
 
