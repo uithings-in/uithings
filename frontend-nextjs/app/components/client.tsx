@@ -401,23 +401,25 @@ function PreviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 md:p-6"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2.5 sm:p-4 md:p-6 lg:p-8"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden font-manrope animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-[20px] sm:rounded-[24px] shadow-2xl w-full max-w-[780px] max-h-[94vh] flex flex-col overflow-hidden font-manrope animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 shrink-0 border-b border-gray-50">
-          <div className="flex items-center gap-2.5">
-            <div className="text-[#238B45] w-5 h-5 flex items-center justify-center">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 shrink-0 border-b border-gray-100/80 w-full">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
+            <div className="text-[#238B45] w-5 h-5 flex items-center justify-center shrink-0">
               <Layers size={18} strokeWidth={2.25} />
             </div>
-            <span className="font-bold text-[0.95rem] text-gray-900 tracking-tight">{item.name}</span>
+            <span className="font-bold text-[0.88rem] sm:text-[0.95rem] text-gray-900 tracking-tight truncate">
+              {item.name}
+            </span>
             {isProComponent(item) && (
-              <span className="flex items-center gap-1 shrink-0 ml-2 bg-[#9FE870]/20 text-[#2c5114] text-[0.65rem] font-bold px-2 py-0.5 rounded-md tracking-wider">
-                <Crown size={14} color="#d66a04" strokeWidth={2.5} />
+              <span className="flex items-center gap-1 shrink-0 ml-1.5 sm:ml-2 bg-[#9FE870]/20 text-[#2c5114] text-[0.62rem] sm:text-[0.65rem] font-bold px-1.5 sm:px-2 py-0.5 rounded-md tracking-wider">
+                <Crown size={13} color="#d66a04" strokeWidth={2.5} />
                 PRO
               </span>
             )}
@@ -425,7 +427,8 @@ function PreviewModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-full border border-gray-900 text-gray-900 hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-900 text-gray-900 hover:bg-gray-100 transition-colors shrink-0 cursor-pointer"
+            aria-label="Close preview modal"
           >
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
               <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -434,9 +437,9 @@ function PreviewModal({
         </div>
 
         {/* Content - Image Preview Carousel */}
-        <div className="px-6 py-4 relative overflow-hidden flex flex-col items-center flex-1 min-h-0">
+        <div className="px-3 sm:px-5 py-2 sm:py-3 relative overflow-hidden flex flex-col items-center flex-1 min-h-0 w-full">
           <div
-            className="relative group/preview w-full h-[50vh] sm:h-[58vh] md:h-[62vh] max-h-[580px] min-h-[350px] rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center bg-[#FAFBFD] select-none"
+            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none h-[48vh] max-h-[370px] min-h-[220px] w-full"
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
@@ -446,7 +449,7 @@ function PreviewModal({
                   alt={`${item.name} ${currentSlide.label || "preview"}`}
                   fill
                   priority
-                  className="object-contain p-2 sm:p-4"
+                  className="object-cover w-full h-full"
                 />
               </div>
             ) : (
@@ -466,55 +469,34 @@ function PreviewModal({
               aria-pressed={isFavorite}
               aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              className={`absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${
-                isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-              }`}
+              className={`absolute right-2.5 sm:right-3 top-2.5 sm:top-3 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
+                }`}
             >
-              <Heart size={18} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
+              <Heart size={16} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} className="sm:size-[18px]" />
             </button>
-
-            {/* Dots Indicator */}
-            {hasMultiple && (
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full">
-                {slides.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentIndex(idx);
-                    }}
-                    aria-label={`Go to slide ${idx + 1}`}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                      currentIndex === idx ? "w-5 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 pb-6 pt-2 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 pb-3.5 sm:pb-5 pt-2 shrink-0 border-t border-gray-50 sm:border-t-0">
           {/* User Info */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#9FE870] to-[#54992e] flex items-center justify-center text-black font-extrabold text-xs shadow-sm shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#9FE870] to-[#54992e] flex items-center justify-center text-black font-extrabold text-xs shadow-sm shrink-0">
               {getInitials(item.createdBy?.name || "System")}
             </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-[0.88rem] text-gray-900 tracking-tight leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-[0.82rem] sm:text-[0.88rem] text-gray-900 tracking-tight leading-tight truncate max-w-[180px] sm:max-w-none">
                 {item.createdBy?.name || "System Uploader"}
               </span>
-              <span className="text-[0.72rem] text-gray-400 font-medium">Contributor</span>
+              <span className="text-[0.68rem] sm:text-[0.72rem] text-gray-400 font-medium">Contributor</span>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-2.5 w-full sm:w-auto">
             {/* Dark & Light Mode Switcher */}
             {hasMultiple && (
-              <div className="flex items-center h-9 rounded-xl bg-gray-100 p-1 border border-gray-200/80">
+              <div className="flex items-center h-8 sm:h-9 rounded-xl bg-gray-100 p-0.5 sm:p-1 border border-gray-200/80 shrink-0">
                 {slides.map((slide, idx) => {
                   const isActive = currentIndex === idx;
                   const isDark = slide.mode === "dark";
@@ -526,18 +508,17 @@ function PreviewModal({
                         e.stopPropagation();
                         setCurrentIndex(idx);
                       }}
-                      className={`flex items-center gap-1.5 h-full px-3 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
-                        isActive
-                          ? isDark
-                            ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
-                            : "bg-white text-gray-900 shadow-xs border-gray-200/60"
-                          : "text-gray-500 hover:text-gray-900 border-transparent"
-                      }`}
+                      className={`flex items-center gap-1 sm:gap-1.5 h-full px-2 sm:px-3 rounded-lg text-[0.72rem] sm:text-xs font-bold transition-all cursor-pointer border ${isActive
+                        ? isDark
+                          ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
+                          : "bg-white text-gray-900 shadow-xs border-gray-200/60"
+                        : "text-gray-500 hover:text-gray-900 border-transparent"
+                        }`}
                     >
                       {isDark ? (
-                        <Moon size={12} className={isActive ? "text-indigo-400" : "text-gray-400"} />
+                        <Moon size={11} className={isActive ? "text-indigo-400" : "text-gray-400"} />
                       ) : (
-                        <Sun size={12} className={isActive ? "text-amber-500" : "text-gray-400"} />
+                        <Sun size={11} className={isActive ? "text-amber-500" : "text-gray-400"} />
                       )}
                       <span>{slide.label}</span>
                     </button>
@@ -550,7 +531,7 @@ function PreviewModal({
               type="button"
               onClick={handleCopy}
               disabled={isCopying || isSuccess}
-              className={`w-[120px] h-9 shrink-0 rounded-xl border text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
+              className={`flex-1 sm:flex-initial sm:w-[120px] h-8 sm:h-9 shrink-0 rounded-xl border text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
                 ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
                 : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
                 }`}
@@ -572,7 +553,7 @@ function PreviewModal({
                 </span>
               ) : (
                 <>
-                  <Copy size={18} color="currentColor" strokeWidth={2} className="mr-0.5" />
+                  <Copy size={16} color="currentColor" strokeWidth={2} className="mr-0.5 sm:size-[18px]" />
                   Copy
                 </>
               )}
@@ -1323,11 +1304,10 @@ export default function ComponentsClient({
                   <button
                     type="button"
                     onClick={() => setViewMode("wireframe")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      viewMode === "wireframe"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${viewMode === "wireframe"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     <IconWireframe />
                     Wireframe
@@ -1335,11 +1315,10 @@ export default function ComponentsClient({
                   <button
                     type="button"
                     onClick={() => setViewMode("ui-design")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      viewMode === "ui-design"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${viewMode === "ui-design"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     <SquarePen size={14} strokeWidth={1.8} />
                     UI Design
@@ -1351,33 +1330,30 @@ export default function ComponentsClient({
                   <button
                     type="button"
                     onClick={() => setPlatformMode("all")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      platformMode === "all"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "all"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     All
                   </button>
                   <button
                     type="button"
                     onClick={() => setPlatformMode("web")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      platformMode === "web"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "web"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     Web
                   </button>
                   <button
                     type="button"
                     onClick={() => setPlatformMode("app")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      platformMode === "app"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "app"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     App
                   </button>
@@ -1388,22 +1364,20 @@ export default function ComponentsClient({
                   <button
                     type="button"
                     onClick={() => togglePriceMode("free")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      priceMode === "free"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${priceMode === "free"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     Free
                   </button>
                   <button
                     type="button"
                     onClick={() => togglePriceMode("pro")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${
-                      priceMode === "pro"
-                        ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                        : "text-white/70 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${priceMode === "pro"
+                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
+                      : "text-white/70 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     <Crown
                       size={14}
