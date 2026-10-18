@@ -4,8 +4,8 @@ import { Layers, Search, Scaling, Frame, Crown } from "lucide-react";
 
 function SkeletonCard() {
   return (
-    <article className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10">
-      <div className="flex-1 bg-white/20 rounded-xl min-h-0" />
+    <article className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10">
+      <div className="w-full aspect-[16/9] bg-white/20 rounded-[8px] shrink-0" />
       <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <div className="h-3.5 w-24 bg-white/25 rounded-full" />

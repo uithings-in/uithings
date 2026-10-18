@@ -6,6 +6,7 @@ import Image from "next/image";
 import { componentsApi } from "../../api/components";
 import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from "../../api/payments";
 import { copyToFigma } from "../../lib/clipboard";
+import cloudinaryLoader from "../../lib/cloudinaryLoader";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
@@ -271,10 +272,10 @@ function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSumma
 function SkeletonCard() {
   return (
     <article
-      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
+      className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
     >
       {/* Preview placeholder */}
-      <div className="flex-1 bg-white/20 rounded-xl min-h-0" />
+      <div className="w-full aspect-[16/9] bg-white/20 rounded-[8px] shrink-0" />
 
       {/* Footer row placeholder */}
       <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
@@ -439,17 +440,19 @@ function PreviewModal({
         {/* Content - Image Preview Carousel */}
         <div className="px-3 sm:px-5 py-2 sm:py-3 relative overflow-hidden flex flex-col items-center flex-1 min-h-0 w-full">
           <div
-            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none h-[48vh] max-h-[370px] min-h-[220px] w-full"
+            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none aspect-[16/9] max-h-[380px] w-full"
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
               <div key={currentSlide.url} className="relative w-full h-full animate-in fade-in duration-200">
                 <Image
+                  loader={cloudinaryLoader}
                   src={currentSlide.url}
                   alt={`${item.name} ${currentSlide.label || "preview"}`}
                   fill
                   priority
-                  className="object-cover w-full h-full"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className="object-cover object-top w-full h-full"
                 />
               </div>
             ) : (
@@ -613,31 +616,34 @@ const ComponentCard = memo(function ComponentCard({
 
   return (
     <article
-      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope gpu-accel"
+      className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
       style={{
         background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
       }}
     >
       {/* Preview */}
       <div
-        className="relative cursor-pointer group/preview overflow-hidden flex-1 min-h-0 w-full rounded-xl border-2 border-[#9FE870]/40 bg-[#F4F9ED]"
+        className="relative cursor-pointer group/preview overflow-hidden w-full aspect-[16/9] rounded-[8px] border-2 border-[#9FE870]/40 bg-[#F4F9ED] p-[4px] shrink-0"
         onClick={onPreview}
         title="Click to preview"
       >
-        {item.previewImageUrl ? (
-          <Image
-            src={item.previewImageUrl}
-            alt={item.name}
-            fill
-            priority={priority}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1920px) 25vw, 20vw"
-            className="object-cover w-full h-full transition-transform duration-300 group-hover/preview:scale-[1.02]"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
-            No preview
-          </div>
-        )}
+        <div className="relative w-full h-full overflow-hidden rounded-[4px]">
+          {item.previewImageUrl ? (
+            <Image
+              loader={cloudinaryLoader}
+              src={item.previewImageUrl}
+              alt={item.name}
+              fill
+              priority={priority}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+              className="object-cover object-top w-full h-full"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
+              No preview
+            </div>
+          )}
+        </div>
         <button
           type="button"
           onClick={(event) => {

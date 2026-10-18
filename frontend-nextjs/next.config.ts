@@ -5,16 +5,17 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   images: {
-    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+        pathname: "/**",
       },
     ],
   },
