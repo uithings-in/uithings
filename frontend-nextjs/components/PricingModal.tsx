@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { plansApi, type Plan } from "../api/plans";
 import { paymentsApi } from "../api/payments";
 import { useQuery } from "@tanstack/react-query";
-import { Info, X } from "lucide-react";
-import { PlanTermsModal } from "./PlanTermsModal";
+import { X, Zap, Layers, SquareMousePointer, CheckCircle2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -25,35 +25,64 @@ interface RazorpayFailureResponse {
   };
 }
 
-interface RazorpayInstance {
-  open: () => void;
-  on: (
-    event: "payment.failed",
-    callback: (response: RazorpayFailureResponse) => void
-  ) => void;
-}
-
-type RazorpayConstructor = new (options: {
-  key: string | undefined;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: (response: RazorpayPaymentResponse) => Promise<void>;
-  prefill: {
-    name: string | undefined;
-    email: string | undefined;
-  };
-  theme: {
-    color: string;
-  };
-}) => RazorpayInstance;
-
 interface PricingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const DEFAULT_LANDING_PLANS = [
+  {
+    planKey: "pro_starter",
+    name: "Basic Plan",
+    pricePrefix: "₹",
+    price: "99",
+    period: "per user / 180 days",
+    description: "Perfect for testing and light creative needs.",
+    features: [
+      "100 components",
+      "Figma variables",
+      "Dark mode variables",
+      "Component properties",
+      "Interactive components",
+      "Auto Layout 5.0",
+    ],
+    featured: false,
+  },
+  {
+    planKey: "pro_ultimate",
+    name: "Advance Plan",
+    pricePrefix: "₹",
+    price: "199",
+    period: "per user / 180 days",
+    description: "Unlock more power with advanced models and bigger limits.",
+    features: [
+      "250 components",
+      "Figma variables",
+      "Dark mode variables",
+      "Component properties",
+      "Interactive components",
+      "Auto Layout 5.0",
+    ],
+    featured: true,
+  },
+  {
+    planKey: "pro_annual",
+    name: "Premium+",
+    pricePrefix: "₹",
+    price: "499",
+    period: "per user / 365 days",
+    description: "Everything unlimited. For pros, teams, and power creators.",
+    features: [
+      "Unlimited components",
+      "Figma variables",
+      "Dark mode variables",
+      "Component properties",
+      "Interactive components",
+      "Auto Layout 5.0",
+    ],
+    featured: false,
+  },
+];
 
 export function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const { user, setLoginModalOpen } = useAuth();
@@ -62,17 +91,12 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
   const [error, setError] = useState("");
   const [pendingPlanName, setPendingPlanName] = useState<string | null>(null);
   const [showLoginNotice, setShowLoginNotice] = useState(false);
-  const [termsOpen, setTermsOpen] = useState(false);
 
   const { data: plans } = useQuery({
     queryKey: ["plans"],
     queryFn: plansApi.getAllPlans,
     enabled: isOpen,
   });
-
-  const proStarter = plans?.find((p) => p.name === "pro_starter");
-  const proUltimate = plans?.find((p) => p.name === "pro_ultimate");
-  const proAnnual = plans?.find((p) => p.name === "pro_annual");
 
   const { refetch: refetchSubscription } = useQuery({
     queryKey: ["subscription", "checkAccess"],
@@ -95,93 +119,112 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
         setPendingPlanName(null);
         setShowLoginNotice(false);
         setError("");
-        setTermsOpen(false);
       }, 0);
     }
   }, [isOpen]);
 
-  const startPayment = useCallback(async (plan: Plan) => {
-    setSelectedPlan(plan);
-    setError("");
-    setLoading(true);
+  const startPayment = useCallback(
+    async (plan: Plan) => {
+      setSelectedPlan(plan);
+      setError("");
+      setLoading(true);
 
-    try {
-      const orderData = await paymentsApi.createOrder(plan._id);
+      try {
+        const orderData = await paymentsApi.createOrder(plan._id);
 
-      if (!window.Razorpay) {
-        throw new Error("Razorpay SDK not loaded");
-      }
+        if (!window.Razorpay) {
+          throw new Error("Razorpay SDK not loaded");
+        }
 
-      const razorpayOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Figcomponents Pro",
-        description: `Subscribe to ${orderData.planName}`,
-        order_id: orderData.orderId,
-        handler: async (response: RazorpayPaymentResponse) => {
-          try {
-            const result = await paymentsApi.verifyPayment(
-              response.razorpay_order_id,
-              response.razorpay_payment_id,
-              response.razorpay_signature,
-              plan._id
-            );
-            await refetchSubscription();
-            if (result.data?.isQueued) {
-              alert("Plan purchased! It has been queued and will activate after your current plan expires. You can also manually activate it from your Dashboard.");
-            } else {
-              alert("Payment successful! You now have Pro access.");
+        const razorpayOptions = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "Ui Things Pro",
+          description: `Subscribe to ${orderData.planName}`,
+          order_id: orderData.orderId,
+          handler: async (response: RazorpayPaymentResponse) => {
+            try {
+              const result = await paymentsApi.verifyPayment(
+                response.razorpay_order_id,
+                response.razorpay_payment_id,
+                response.razorpay_signature,
+                plan._id
+              );
+              await refetchSubscription();
+              if (result.data?.isQueued) {
+                alert(
+                  "Plan purchased! It has been queued and will activate after your current plan expires."
+                );
+              } else {
+                alert("Payment successful! You now have Pro access.");
+              }
+              onClose();
+            } catch {
+              setError("Payment verification failed. Please contact support.");
             }
-            onClose();
-          } catch {
-            setError("Payment verification failed. Please contact support.");
-          }
-        },
-        prefill: {
-          name: user?.name,
-          email: user?.email,
-        },
-        theme: {
-          color: "#2563EB",
-        },
-      };
+          },
+          prefill: {
+            name: user?.name,
+            email: user?.email,
+          },
+          theme: {
+            color: "#4B3DF5",
+          },
+        };
 
-      const razorpay = new window.Razorpay(razorpayOptions);
-      razorpay.open();
+        const razorpay = new window.Razorpay(razorpayOptions);
+        razorpay.open();
 
-      razorpay.on("payment.failed", (response: RazorpayFailureResponse) => {
-        setError(`Payment failed: ${response.error.description}`);
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "";
-      setError(
-        message === "SUBSCRIPTION_EXISTS"
-          ? "Failed to create payment. Please try again."
-          : message || "Failed to create payment. Please try again."
-      );
-    } finally {
-      setLoading(false);
-      setSelectedPlan(null);
-    }
-  }, [onClose, refetchSubscription, user]);
+        razorpay.on("payment.failed", (response: RazorpayFailureResponse) => {
+          setError(`Payment failed: ${response.error.description}`);
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "";
+        setError(
+          message === "SUBSCRIPTION_EXISTS"
+            ? "Subscription already exists."
+            : message || "Failed to initiate payment. Please try again."
+        );
+      } finally {
+        setLoading(false);
+        setSelectedPlan(null);
+      }
+    },
+    [onClose, refetchSubscription, user]
+  );
 
-  const handlePlanSelect = async (planName: string) => {
-    const plan = plans?.find((p) => p.name === planName);
+  const handlePlanSelect = async (preferredKey: string) => {
+    const targetPlan =
+      plans?.find((p) => p.name === preferredKey) ||
+      plans?.find((p) => {
+        const pName = (p.displayName || p.name).toLowerCase();
+        if (preferredKey === "pro_starter") {
+          return pName.includes("basic") || pName.includes("starter");
+        }
+        if (preferredKey === "pro_ultimate") {
+          return pName.includes("advance") || pName.includes("ultimate");
+        }
+        if (preferredKey === "pro_annual") {
+          return pName.includes("premium") || pName.includes("annual");
+        }
+        return false;
+      }) ||
+      plans?.[0];
 
-    if (!plan) {
-      alert("This plan is not available yet.");
+    if (!targetPlan) {
+      alert("This plan is currently not available. Please try again later.");
       return;
     }
 
     if (!user) {
-      setPendingPlanName(plan.name);
+      setPendingPlanName(targetPlan.name);
       setShowLoginNotice(true);
       setLoginModalOpen(true);
       return;
     }
 
-    await startPayment(plan);
+    await startPayment(targetPlan);
   };
 
   useEffect(() => {
@@ -201,216 +244,234 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
     }
   };
 
+  // Map plans with live backend data and default fallback pricing page details
+  const displayPlans = useMemo(() => {
+    return DEFAULT_LANDING_PLANS.map((defaultPlan, index) => {
+      const matched =
+        plans?.find((p) => p.name === defaultPlan.planKey) ||
+        plans?.find((p) => {
+          const pName = (p.displayName || p.name).toLowerCase();
+          if (defaultPlan.planKey === "pro_starter") {
+            return pName.includes("basic") || pName.includes("starter");
+          }
+          if (defaultPlan.planKey === "pro_ultimate") {
+            return pName.includes("advance") || pName.includes("ultimate");
+          }
+          if (defaultPlan.planKey === "pro_annual") {
+            return pName.includes("premium") || pName.includes("annual");
+          }
+          return false;
+        }) ||
+        plans?.[index] ||
+        null;
+
+      const priceValue = matched
+        ? Math.floor(matched.price / 100).toString()
+        : defaultPlan.price;
+      const periodValue = matched
+        ? `per user / ${matched.durationDays} days`
+        : defaultPlan.period;
+      const descValue = matched?.description || defaultPlan.description;
+      const featuresValue =
+        matched?.features && matched.features.length > 0
+          ? matched.features.slice(0, 6)
+          : defaultPlan.features;
+
+      return {
+        ...defaultPlan,
+        price: priceValue,
+        period: periodValue,
+        description: descValue,
+        features: featuresValue,
+        planObj: matched,
+      };
+    });
+  }, [plans]);
+
+  const [basicPlan, advancePlan, premiumPlan] = displayPlans;
+
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 overflow-y-auto"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-[950px] bg-white rounded-[32px] shadow-2xl p-6 md:p-8 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <button
-          onClick={onClose}
-          className="absolute right-2 top-2 z-10 p-2 text-gray-400 hover:text-gray-900 cursor-pointer"
-          aria-label="Close modal"
-        >
-          <X size={20} />
-        </button>
+      <div className="relative w-full max-w-[890px] bg-[#0A071E] border border-white/10 rounded-[28px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] p-6 sm:p-8 md:p-9 overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-[#F7F7FD]">
+        {/* Subtle Cosmic Ambient Glow inside modal */}
+        <div
+          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[350px] opacity-60"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% 20%, rgba(75, 61, 245, 0.4) 0%, rgba(124, 92, 255, 0.15) 50%, transparent 80%)",
+          }}
+        />
+
+        {/* Header */}
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Choose the right plan for you
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#A6A6C1]">
+              There&apos;s an affordable plan for everyone.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-white/10 bg-white/[0.04] p-1.5 text-[#A6A6C1] hover:text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+            aria-label="Close modal"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+          <div className="relative z-10 mt-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs sm:text-sm text-center">
             {error}
           </div>
         )}
 
         {showLoginNotice && !user && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm text-center">
+          <div className="relative z-10 mt-4 p-3 bg-[#4B3DF5]/15 border border-[#4B3DF5]/30 rounded-xl text-[#DFD5F6] text-xs sm:text-sm text-center">
             Please log in to continue with your selected plan.
           </div>
         )}
 
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col lg:flex-row gap-8 lg:gap-6 items-center lg:items-stretch">
-            {/* Left Column */}
-            <div className="flex-1 max-w-[280px] flex flex-col justify-center text-center lg:text-left">
-              <h3 className="text-[#2563EB] font-bold text-xl mb-2">Go Pro</h3>
-              <h2 className="text-2xl md:text-2xl font-extrabold text-[#0B1527] leading-[1.2] tracking-tight mb-4">
-                The right plan can change your work life
-              </h2>
-              <p className="text-[#64748B] text-sm mb-6 leading-[1.6]">
-                Clarity gives you the blocks & components you need to create a truly professional website, landing page or admin panel for your SaaS.
-              </p>
-              <div className="border-t border-gray-100 pt-4">
-                <h4 className="font-bold text-gray-900 mb-2 text-sm">Trusted by Customers</h4>
-                <div className="flex items-center justify-center lg:justify-start gap-2">
-                  <div className="flex text-[#FFC107] text-xl gap-1">
-                    ★★★★★
-                  </div>
-                  <span className="text-gray-600 font-medium mt-1 text-sm">4.4/5</span>
-                </div>
-              </div>
+        {/* 3 Cards Grid */}
+        <div className="relative z-10 mt-8 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+          {/* Card 1: Basic Plan */}
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0E0B24]/80 p-6 flex flex-col text-center shadow-[0_4px_24px_rgba(0,0,0,0.3)] transition-all duration-300 hover:border-white/20 hover:bg-[#130E2E]/90 backdrop-blur-md">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#1A1538] text-[#7C5CFF] border border-[#7C5CFF]/30">
+              <Zap size={18} className="fill-[#7C5CFF]" />
             </div>
 
-            {/* Right Column - Cards */}
-            <div className="flex-[1.4] w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* BASIC Card */}
-              <div className="relative bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.16)] p-6 flex flex-col border border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setTermsOpen(true)}
-                  className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-[#238B45] hover:text-[#238B45]"
-                  aria-label="View basic plan purchase terms"
-                  title="Plan purchase terms"
-                >
-                  <Info size={16} />
-                </button>
-                <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-center mb-1 text-gray-900">
-                  {proStarter?.displayName || "BASIC"}
-                </h3>
-                <p className="text-gray-400 text-xs text-center mb-4">{proStarter?.description || "Best for startups"}</p>
+            <h3 className="text-sm font-semibold text-white mt-4">{basicPlan.name}</h3>
 
-                <div className="bg-[#FAFAFA] rounded-2xl py-4 flex flex-col items-center justify-center mb-6">
-                  <div className="flex items-baseline text-slate-900">
-                    <span className="text-lg font-bold align-top relative -top-2">₹</span>
-                    <span className="text-[40px] font-black tracking-tight leading-none">
-                      {proStarter ? Math.floor(proStarter.price / 100) : 99}
-                    </span>
-                    <span className="text-xl font-bold ml-1 text-slate-900">/</span>
-                  </div>
-                  <span className="text-[#94A3B8] text-xs font-medium mt-1">
-                    {proStarter ? `${proStarter.durationDays} Days` : "180 Days"}
-                  </span>
-                </div>
-
-                <ul className="space-y-3 mb-6 flex-1">
-                  {(proStarter?.features || [
-                    "100 Components",
-                    "100 Pro Components",
-                    "Upgrade facility"
-                  ]).slice(0, 4).map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#22C55E] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-[#334155] text-sm font-medium">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handlePlanSelect("pro_starter")}
-                  disabled={loading}
-                  className="bg-[#9FE870] hover:bg-[#8edb5f] text-black w-full cursor-pointer rounded-xl py-3 font-semibold text-sm transition-colors disabled:opacity-50"
-                >
-                  {loading && selectedPlan?.name === "pro_starter" ? "Processing..." : "Buy Now"}
-                </button>
-              </div>
-
-              {/* ADVANCE Card */}
-              <div className="relative bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.16)] p-6 flex flex-col border border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setTermsOpen(true)}
-                  className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full border border-gray-200 bg-white text-gray-500 transition hover:border-[#238B45] hover:text-[#238B45]"
-                  aria-label="View advance plan purchase terms"
-                  title="Plan purchase terms"
-                >
-                  <Info size={16} />
-                </button>
-                <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-center mb-1 text-gray-900">
-                  {proUltimate?.displayName || "ADVANCE"}
-                </h3>
-                <p className="text-gray-400 text-xs text-center mb-4">{proUltimate?.description || "Best for medium"}</p>
-
-                <div className="bg-[#FAFAFA] rounded-2xl py-4 flex flex-col items-center justify-center mb-6">
-                  <div className="flex items-baseline text-slate-900">
-                    <span className="text-lg font-bold align-top relative -top-2">₹</span>
-                    <span className="text-[40px] font-black tracking-tight leading-none">
-                      {proUltimate ? Math.floor(proUltimate.price / 100) : 199}
-                    </span>
-                    <span className="text-xl font-bold ml-1 text-slate-900">/</span>
-                  </div>
-                  <span className="text-[#94A3B8] text-xs font-medium mt-1">
-                    {proUltimate ? `${proUltimate.durationDays} Days` : "180 Days"}
-                  </span>
-                </div>
-
-                <ul className="space-y-3 mb-6 flex-1">
-                  {(proUltimate?.features || [
-                    "250 Components",
-                    "250 Pro Components",
-                    "Upgrade facility"
-                  ]).slice(0, 4).map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-[#22C55E] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-[#334155] text-sm font-medium">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handlePlanSelect("pro_ultimate")}
-                  disabled={loading}
-                  className="bg-[#9FE870] hover:bg-[#8edb5f] text-black w-full cursor-pointer rounded-xl py-3 font-semibold text-sm transition-colors disabled:opacity-50"
-                >
-                  {loading && selectedPlan?.name === "pro_ultimate" ? "Processing..." : "Buy Now"}
-                </button>
-              </div>
+            <div className="mt-2 flex items-baseline justify-center gap-1">
+              <span className="text-xl font-bold text-[#7C5CFF]">{basicPlan.pricePrefix}</span>
+              <span className="text-3xl font-extrabold text-[#7C5CFF]">{basicPlan.price}</span>
             </div>
-          </div>
+            <span className="text-[11px] text-[#8F8A98] mt-0.5">{basicPlan.period}</span>
 
-          {/* Bottom Dark Card */}
-          <div className="relative bg-[#111111] rounded-[24px] px-6 md:px-8 py-6 text-white flex flex-col md:flex-row items-center justify-between shadow-xl">
+            <p className="text-[11.5px] text-[#A6A6C1] mt-3 mb-6 leading-relaxed">
+              {basicPlan.description}
+            </p>
+
+            <ul className="space-y-3 mb-8 text-left text-xs text-[#C4C0D9]">
+              {basicPlan.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-[#7C5CFF] shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
             <button
               type="button"
-              onClick={() => setTermsOpen(true)}
-              className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-              aria-label="View annual plan purchase terms"
-              title="Plan purchase terms"
+              onClick={() => handlePlanSelect("pro_starter")}
+              disabled={loading}
+              className="mt-auto w-full rounded-xl border border-white/15 bg-white/[0.05] py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-white/[0.1] hover:border-white/25 transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
-              <Info size={16} />
+              {loading && selectedPlan?.name === "pro_starter"
+                ? "Processing..."
+                : "Buy Now"}
             </button>
-            <div className="w-full md:w-auto grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8 mb-6 md:mb-0">
-              {(proAnnual?.features || [
-                "Unlimited components",
-                "Use Free & Pro",
-                "365 Days Validity",
-                "Access all Premium+",
-                "Use all Components",
-                "365 Days Validity"
-              ]).slice(0, 4).map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                  <span className="text-sm font-medium tracking-wide">{feature}</span>
-                </div>
-              ))}
+          </div>
+
+          {/* Card 2: Advance Plan (Featured Glowing Card) */}
+          <div className="relative rounded-2xl border border-[#7C5CFF]/60 bg-gradient-to-b from-[#181140] to-[#0E0A28] p-6 flex flex-col text-center shadow-[0_0_35px_rgba(124,92,255,0.25)] overflow-hidden text-white backdrop-blur-md">
+            {/* Blue & violet radial glow */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-80"
+              style={{
+                background:
+                  "radial-gradient(ellipse 90% 70% at 75% 25%, rgba(124, 92, 255, 0.45) 0%, rgba(67, 67, 213, 0.25) 50%, transparent 85%)",
+              }}
+            />
+
+            <div className="relative z-10 mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-[#4B3DF5] to-[#7C5CFF] text-white shadow-[0_0_12px_rgba(124,92,255,0.5)]">
+              <Layers size={18} />
             </div>
 
-            <div className="flex flex-col items-center md:items-end w-full md:w-auto">
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-[#82F24E] text-[40px] font-black leading-none tracking-tight">
-                  ₹{proAnnual ? Math.floor(proAnnual.price / 100) : 399}
-                </span>
-                <span className="text-gray-300 text-sm font-medium">
-                  / {proAnnual ? `${proAnnual.durationDays} Days` : "365 Days"}
-                </span>
-              </div>
-              <button
-                onClick={() => handlePlanSelect("pro_annual")}
-                disabled={loading}
-                className="bg-white text-slate-900 px-15 py-3 rounded-xl font-bold text-sm w-full md:w-auto hover:bg-[#9FE870] cursor-pointer transition-colors disabled:opacity-50"
-              >
-                Grab it !
-              </button>
+            <h3 className="relative z-10 text-sm font-semibold text-white mt-4">
+              {advancePlan.name}
+            </h3>
+
+            <div className="relative z-10 mt-2 flex items-baseline justify-center gap-1">
+              <span className="text-xl font-bold text-white">{advancePlan.pricePrefix}</span>
+              <span className="text-3xl font-extrabold text-white">{advancePlan.price}</span>
             </div>
+            <span className="relative z-10 text-[11px] text-[#A6A6C1] mt-0.5">
+              {advancePlan.period}
+            </span>
+
+            <p className="relative z-10 text-[11.5px] text-[#C4C0D9] mt-3 mb-6 leading-relaxed">
+              {advancePlan.description}
+            </p>
+
+            <ul className="relative z-10 space-y-3 mb-8 text-left text-xs text-[#E0DCFE]">
+              {advancePlan.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-[#9FE870] shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => handlePlanSelect("pro_ultimate")}
+              disabled={loading}
+              className="relative z-10 mt-auto w-full rounded-xl bg-white py-2.5 text-xs sm:text-sm font-semibold text-[#070416] hover:bg-[#F3F4F6] transition-all shadow-lg hover:shadow-white/20 cursor-pointer disabled:opacity-50"
+            >
+              {loading && selectedPlan?.name === "pro_ultimate"
+                ? "Processing..."
+                : "Buy Now"}
+            </button>
+          </div>
+
+          {/* Card 3: Premium+ Plan */}
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0E0B24]/80 p-6 flex flex-col text-center shadow-[0_4px_24px_rgba(0,0,0,0.3)] transition-all duration-300 hover:border-white/20 hover:bg-[#120E2C]/90 backdrop-blur-md">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#1A1538] text-[#60A5FA] border border-[#60A5FA]/30">
+              <SquareMousePointer size={18} />
+            </div>
+
+            <h3 className="text-sm font-semibold text-white mt-4">{premiumPlan.name}</h3>
+
+            <div className="mt-2 flex items-baseline justify-center gap-1">
+              <span className="text-xl font-bold text-[#60A5FA]">{premiumPlan.pricePrefix}</span>
+              <span className="text-3xl font-extrabold text-[#60A5FA]">{premiumPlan.price}</span>
+            </div>
+            <span className="text-[11px] text-[#8F8A98] mt-0.5">{premiumPlan.period}</span>
+
+            <p className="text-[11.5px] text-[#A6A6C1] mt-3 mb-6 leading-relaxed">
+              {premiumPlan.description}
+            </p>
+
+            <ul className="space-y-3 mb-8 text-left text-xs text-[#C4C0D9]">
+              {premiumPlan.features.map((feature, i) => (
+                <li key={i} className="flex items-center gap-2.5">
+                  <CheckCircle2 size={16} className="text-[#60A5FA] shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => handlePlanSelect("pro_annual")}
+              disabled={loading}
+              className="mt-auto w-full rounded-xl border border-white/15 bg-white/[0.05] py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-white/[0.1] hover:border-white/25 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              {loading && selectedPlan?.name === "pro_annual"
+                ? "Processing..."
+                : "Buy Now"}
+            </button>
           </div>
         </div>
       </div>
-      <PlanTermsModal isOpen={termsOpen} onClose={() => setTermsOpen(false)} />
     </div>
   );
 }

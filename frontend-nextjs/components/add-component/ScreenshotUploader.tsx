@@ -78,7 +78,37 @@ function ThemeDropzone({
       setError(`Max ${MAX_SIZE_MB}MB.`);
       return;
     }
-    onFileSelect(selected);
+
+    // Validate 16:9 aspect ratio with ~5% tolerance
+    const objectUrl = URL.createObjectURL(selected);
+    const img = new window.Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      if (!width || !height) {
+        onFileSelect(selected);
+        return;
+      }
+      const actualRatio = width / height;
+      const targetRatio = 16 / 9;
+      const diff = Math.abs(actualRatio - targetRatio) / targetRatio;
+
+      if (diff > 0.05) {
+        setError(
+          `Image aspect ratio must be 16:9 (within 5% tolerance). Detected: ${width}×${height} (~${actualRatio.toFixed(2)}:1). Recommended: 1920×1080 or 1600×900.`
+        );
+        return;
+      }
+
+      onFileSelect(selected);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      // Fallback if browser Image constructor fails to decode
+      onFileSelect(selected);
+    };
+    img.src = objectUrl;
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -220,7 +250,7 @@ function ThemeDropzone({
           </span>
 
           <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#A1A1AA]">
-            PNG, JPG, WebP, AVIF up to {MAX_SIZE_MB}MB
+            16:9 ratio (1920×1080 or 1600×900) • Max {MAX_SIZE_MB}MB
           </p>
 
           <span className="mt-2 inline-flex items-center gap-1 rounded bg-gray-200/70 dark:bg-white/[0.08] px-2 py-0.5 text-[9.5px] font-medium text-gray-700 dark:text-neutral-300 group-hover:bg-orange-500/10 group-hover:text-[#EA580C] dark:group-hover:text-[#FB923C] transition-colors">
@@ -297,7 +327,7 @@ export function ScreenshotUploader({
               </span>
             </div>
             <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-              Upload distinct screenshots for Dark mode and Light mode appearances (16:9 ratio).
+              Upload distinct screenshots in 16:9 ratio (recommended: 1920×1080 or 1600×900, PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
             </p>
           </div>
         </div>

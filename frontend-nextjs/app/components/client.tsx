@@ -6,13 +6,12 @@ import Image from "next/image";
 import { componentsApi } from "../../api/components";
 import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from "../../api/payments";
 import { copyToFigma } from "../../lib/clipboard";
+import cloudinaryLoader from "../../lib/cloudinaryLoader";
 import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Layers, Search, SquarePen, Moon, Sun } from "lucide-react";
-
-
-
+import { SubscriptionCard, SubscriptionCardSkeleton } from "../../components/sidebar/SubscriptionCard";
+import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Layers, Search, SquarePen, Moon, Sun, ChevronRight, Sparkles, Clock } from "lucide-react";
 
 // ── icons (inline SVGs to avoid extra deps) ──────────────────────────────────
 function IconGrid() {
@@ -42,21 +41,6 @@ function IconX() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
       <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-function IconUnlock({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-    </svg>
-  );
-}
-function IconCheck() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
   );
 }
@@ -101,180 +85,16 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   );
 }
 
-// ── Pro subscription usage card ───────────────────────────────────────────────
-type SubscriptionSummary = CurrentSubscriptionData | SubscriptionData;
 
-function formatPlanPrice(price?: number, durationDays?: number) {
-  if (!price || !durationDays) return "Active plan";
-  return `₹${(price / 100).toFixed(2)} / ${durationDays} Days`;
-}
-
-function getDaysBetween(startDate?: string, endDate?: string) {
-  if (!startDate || !endDate) return 0;
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
-  return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-}
-
-function getDaysLeft(endDate?: string) {
-  if (!endDate) return 0;
-  const end = new Date(endDate).getTime();
-  if (!Number.isFinite(end)) return 0;
-  return Math.max(0, Math.ceil((end - Date.now()) / (1000 * 60 * 60 * 24)));
-}
-
-function UsageMeter({
-  label,
-  value,
-  total,
-}: {
-  label: string;
-  value: number;
-  total: number;
-}) {
-  const progress = total <= 0 ? 100 : Math.min(100, Math.max(0, (value / total) * 100));
-
-  return (
-    <div>
-      <div className="mb-1 flex items-end justify-between gap-2">
-        <span className="text-[0.72rem] font-bold text-slate-700">{label}</span>
-        <span className="text-[0.68rem] font-semibold text-slate-500">
-          {value} / {total}
-        </span>
-      </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-        <div
-          className="h-full rounded-full bg-[#22C55E] transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function IconInfinity({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z" />
-    </svg>
-  );
-}
-
-function ProSubscriptionCard({ subscription }: { subscription: SubscriptionSummary | null }) {
-  const plan = subscription && "plan" in subscription ? subscription.plan : undefined;
-  const planName = plan?.displayName ? `${plan.displayName} Plan` : "Pro Plan";
-  const maxComponents = subscription?.maxComponents ?? plan?.componentLimit ?? 0;
-  const isUnlimited = maxComponents >= 999999;
-  const downloadsUsed = Math.max(0, subscription?.componentCountUsed ?? 0);
-  const durationDays =
-    plan?.durationDays ||
-    getDaysBetween(subscription && "startDate" in subscription ? subscription.startDate : undefined, subscription?.endDate) ||
-    180;
-  const daysLeft = getDaysLeft(subscription?.endDate);
-  const daysPassed = Math.max(0, durationDays - daysLeft);
-  const expiresSoon = daysLeft <= 7;
-
-  // ── Unlimited / Premium+ card ──────────────────────────────────────────
-  if (isUnlimited) {
-    return (
-      <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white p-[1px] shadow-[0_10px_30px_rgba(15,23,42,0.07)]"
-        style={{ background: "radial-gradient(120% 120% at 50% 50%, rgba(255,255,255,0.24), rgba(255,255,255,0.06))" }}>
-        <div className="rounded-[15px] p-4" style={{ background: "linear-gradient(146deg, rgba(255,255,255,0.06) 39%, rgba(255,255,255,0.24) 107%)" }}>
-          {/* Header — stacked to avoid overlap */}
-          <div className="mb-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="shrink-0 flex h-7 w-7 items-center justify-center rounded-[4px]"
-                style={{ background: "#d66a04" }}>
-                <Crown size={14} color="white" strokeWidth={2.5} />
-              </div>
-              <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.56rem] font-extrabold uppercase tracking-wider flex items-center gap-1 ${expiresSoon
-                ? "bg-red-50 text-red-600"
-                : daysLeft > 0
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                  : "bg-red-50 text-red-600"
-                }`}>
-                <span className={`inline-block h-1.5 w-1.5 rounded-full ${expiresSoon ? "bg-red-500" : daysLeft > 0 ? "bg-emerald-500 animate-pulse" : "bg-red-500"
-                  }`} />
-                {daysLeft > 0 ? "Active" : "Expired"}
-              </span>
-            </div>
-            <p className="text-[0.92rem] font-extrabold text-white leading-tight">{planName}</p>
-            <p className="text-[0.65rem] font-bold text-[#d5d5d5] mt-0.5">
-              {formatPlanPrice(plan?.price, plan?.durationDays)}
-            </p>
-          </div>
-
-          {/* Unlimited downloads highlight */}
-          <div className="rounded-xl p-3 mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
-            style={{ background: "radial-gradient(140% 160% at 42% 36%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[0.72rem] font-bold text-white">Downloads</span>
-              <div className="flex items-center gap-1 text-[#f2f2f2]">
-                <IconInfinity className="w-4 h-4" />
-                <span className="text-[0.65rem] font-extrabold uppercase tracking-wider">Unlimited</span>
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[1.4rem] font-black text-white tabular-nums leading-none">
-                {downloadsUsed.toLocaleString()}
-              </span>
-              <span className="text-[0.65rem] font-semibold text-[#f2f2f2]">components copied</span>
-            </div>
-          </div>
-
-          {/* Days remaining — text only, no progress bar */}
-          <div className="rounded-lg p-3 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.1)]" style={{ background: "radial-gradient(120% 120% at 42% 36%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))" }}>
-            <span className="text-[0.72rem] font-bold text-white">Validity</span>
-            <span className="text-[0.68rem] font-semibold text-[#fbfcfd]">
-              {daysLeft > 0 ? `${daysLeft} days remaining` : "Plan expired"}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Limited plan card (Basic / Advance) ────────────────────────────────
-  return (
-    <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-[0.95rem] font-extrabold text-slate-900">{planName}</p>
-          <p className="mt-1 text-[0.72rem] font-bold text-[#238B45]">
-            {formatPlanPrice(plan?.price, plan?.durationDays)}
-          </p>
-        </div>
-        <span
-          className={`shrink-0 rounded-md px-2 py-1 text-[0.56rem] font-extrabold uppercase tracking-wide ${expiresSoon ? "bg-red-50 text-red-600" : "bg-sky-50 text-sky-700"
-            }`}
-        >
-          {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
-        </span>
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-[0.75rem] font-bold text-slate-700">Plan Usage</span>
-          <span className="text-[0.65rem] font-semibold text-slate-400">Current cycle</span>
-        </div>
-        <div className="space-y-3">
-          <UsageMeter label="Downloads" value={downloadsUsed} total={maxComponents} />
-          <UsageMeter label="Days passed" value={daysPassed} total={durationDays} />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── SkeletonCard ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
     <article
-      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
+      className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
     >
       {/* Preview placeholder */}
-      <div className="flex-1 bg-white/20 rounded-xl min-h-0" />
+      <div className="w-full aspect-[16/9] bg-white/20 rounded-[8px] shrink-0" />
 
       {/* Footer row placeholder */}
       <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
@@ -439,17 +259,19 @@ function PreviewModal({
         {/* Content - Image Preview Carousel */}
         <div className="px-3 sm:px-5 py-2 sm:py-3 relative overflow-hidden flex flex-col items-center flex-1 min-h-0 w-full">
           <div
-            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none h-[48vh] max-h-[370px] min-h-[220px] w-full"
+            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none aspect-[16/9] max-h-[380px] w-full"
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
               <div key={currentSlide.url} className="relative w-full h-full animate-in fade-in duration-200">
                 <Image
+                  loader={cloudinaryLoader}
                   src={currentSlide.url}
                   alt={`${item.name} ${currentSlide.label || "preview"}`}
                   fill
                   priority
-                  className="object-cover w-full h-full"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className="object-cover object-top w-full h-full"
                 />
               </div>
             ) : (
@@ -613,31 +435,34 @@ const ComponentCard = memo(function ComponentCard({
 
   return (
     <article
-      className="w-full aspect-[390/320] rounded-[20px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope gpu-accel"
+      className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
       style={{
         background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
       }}
     >
       {/* Preview */}
       <div
-        className="relative cursor-pointer group/preview overflow-hidden flex-1 min-h-0 w-full rounded-xl border-2 border-[#9FE870]/40 bg-[#F4F9ED]"
+        className="relative cursor-pointer group/preview overflow-hidden w-full aspect-[16/9] rounded-[8px] border-1 border-[#54636C] bg-[#92A7B3] p-[4px] shrink-0"
         onClick={onPreview}
         title="Click to preview"
       >
-        {item.previewImageUrl ? (
-          <Image
-            src={item.previewImageUrl}
-            alt={item.name}
-            fill
-            priority={priority}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1920px) 25vw, 20vw"
-            className="object-cover w-full h-full transition-transform duration-300 group-hover/preview:scale-[1.02]"
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
-            No preview
-          </div>
-        )}
+        <div className="relative w-full h-full overflow-hidden rounded-[4px] bg-[#92A7B3]">
+          {item.previewImageUrl ? (
+            <Image
+              loader={cloudinaryLoader}
+              src={item.previewImageUrl}
+              alt={item.name}
+              fill
+              priority={priority}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+              className="object-cover object-top w-full h-full"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm">
+              No preview
+            </div>
+          )}
+        </div>
         <button
           type="button"
           onClick={(event) => {
@@ -661,10 +486,10 @@ const ComponentCard = memo(function ComponentCard({
           <span className="font-semibold text-white text-[12.5px] truncate">{item.name}</span>
           {isPro ? (
             <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
-              <Crown size={18} color="#d66a04" strokeWidth={2} />
+              <Crown size={18} color="#f19239ff" strokeWidth={2} />
             </span>
           ) : (
-            <span className="text-[9.5px] font-bold text-white px-1.5 py-0.5 rounded border border-[#19ff00] bg-[#00ae34] shrink-0 uppercase tracking-wide">
+            <span className="text-[9.5px] font-bold text-[#F0F8FF] px-1.5 py-0.5 rounded bg-[#8F8F8F] shrink-0 uppercase tracking-wide">
               FREE
             </span>
           )}
@@ -1176,58 +1001,16 @@ export default function ComponentsClient({
         }
       `}} />
         {/* ── Left Sidebar ───────────────────────────────────────────────── */}
-        <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope h-full self-start">
+        <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-sans h-full self-start">
 
-          {/* Plan / Upsell Block — loading animation until auth resolves */}
+          {/* Plan / Subscription Summary Card */}
           {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
-            <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-              <div className="flex flex-col items-center justify-center py-3 gap-3">
-                <svg className="animate-spin h-6 w-6 text-[#22C55E]" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                  <path className="opacity-75" fill="currentColor" d="M12 2a10 10 0 00-10 10h3a7 7 0 017-7V2z" />
-                </svg>
-                <span className="text-[0.72rem] font-semibold text-white/70">Loading plan...</span>
-              </div>
-            </div>
-          ) : isProUser ? (
-            <ProSubscriptionCard subscription={activeSubscription} />
+            <SubscriptionCardSkeleton />
           ) : (
-            <div className="mx-4 mb-6 rounded-2xl p-4 border border-white bg-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.07)] shrink-0">
-              <div className="flex items-center gap-2 mb-4 justify-center">
-                <IconUnlock className="text-orange-500 w-5 h-5" />
-                <span className="text-white font-bold text-[0.95rem]">Unlock Premium+</span>
-              </div>
-
-              <div className="space-y-2 mb-4 ">
-                <div className="flex items-start gap-2.5 bg-white/10 border border-white/20 rounded-lg p-2.5">
-                  <div className="mt-0.5 shrink-0 bg-[#3B82F6] rounded-full w-4 h-4 flex items-center justify-center text-white">
-                    <IconCheck />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.65rem] text-white font-bold leading-tight">Everything in Components</span>
-                    <span className="text-[0.65rem] text-white/70 font-medium leading-tight">Unlimited Components</span>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2.5 border border-white/20 rounded-lg p-2.5 bg-white/10">
-                  <div className="mt-0.5 shrink-0 bg-gray-200 rounded-full w-4 h-4 flex items-center justify-center text-gray-400">
-                    <IconCheck />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[0.65rem] text-white font-bold leading-tight">50+ Website UI Template</span>
-                    <span className="text-[0.65rem] text-white/70 font-medium leading-tight">All future components</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setPricingModalOpen(true)}
-                className="w-full text-white border border-white/50 bg-white/10 hover:bg-white/20 transition-all duration-100 cursor-pointer font-bold text-[0.75rem] py-3 rounded-lg shadow-sm"
-              >
-                BUY NOW !
-              </button>
-            </div>
+            <SubscriptionCard
+              subscription={isProUser ? activeSubscription : null}
+              onManage={() => setPricingModalOpen(true)}
+            />
           )}
 
           {/* Components section (Fixed in Position) */}

@@ -82,7 +82,7 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
       <article className="group relative overflow-hidden rounded-lg border border-gray-200/90 dark:border-white/[0.1] bg-white dark:bg-[#17171A] shadow-2xs flex flex-col transition-all">
         {/* Screenshot Container */}
         <div
-          className={`relative aspect-[16/10] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
+          className={`relative aspect-[16/9] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
             }`}
         >
           {activeUrl ? (
