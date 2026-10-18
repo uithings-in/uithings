@@ -1001,7 +1001,7 @@ export default function ComponentsClient({
         }
       `}} />
         {/* ── Left Sidebar ───────────────────────────────────────────────── */}
-        <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope h-full self-start">
+        <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-sans h-full self-start">
 
           {/* Plan / Subscription Summary Card */}
           {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (

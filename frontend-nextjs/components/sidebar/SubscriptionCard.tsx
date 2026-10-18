@@ -21,7 +21,7 @@ export function SubscriptionCardSkeleton({ className = "" }: { className?: strin
     <div
       aria-busy="true"
       aria-label="Loading subscription details"
-      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-manrope animate-pulse ${className}`}
+      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans animate-pulse ${className}`}
     >
       {/* Header skeleton */}
       <div className="flex items-start justify-between gap-3">
@@ -135,34 +135,34 @@ export function SubscriptionCard({
   return (
     <section
       aria-label="Subscription summary"
-      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-manrope ${className}`}
+      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans ${className}`}
     >
-      {/* ── 1. Header (two lines, never wraps price, truncate long title) ─────── */}
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {/* 32px circular crown badge with faint orange tint */}
+      {/* ── 1. Header (two lines, never wraps price) ─────── */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* 28px circular crown badge with faint orange tint */}
           <div
             aria-hidden="true"
-            className="h-8 w-8 rounded-full bg-orange-500/[0.12] text-orange-400 flex items-center justify-center shrink-0"
+            className="h-7 w-7 rounded-full bg-orange-500/[0.12] text-orange-400 flex items-center justify-center shrink-0"
           >
-            <Crown size={16} strokeWidth={2.2} />
+            <Crown size={14} strokeWidth={2.2} />
           </div>
 
           <div className="min-w-0 flex-1">
             <h2
               title={info.planName}
-              className="text-base font-semibold text-white/92 leading-tight truncate"
+              className="text-[13px] font-semibold text-white/95 leading-tight truncate"
             >
               {info.planName}
             </h2>
-            <p className="text-sm font-normal text-white/64 leading-normal whitespace-nowrap mt-0.5">
+            <p className="text-[11px] font-normal text-white/55 leading-tight whitespace-nowrap mt-0.5">
               {info.priceFormatted}
             </p>
           </div>
         </div>
 
         {/* Status: small dot + text, NO pill background */}
-        <div className={`shrink-0 flex items-center gap-1.5 pt-0.5 text-xs font-medium ${statusTextColor}`}>
+        <div className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium ${statusTextColor}`}>
           <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
             {pulseDot && (
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusDotColor}`} />
@@ -175,11 +175,11 @@ export function SubscriptionCard({
 
       {/* ── 2. Hero Headline ─────────────────────────────────────────────────── */}
       <div className="mt-3.5">
-        <p className="text-[24px] font-semibold text-white/92 leading-[1.2] tabular-nums tracking-[-0.01em]">
+        <p className="text-[18px] sm:text-[19px] font-bold text-white leading-[1.25] tracking-[-0.02em]">
           {info.headline}
         </p>
         {info.subline && (
-          <p className="text-sm font-normal text-white/64 mt-1 leading-normal">
+          <p className="text-xs font-normal text-white/60 mt-1 leading-relaxed">
             {info.subline}
           </p>
         )}
@@ -209,13 +209,13 @@ export function SubscriptionCard({
 
       {/* ── 5. Stats Row (dl with 2 equal columns) ───────────────────────────── */}
       {info.state !== "none" ? (
-        <dl className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1 min-w-0">
-            <dt className="text-xs font-normal text-white/64">Downloads</dt>
-            <dd className="text-base font-semibold text-white/92 tabular-nums">
+        <dl className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <dt className="text-[11px] font-medium text-white/55">Downloads</dt>
+            <dd className="text-sm font-semibold text-white tabular-nums">
               {info.isUnlimited ? (
                 <span className="flex items-center gap-1.5">
-                  <Infinity size={16} strokeWidth={2.2} className="text-white/80 shrink-0" aria-hidden="true" />
+                  <Infinity size={15} strokeWidth={2.2} className="text-white/80 shrink-0" aria-hidden="true" />
                   <span>Unlimited</span>
                 </span>
               ) : (
@@ -226,49 +226,49 @@ export function SubscriptionCard({
             </dd>
           </div>
 
-          <div className="flex flex-col gap-1 min-w-0">
-            <dt className="text-xs font-normal text-white/64">Copied</dt>
-            <dd className="text-base font-semibold text-white/92 tabular-nums">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <dt className="text-[11px] font-medium text-white/55">Copied</dt>
+            <dd className="text-sm font-semibold text-white tabular-nums">
               {info.downloadsUsed.toLocaleString()}
             </dd>
           </div>
         </dl>
       ) : (
-        <dl className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1 min-w-0">
-            <dt className="text-xs font-normal text-white/64">Downloads</dt>
-            <dd className="text-base font-semibold text-white/92">
+        <dl className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <dt className="text-[11px] font-medium text-white/55">Downloads</dt>
+            <dd className="text-sm font-semibold text-white">
               <span className="flex items-center gap-1.5">
-                <Sparkles size={16} className="text-[#9FE870] shrink-0" aria-hidden="true" />
+                <Sparkles size={14} className="text-[#9FE870] shrink-0" aria-hidden="true" />
                 <span>Unlimited</span>
               </span>
             </dd>
           </div>
 
-          <div className="flex flex-col gap-1 min-w-0">
-            <dt className="text-xs font-normal text-white/64">Access</dt>
-            <dd className="text-base font-semibold text-white/92 tabular-nums">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <dt className="text-[11px] font-medium text-white/55">Access</dt>
+            <dd className="text-sm font-semibold text-white tabular-nums">
               73+
             </dd>
           </div>
         </dl>
       )}
 
-      {/* ── 6. Action Button (44px min-height ghost/outline or solid CTA) ────── */}
+      {/* ── 6. Action Button (ghost/outline or solid CTA) ────── */}
       <button
         type="button"
         onClick={onManage}
-        className={`w-full mt-3.5 min-h-[44px] h-11 px-4 rounded-xl text-sm flex items-center justify-between transition-all duration-150 cursor-pointer ${
+        className={`w-full mt-3.5 min-h-[40px] h-10 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-all duration-300 cursor-pointer ${
           isUrgentOrExpired
-            ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 active:scale-[0.99] text-white font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
+            ? "bg-[#4343D5]/70 backdrop-blur-md text-[#F7F7FD] font-semibold border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4343D5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
             : "border border-white/[0.14] bg-transparent hover:bg-white/[0.06] active:bg-white/[0.1] text-white/92 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9FE870] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
         }`}
       >
-        <span>{info.buttonLabel}</span>
+        <span className="font-semibold text-[13px]">{info.buttonLabel}</span>
         <ChevronRight
-          size={16}
-          strokeWidth={2}
-          className="text-white/70 group-hover:text-white transition-colors shrink-0"
+          size={15}
+          strokeWidth={2.2}
+          className="text-white/80 group-hover:text-white transition-colors shrink-0"
           aria-hidden="true"
         />
       </button>

@@ -72,7 +72,7 @@ export function deriveSubscriptionInfo(
   if (!subscription) {
     return {
       state: "none",
-      planName: "Pro Membership",
+      planName: "Pro Member",
       priceFormatted: "Free tier",
       daysLeft: 0,
       durationDays: 0,
