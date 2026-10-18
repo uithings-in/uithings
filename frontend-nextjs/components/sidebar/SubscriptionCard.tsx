@@ -258,11 +258,7 @@ export function SubscriptionCard({
       <button
         type="button"
         onClick={onManage}
-        className={`w-full mt-3.5 min-h-[40px] h-10 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-all duration-300 cursor-pointer ${
-          isUrgentOrExpired
-            ? "bg-[#4343D5]/70 backdrop-blur-md text-[#F7F7FD] font-semibold border border-white/20 shadow-[0_0_24px_rgba(67,67,213,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] hover:bg-[#525BE0]/85 hover:border-white/35 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4343D5] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
-            : "border border-white/[0.14] bg-transparent hover:bg-white/[0.06] active:bg-white/[0.1] text-white/92 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9FE870] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
-        }`}
+        className="w-full mt-3.5 min-h-[40px] h-10 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-all duration-200 cursor-pointer border border-white/20 hover:border-white/40 bg-transparent hover:bg-white/5 active:scale-[0.99] text-white font-semibold shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1830]"
       >
         <span className="font-semibold text-[13px]">{info.buttonLabel}</span>
         <ChevronRight

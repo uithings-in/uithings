@@ -228,7 +228,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setLoginModalOpen(true)}
-                className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex cursor-pointer"
+                className="hidden h-9 items-center justify-center rounded-[40px] border border-white/25 bg-transparent px-5 text-[15px] font-medium text-[#F7F7FD] transition-all hover:border-white/50 hover:bg-white/[0.06] hover:text-white active:scale-95 md:inline-flex cursor-pointer"
                 style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
               >
                 Log in
@@ -272,7 +272,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setLoginModalOpen(true)}
-              className="hidden h-9 w-[116px] items-center justify-center rounded-[40px] border border-[rgba(250,250,250,0.1)] bg-[rgba(248,246,253,0.1)] px-5 text-[18px] font-medium text-[#F7F7FD] transition-all hover:bg-white/20 md:inline-flex cursor-pointer"
+              className="hidden h-9 items-center justify-center rounded-[40px] border border-white/25 bg-transparent px-5 text-[15px] font-medium text-[#F7F7FD] transition-all hover:border-white/50 hover:bg-white/[0.06] hover:text-white active:scale-95 md:inline-flex cursor-pointer"
               style={{ fontFamily: "var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif" }}
             >
               Log in
