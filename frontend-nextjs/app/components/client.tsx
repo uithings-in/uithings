@@ -623,11 +623,11 @@ const ComponentCard = memo(function ComponentCard({
     >
       {/* Preview */}
       <div
-        className="relative cursor-pointer group/preview overflow-hidden w-full aspect-[16/9] rounded-[8px] border-2 border-[#9FE870]/40 bg-[#F4F9ED] p-[4px] shrink-0"
+        className="relative cursor-pointer group/preview overflow-hidden w-full aspect-[16/9] rounded-[8px] border-1 border-[#54636C] bg-[#92A7B3] p-[4px] shrink-0"
         onClick={onPreview}
         title="Click to preview"
       >
-        <div className="relative w-full h-full overflow-hidden rounded-[4px]">
+        <div className="relative w-full h-full overflow-hidden rounded-[4px] bg-[#92A7B3]">
           {item.previewImageUrl ? (
             <Image
               loader={cloudinaryLoader}
@@ -667,10 +667,10 @@ const ComponentCard = memo(function ComponentCard({
           <span className="font-semibold text-white text-[12.5px] truncate">{item.name}</span>
           {isPro ? (
             <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
-              <Crown size={18} color="#d66a04" strokeWidth={2} />
+              <Crown size={18} color="#f19239ff" strokeWidth={2} />
             </span>
           ) : (
-            <span className="text-[9.5px] font-bold text-white px-1.5 py-0.5 rounded border border-[#19ff00] bg-[#00ae34] shrink-0 uppercase tracking-wide">
+            <span className="text-[9.5px] font-bold text-[#F0F8FF] px-1.5 py-0.5 rounded bg-[#8F8F8F] shrink-0 uppercase tracking-wide">
               FREE
             </span>
           )}
