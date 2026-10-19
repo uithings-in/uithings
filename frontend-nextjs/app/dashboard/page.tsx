@@ -2372,11 +2372,11 @@ function DashboardContent() {
               </Link>
 
               <Link
-                href="/"
+                href="/components"
                 className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
               >
                 <ArrowLeft size={14} className="text-gray-400" />
-                <span>Back to Home</span>
+                <span>Back to Components</span>
               </Link>
             </nav>
           </div>
