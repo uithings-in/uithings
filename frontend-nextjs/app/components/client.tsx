@@ -259,7 +259,9 @@ function PreviewModal({
         {/* Content - Image Preview Carousel */}
         <div className="px-3 sm:px-5 py-2 sm:py-3 relative overflow-hidden flex flex-col items-center flex-1 min-h-0 w-full">
           <div
-            className="relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none aspect-[16/9] max-h-[380px] w-full"
+            className={`relative group/preview rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden flex items-center justify-center select-none aspect-[16/9] max-h-[380px] w-full transition-colors ${
+              currentSlide?.mode === "dark" ? "bg-[#0D0D11]" : "bg-[#F8F9FA]"
+            }`}
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
@@ -271,7 +273,7 @@ function PreviewModal({
                   fill
                   priority
                   sizes="(max-width: 768px) 100vw, 800px"
-                  className="object-cover object-top w-full h-full"
+                  className="object-contain w-full h-full"
                 />
               </div>
             ) : (

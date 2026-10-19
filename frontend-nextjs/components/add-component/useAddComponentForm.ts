@@ -232,7 +232,11 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const setDarkPreviewFile = useCallback(
     (file: File | null) => {
       setDarkPreviewFileState(file);
-      suggestNameFromFile(file);
+      if (!file) {
+        setDarkPreviewUrl("");
+      } else {
+        suggestNameFromFile(file);
+      }
     },
     [suggestNameFromFile]
   );
@@ -240,7 +244,11 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const setLightPreviewFile = useCallback(
     (file: File | null) => {
       setLightPreviewFileState(file);
-      suggestNameFromFile(file);
+      if (!file) {
+        setLightPreviewUrl("");
+      } else {
+        suggestNameFromFile(file);
+      }
     },
     [suggestNameFromFile]
   );

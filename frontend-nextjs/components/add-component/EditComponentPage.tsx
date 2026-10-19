@@ -145,6 +145,20 @@ export function EditComponentView({
     }
   }, [lightPreviewFile]);
 
+  const handleDarkFileSelect = (file: File | null) => {
+    setDarkPreviewFile(file);
+    if (!file) {
+      setDarkPreviewUrl("");
+    }
+  };
+
+  const handleLightFileSelect = (file: File | null) => {
+    setLightPreviewFile(file);
+    if (!file) {
+      setLightPreviewUrl("");
+    }
+  };
+
   const markTouched = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
@@ -272,9 +286,9 @@ export function EditComponentView({
 
       const [uploadedDarkUrl, uploadedLightUrl] = await Promise.all(uploadPromises);
 
-      const finalDarkUrl = uploadedDarkUrl || (darkPreviewUrl.startsWith("blob:") ? undefined : darkPreviewUrl);
-      const finalLightUrl = uploadedLightUrl || (lightPreviewUrl.startsWith("blob:") ? undefined : lightPreviewUrl);
-      const finalPreviewUrl = finalDarkUrl || finalLightUrl || component?.previewImageUrl || "";
+      const finalDarkUrl = uploadedDarkUrl || (darkPreviewUrl.startsWith("blob:") ? "" : darkPreviewUrl);
+      const finalLightUrl = uploadedLightUrl || (lightPreviewUrl.startsWith("blob:") ? "" : lightPreviewUrl);
+      const finalPreviewUrl = finalDarkUrl || finalLightUrl || "";
 
       // 2. Combine tags with platform tag for discoverability
       const cleanTags = Array.from(
@@ -461,10 +475,10 @@ export function EditComponentView({
             <ScreenshotUploader
               darkPreviewFile={darkPreviewFile}
               darkPreviewUrl={darkPreviewUrl}
-              onDarkFileSelect={setDarkPreviewFile}
+              onDarkFileSelect={handleDarkFileSelect}
               lightPreviewFile={lightPreviewFile}
               lightPreviewUrl={lightPreviewUrl}
-              onLightFileSelect={setLightPreviewFile}
+              onLightFileSelect={handleLightFileSelect}
               error={errors.previewFile}
               onBlur={() => markTouched("previewFile")}
             />

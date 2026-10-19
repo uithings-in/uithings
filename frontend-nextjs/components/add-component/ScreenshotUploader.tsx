@@ -28,7 +28,7 @@ interface ScreenshotUploaderProps {
   onBlur?: () => void;
 }
 
-const MAX_SIZE_MB = 10;
+const MAX_SIZE_MB = 25;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 const ALLOWED_MIME_TYPES = [
   "image/png",
@@ -79,36 +79,7 @@ function ThemeDropzone({
       return;
     }
 
-    // Validate 16:9 aspect ratio with ~5% tolerance
-    const objectUrl = URL.createObjectURL(selected);
-    const img = new window.Image();
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      const width = img.naturalWidth;
-      const height = img.naturalHeight;
-      if (!width || !height) {
-        onFileSelect(selected);
-        return;
-      }
-      const actualRatio = width / height;
-      const targetRatio = 16 / 9;
-      const diff = Math.abs(actualRatio - targetRatio) / targetRatio;
-
-      if (diff > 0.05) {
-        setError(
-          `Image aspect ratio must be 16:9 (within 5% tolerance). Detected: ${width}×${height} (~${actualRatio.toFixed(2)}:1). Recommended: 1920×1080 or 1600×900.`
-        );
-        return;
-      }
-
-      onFileSelect(selected);
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      // Fallback if browser Image constructor fails to decode
-      onFileSelect(selected);
-    };
-    img.src = objectUrl;
+    onFileSelect(selected);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -137,6 +108,25 @@ function ThemeDropzone({
       return `${Math.round(bytes / 1024)} KB`;
     }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    onFileSelect(null);
+  };
+
+  const handleChange = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    fileInputRef.current?.click();
   };
 
   return (
@@ -169,7 +159,7 @@ function ThemeDropzone({
           </span>
         ) : (
           <span className="text-[10px] text-gray-400 dark:text-[#71717A]">
-            16:9 ratio
+            Any ratio
           </span>
         )}
       </div>
@@ -201,7 +191,7 @@ function ThemeDropzone({
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleChange}
                 className="inline-flex items-center gap-1 rounded-md border border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#1E1E22] hover:bg-gray-100 dark:hover:bg-white/[0.08] px-2 py-1 text-[10.5px] font-medium text-gray-800 dark:text-white transition cursor-pointer"
                 title="Change image"
               >
@@ -210,7 +200,7 @@ function ThemeDropzone({
               </button>
               <button
                 type="button"
-                onClick={() => onFileSelect(null)}
+                onClick={handleRemove}
                 className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 px-2 py-1 text-[10.5px] font-medium transition cursor-pointer"
                 title="Remove image"
               >
@@ -250,7 +240,7 @@ function ThemeDropzone({
           </span>
 
           <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#A1A1AA]">
-            16:9 ratio (1920×1080 or 1600×900) • Max {MAX_SIZE_MB}MB
+            Any ratio or size • Max {MAX_SIZE_MB}MB
           </p>
 
           <span className="mt-2 inline-flex items-center gap-1 rounded bg-gray-200/70 dark:bg-white/[0.08] px-2 py-0.5 text-[9.5px] font-medium text-gray-700 dark:text-neutral-300 group-hover:bg-orange-500/10 group-hover:text-[#EA580C] dark:group-hover:text-[#FB923C] transition-colors">
@@ -327,7 +317,7 @@ export function ScreenshotUploader({
               </span>
             </div>
             <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-              Upload distinct screenshots in 16:9 ratio (recommended: 1920×1080 or 1600×900, PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
+              Upload distinct screenshots in any ratio or size (PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
             </p>
           </div>
         </div>
