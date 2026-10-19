@@ -673,6 +673,13 @@ const updateComponent = asyncHandler(async (req, res) => {
     pricingType: req.body.pricingType ?? component.pricingType,
   };
 
+  if (req.body.darkPreviewImageUrl !== undefined) {
+    updates.darkPreviewImageUrl = req.body.darkPreviewImageUrl;
+  }
+  if (req.body.lightPreviewImageUrl !== undefined) {
+    updates.lightPreviewImageUrl = req.body.lightPreviewImageUrl;
+  }
+
   if (req.body.tags !== undefined) {
     updates.tags = req.body.tags;
     const matchedTags = await Tag.find({ name: { $in: req.body.tags } });

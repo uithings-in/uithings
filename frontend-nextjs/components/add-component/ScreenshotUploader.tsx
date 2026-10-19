@@ -110,6 +110,25 @@ function ThemeDropzone({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const handleRemove = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    onFileSelect(null);
+  };
+
+  const handleChange = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="flex flex-col h-full rounded-xl border border-gray-200 dark:border-white/[0.08] bg-gray-50/50 dark:bg-[#161619] p-3 sm:p-3.5 transition-colors">
       {/* Box Header */}
@@ -172,7 +191,7 @@ function ThemeDropzone({
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleChange}
                 className="inline-flex items-center gap-1 rounded-md border border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#1E1E22] hover:bg-gray-100 dark:hover:bg-white/[0.08] px-2 py-1 text-[10.5px] font-medium text-gray-800 dark:text-white transition cursor-pointer"
                 title="Change image"
               >
@@ -181,7 +200,7 @@ function ThemeDropzone({
               </button>
               <button
                 type="button"
-                onClick={() => onFileSelect(null)}
+                onClick={handleRemove}
                 className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 px-2 py-1 text-[10.5px] font-medium transition cursor-pointer"
                 title="Remove image"
               >
