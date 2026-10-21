@@ -44,6 +44,14 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    bankName: {
+      type: String,
+      default: null,
+    },
+    paymentDate: {
+      type: Date,
+      default: Date.now,
+    },
     signature: {
       type: String,
       default: null,

@@ -114,7 +114,7 @@ const listComponents = asyncHandler(async (req, res) => {
       .skip(skip)
       .limit(perPage)
       .select(select)
-      .populate({ path: "createdBy", select: "name email" })
+      .populate({ path: "createdBy", select: "name email profilePicture" })
       .lean(),
     Component.countDocuments(query),
   ]);
@@ -248,7 +248,7 @@ const listFavoriteComponents = asyncHandler(async (req, res) => {
       .skip(skip)
       .limit(perPage)
       .select("-figmaDataBase64")
-      .populate({ path: "createdBy", select: "name email" })
+      .populate({ path: "createdBy", select: "name email profilePicture" })
       .lean(),
     Component.countDocuments(query),
   ]);
@@ -351,7 +351,7 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(perPage)
-      .populate({ path: "createdBy", select: "name email" })
+      .populate({ path: "createdBy", select: "name email profilePicture" })
       .lean(),
     Component.countDocuments(query),
   ]);
@@ -519,7 +519,7 @@ const getComponent = asyncHandler(async (req, res) => {
 
   // ── MongoDB query ───────────────────────────────────────────────────────────
   const component = await Component.findById(req.params.id)
-    .populate("createdBy", "name email")
+    .populate("createdBy", "name email profilePicture")
     .lean();
 
   if (!component) {

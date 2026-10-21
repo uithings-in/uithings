@@ -15,7 +15,7 @@ const getNotifications = asyncHandler(async (req, res) => {
     const recentComponents = await Component.find({})
       .sort({ createdAt: -1 })
       .limit(20)
-      .populate("createdBy", "name email");
+      .populate("createdBy", "name email profilePicture");
 
     const initialNotifications = recentComponents.map((comp) => ({
       type: "component_uploaded",

@@ -25,9 +25,39 @@ import {
   FolderOpen,
   Search as SearchIcon,
   CheckCircle,
+  Zap,
+  RefreshCw,
+  Gift,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+
+export interface PlanItem {
+  _id: string
+  name: string
+  displayName: string
+  description: string
+  price: number
+  durationDays: number
+  componentLimit: number
+  isActive: boolean
+  isPremiumPlus?: boolean
+  sortOrder?: number
+  features?: string[]
+}
+
+export interface SubscriptionRecord {
+  _id: string
+  userId: string
+  planId: PlanItem | any
+  status: 'active' | 'expired' | 'cancelled' | 'pending' | 'queued'
+  startDate?: string
+  endDate?: string
+  maxComponents: number
+  componentCountUsed: number
+  transactions?: any[]
+  createdAt?: string
+}
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -133,6 +163,35 @@ export function UserProfile() {
     submitting: false,
   })
 
+  // Subscription plans & history state
+  const [plans, setPlans] = useState<PlanItem[]>([])
+  const [plansLoading, setPlansLoading] = useState(false)
+  const [subscriptionHistory, setSubscriptionHistory] = useState<SubscriptionRecord[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [activatingPlan, setActivatingPlan] = useState<PlanItem | null>(null)
+  const [customDurationDays, setCustomDurationDays] = useState<number>(0)
+  const [customComponentLimit, setCustomComponentLimit] = useState<number>(0)
+  const [isPromotion, setIsPromotion] = useState(false)
+  const [transactionId, setTransactionId] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [paymentDate, setPaymentDate] = useState('')
+  const [amount, setAmount] = useState<number | string>('')
+  const [activatingSubmit, setActivatingSubmit] = useState(false)
+  const [openRevokeDialog, setOpenRevokeDialog] = useState(false)
+  const [revokingSubmit, setRevokingSubmit] = useState(false)
+  const [showSwitchPlans, setShowSwitchPlans] = useState(false)
+
+  const openActivateModal = (plan: PlanItem, promoMode = false) => {
+    setActivatingPlan(plan)
+    setIsPromotion(promoMode)
+    setCustomDurationDays(plan.durationDays)
+    setCustomComponentLimit(plan.componentLimit)
+    setTransactionId('')
+    setBankName('')
+    setPaymentDate(format(new Date(), 'yyyy-MM-dd'))
+    setAmount(promoMode ? 0 : Math.floor(plan.price / 100))
+  }
+
   const fetchUserDetails = useCallback(async () => {
     if (!userId) return
     try {
@@ -168,10 +227,120 @@ export function UserProfile() {
     }
   }, [userId, auth.accessToken])
 
+  const fetchPlans = useCallback(async () => {
+    try {
+      setPlansLoading(true)
+      const res = await axios.get(`${API_URL}/plans`)
+      if (res.data && Array.isArray(res.data.data)) {
+        setPlans(res.data.data)
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch plans', err)
+    } finally {
+      setPlansLoading(false)
+    }
+  }, [])
+
+  const fetchSubscriptionHistory = useCallback(async () => {
+    if (!userId) return
+    try {
+      setHistoryLoading(true)
+      const res = await axios.get(`${API_URL}/users/${userId}/subscriptions`, {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      })
+      if (res.data && Array.isArray(res.data.data)) {
+        setSubscriptionHistory(res.data.data)
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch subscription history', err)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [userId, auth.accessToken])
+
   useEffect(() => {
     fetchUserDetails()
     fetchUserComponents()
-  }, [fetchUserDetails, fetchUserComponents])
+    fetchPlans()
+    fetchSubscriptionHistory()
+  }, [fetchUserDetails, fetchUserComponents, fetchPlans, fetchSubscriptionHistory])
+
+  const handleActivatePlan = async (overridePromo?: boolean) => {
+    if (!activatingPlan || !userId) return
+
+    const promo = overridePromo !== undefined ? overridePromo : isPromotion
+
+    if (!promo) {
+      if (!transactionId.trim()) {
+        toast.error('Transaction ID is required')
+        return
+      }
+
+      if (!bankName.trim()) {
+        toast.error('Bank Name is required')
+        return
+      }
+
+      if (!paymentDate) {
+        toast.error('Payment Date is required')
+        return
+      }
+
+      const numAmount = Number(amount)
+      if (isNaN(numAmount) || numAmount <= 0) {
+        toast.error('Please enter a valid Amount')
+        return
+      }
+    }
+
+    try {
+      setActivatingSubmit(true)
+      const res = await axios.post(
+        `${API_URL}/users/${userId}/activate-plan`,
+        {
+          planId: activatingPlan._id,
+          customDurationDays: customDurationDays || activatingPlan.durationDays,
+          customComponentLimit: customComponentLimit || activatingPlan.componentLimit,
+          isPromotion: promo,
+          transactionId: promo ? undefined : transactionId.trim(),
+          bankName: promo ? undefined : bankName.trim(),
+          paymentDate: promo ? undefined : paymentDate,
+          amount: promo ? 0 : Number(amount),
+        },
+        { headers: { Authorization: `Bearer ${auth.accessToken}` } }
+      )
+      toast.success(res.data?.message || `Plan "${activatingPlan.displayName}" activated successfully!`)
+      setActivatingPlan(null)
+      setShowSwitchPlans(false)
+      await fetchUserDetails()
+      await fetchSubscriptionHistory()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to activate plan')
+    } finally {
+      setActivatingSubmit(false)
+    }
+  }
+
+  const handleRevokeSubscription = async () => {
+    if (!userId) return
+    try {
+      setRevokingSubmit(true)
+      const res = await axios.post(
+        `${API_URL}/users/${userId}/cancel-subscription`,
+        {},
+        { headers: { Authorization: `Bearer ${auth.accessToken}` } }
+      )
+      toast.success(res.data?.message || 'Subscription cancelled successfully')
+      setOpenRevokeDialog(false)
+      setShowSwitchPlans(false)
+      await fetchUserDetails()
+      await fetchSubscriptionHistory()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to revoke subscription')
+    } finally {
+      setRevokingSubmit(false)
+    }
+  }
 
   const handleCopyFigma = async (comp: any) => {
     if (!comp.figmaDataBase64) {
@@ -346,9 +515,131 @@ export function UserProfile() {
   const sub = user.activeSubscription
   const statusBadgeColor = callTypes.get(user.status) || callTypes.get('active')
 
+  const hasActivePlan = Boolean(
+    sub &&
+    sub.status === 'active' &&
+    sub.planId &&
+    (!sub.endDate || new Date(sub.endDate) > new Date())
+  )
+
   const usedCount = sub?.componentCountUsed || 0
   const maxCount = sub?.maxComponents || 0
   const usagePercentage = maxCount > 0 ? Math.min(100, Math.round((usedCount / maxCount) * 100)) : 0
+
+  const renderPlansList = () => {
+    if (plansLoading) {
+      return (
+        <div className='flex items-center justify-center p-8 text-muted-foreground text-xs gap-2'>
+          <Loader2 className='h-4 w-4 animate-spin text-primary' /> Loading available plans...
+        </div>
+      )
+    }
+
+    if (!plans || plans.length === 0) {
+      return (
+        <div className='rounded-lg border border-dashed p-6 text-center text-muted-foreground text-xs'>
+          No active plans configured in database.
+        </div>
+      )
+    }
+
+    return (
+      <div className='space-y-3'>
+        {plans.map((plan) => {
+          const isUnlimited = plan.componentLimit >= 999999
+          const isFeatured = plan.isPremiumPlus || plan.name?.includes('ultimate')
+          const formattedPrice = `₹${Math.floor(plan.price / 100)}`
+          const durationText =
+            plan.durationDays >= 365
+              ? `${Math.round(plan.durationDays / 365)} Year`
+              : `${Math.round(plan.durationDays / 30)} Months (${plan.durationDays}d)`
+
+          return (
+            <div
+              key={plan._id}
+              className={cn(
+                'rounded-xl border p-4 transition-all duration-200 relative overflow-hidden',
+                isFeatured
+                  ? 'border-amber-500/40 bg-gradient-to-br from-amber-500/5 via-card to-amber-500/10 shadow-sm'
+                  : 'border-border/70 bg-card hover:border-border'
+              )}
+            >
+              {isFeatured && (
+                <div className='absolute top-0 right-0'>
+                  <span className='inline-flex items-center gap-1 bg-amber-500 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-bl-lg shadow-sm'>
+                    <Sparkles className='h-2.5 w-2.5' /> POPULAR
+                  </span>
+                </div>
+              )}
+
+              <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
+                <div className='space-y-1'>
+                  <div className='flex items-center gap-2'>
+                    <h5 className='font-bold text-base text-foreground'>{plan.displayName}</h5>
+                    <Badge variant='secondary' className='text-[10px] font-medium px-2 py-0'>
+                      {durationText}
+                    </Badge>
+                  </div>
+                  <p className='text-xs text-muted-foreground leading-relaxed max-w-sm'>
+                    {plan.description}
+                  </p>
+                </div>
+
+                <div className='text-left sm:text-right shrink-0'>
+                  <div className='text-lg font-extrabold text-foreground'>{formattedPrice}</div>
+                  <span className='text-[11px] text-muted-foreground block'>
+                    {isUnlimited ? 'Unlimited components' : `${plan.componentLimit} components`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Top features list */}
+              {plan.features && plan.features.length > 0 && (
+                <div className='mt-3 pt-2.5 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-1.5'>
+                  {plan.features.slice(0, 4).map((feat, fIdx) => (
+                    <div key={fIdx} className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+                      <CheckCircle2 className='h-3.5 w-3.5 text-emerald-500 shrink-0' />
+                      <span className='truncate'>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Action row */}
+              <div className='mt-3 pt-2.5 flex items-center justify-between border-t border-border/40'>
+                <span className='text-[11px] text-muted-foreground flex items-center gap-1'>
+                  <Clock className='h-3 w-3' /> Valid for {plan.durationDays} days
+                </span>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    className='h-8 text-xs font-semibold gap-1.5 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300'
+                    onClick={() => openActivateModal(plan, true)}
+                    title='Activate as promotional grant (no payment details required)'
+                  >
+                    <Gift className='h-3.5 w-3.5' /> Promotion
+                  </Button>
+                  <Button
+                    size='sm'
+                    className={cn(
+                      'h-8 text-xs font-semibold gap-1.5 transition-all',
+                      isFeatured
+                        ? 'bg-amber-500 text-black hover:bg-amber-400'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    )}
+                    onClick={() => openActivateModal(plan, false)}
+                  >
+                    <Zap className='h-3.5 w-3.5 fill-current' /> Activate Plan
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -431,19 +722,19 @@ export function UserProfile() {
                     )}
 
                     {/* Subscription Badge */}
-                    {user.isProUser ? (
+                    {hasActivePlan ? (
                       <Badge
                         variant='secondary'
                         className='bg-amber-500/15 text-amber-500 border border-amber-500/25 font-semibold gap-1 px-2.5 py-1'
                       >
-                        <Sparkles className='h-3 w-3' /> PRO PLAN
+                        <Sparkles className='h-3 w-3' /> {(sub?.planId?.displayName || 'PRO').toUpperCase()} PLAN
                       </Badge>
                     ) : (
                       <Badge
                         variant='outline'
                         className='bg-neutral-500/10 text-neutral-400 border-neutral-500/20 font-medium text-xs px-2.5 py-1'
                       >
-                        FREE PLAN
+                        FREE TIER
                       </Badge>
                     )}
 
@@ -669,38 +960,57 @@ export function UserProfile() {
             <div className='grid gap-4 md:grid-cols-2'>
               <Card>
                 <CardHeader>
-                  <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                    <CreditCard className='h-4 w-4 text-amber-500' /> Plan & Quota Details
-                  </CardTitle>
-                  <CardDescription>
-                    Full details of the user's current subscription plan
-                  </CardDescription>
+                  <div className='flex items-center justify-between'>
+                    <div className='space-y-0.5'>
+                      <CardTitle className='text-base font-semibold flex items-center gap-2'>
+                        <CreditCard className='h-4 w-4 text-amber-500' /> Plan & Quota Details
+                      </CardTitle>
+                      <CardDescription>
+                        {hasActivePlan
+                          ? "Full details of the user's current active subscription"
+                          : 'User has no active plan. Activate a plan manually below.'}
+                      </CardDescription>
+                    </div>
+                    {hasActivePlan && (
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        className='h-7 text-xs gap-1 border-border'
+                        onClick={() => setShowSwitchPlans(!showSwitchPlans)}
+                      >
+                        <Zap className='h-3 w-3 text-amber-500' />
+                        {showSwitchPlans ? 'Hide Plans' : 'Switch Plan'}
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <div className='flex items-center justify-between rounded-lg border p-4 bg-muted/20'>
                     <div>
                       <p className='text-sm font-medium text-muted-foreground'>Membership Level</p>
                       <h3 className='text-xl font-bold text-foreground mt-0.5'>
-                        {user.isProUser
+                        {hasActivePlan
                           ? sub?.planId?.displayName || 'Pro Plan'
-                          : 'Free Tier User'}
+                          : 'Free Tier (No Active Plan)'}
                       </h3>
                     </div>
-                    {user.isProUser ? (
+                    {hasActivePlan ? (
                       <Badge className='bg-amber-500 text-black font-bold px-3 py-1 gap-1'>
                         <Sparkles className='h-3.5 w-3.5' /> PRO
                       </Badge>
                     ) : (
-                      <Badge variant='outline'>FREE</Badge>
+                      <Badge variant='outline' className='text-muted-foreground font-semibold'>
+                        FREE
+                      </Badge>
                     )}
                   </div>
 
-                  {user.isProUser && sub ? (
+                  {hasActivePlan && sub ? (
                     <>
                       <div className='space-y-2 rounded-lg border p-4'>
                         <div className='flex items-center justify-between text-sm'>
                           <span className='font-medium text-muted-foreground'>Component Quota Usage</span>
-                          <span className='font-bold'>{usedCount} / {maxCount}</span>
+                          <span className='font-bold'>{usedCount} / {maxCount >= 999999 ? '∞ (Unlimited)' : maxCount}</span>
                         </div>
                         <div className='h-2 w-full overflow-hidden rounded-full bg-muted'>
                           <div
@@ -709,7 +1019,9 @@ export function UserProfile() {
                           />
                         </div>
                         <p className='text-xs text-muted-foreground pt-1'>
-                          {Math.max(0, maxCount - usedCount)} components remaining in this billing cycle.
+                          {maxCount >= 999999
+                            ? 'Unlimited component downloads in this cycle.'
+                            : `${Math.max(0, maxCount - usedCount)} components remaining in this billing cycle.`}
                         </p>
                       </div>
 
@@ -727,49 +1039,194 @@ export function UserProfile() {
                           </p>
                         </div>
                       </div>
+
+                      {/* Active subscription admin actions */}
+                      <div className='pt-2 flex items-center justify-between border-t'>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          className='text-xs gap-1.5'
+                          onClick={() => setShowSwitchPlans(!showSwitchPlans)}
+                        >
+                          <Zap className='h-3.5 w-3.5 text-amber-500' />
+                          {showSwitchPlans ? 'Cancel Switching' : 'Switch / Change Plan'}
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          className='text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5'
+                          onClick={() => setOpenRevokeDialog(true)}
+                        >
+                          <XCircle className='h-3.5 w-3.5' /> Revoke Plan
+                        </Button>
+                      </div>
+
+                      {/* If admin clicked Switch Plan, show available plans to switch to */}
+                      {showSwitchPlans && (
+                        <div className='pt-3 space-y-3 border-t'>
+                          <div className='flex items-center justify-between'>
+                            <p className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
+                              <Zap className='h-3.5 w-3.5 text-amber-500' /> Select a plan to switch to:
+                            </p>
+                            <span className='text-[11px] text-muted-foreground'>
+                              Will supersede current active plan
+                            </span>
+                          </div>
+                          {renderPlansList()}
+                        </div>
+                      )}
                     </>
                   ) : (
-                    <div className='rounded-lg border border-dashed p-6 text-center text-muted-foreground'>
-                      <p className='text-sm font-medium'>This user does not currently have an active Pro subscription.</p>
-                      <p className='text-xs mt-1'>You can upgrade this user to Pro by editing their profile.</p>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        className='mt-4'
-                        onClick={() => setOpenEditDialog(true)}
-                      >
-                        <Sparkles className='mr-1.5 h-3.5 w-3.5 text-amber-500' /> Upgrade to Pro
-                      </Button>
+                    /* User has NO active plan - Show all available plans */
+                    <div className='space-y-4 pt-1'>
+                      <div className='rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 p-3.5 flex items-start gap-3'>
+                        <Zap className='h-5 w-5 text-amber-500 shrink-0 mt-0.5' />
+                        <div className='space-y-0.5'>
+                          <h4 className='text-xs font-bold text-foreground'>Manual Plan Activation Available</h4>
+                          <p className='text-xs text-muted-foreground'>
+                            This user does not currently have an active subscription. Choose a plan below to activate it manually.
+                          </p>
+                        </div>
+                      </div>
+
+                      {renderPlansList()}
                     </div>
                   )}
                 </CardContent>
               </Card>
 
+              {/* Right column: Subscription History */}
               <Card>
                 <CardHeader>
-                  <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                    <Clock className='h-4 w-4 text-primary' /> Subscription History
-                  </CardTitle>
-                  <CardDescription>
-                    Billing records and transaction state
-                  </CardDescription>
+                  <div className='flex items-center justify-between'>
+                    <div className='space-y-0.5'>
+                      <CardTitle className='text-base font-semibold flex items-center gap-2'>
+                        <Clock className='h-4 w-4 text-primary' /> Subscription History
+                      </CardTitle>
+                      <CardDescription>
+                        All current and past subscription records
+                      </CardDescription>
+                    </div>
+                    <Button
+                      size='sm'
+                      variant='ghost'
+                      className='h-7 w-7 p-0 text-muted-foreground'
+                      onClick={fetchSubscriptionHistory}
+                      title='Refresh history'
+                    >
+                      <RefreshCw className={cn('h-3.5 w-3.5', historyLoading && 'animate-spin')} />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className='space-y-3'>
-                  {sub?.transactions?.length ? (
-                    sub.transactions.map((tx: any, idx: number) => (
-                      <div key={idx} className='flex items-center justify-between rounded-lg border p-3'>
-                        <div className='space-y-0.5'>
-                          <p className='text-sm font-medium'>Transaction #{idx + 1}</p>
-                          <p className='text-xs text-muted-foreground'>ID: {String(tx).slice(0, 12)}...</p>
-                        </div>
-                        <Badge variant='outline' className='text-green-500 border-green-500/30 bg-green-500/10'>
-                          Paid
-                        </Badge>
-                      </div>
-                    ))
+                  {historyLoading ? (
+                    <div className='flex items-center justify-center p-8 text-muted-foreground text-xs gap-2'>
+                      <Loader2 className='h-4 w-4 animate-spin text-primary' /> Loading history...
+                    </div>
+                  ) : subscriptionHistory.length > 0 ? (
+                    <div className='space-y-2.5 max-h-[500px] overflow-y-auto pr-1'>
+                      {subscriptionHistory.map((item, idx) => {
+                        const planName = typeof item.planId === 'object' && item.planId ? item.planId.displayName : 'Custom Plan'
+                        const statusColors: Record<string, string> = {
+                          active: 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10',
+                          cancelled: 'text-amber-500 border-amber-500/30 bg-amber-500/10',
+                          expired: 'text-neutral-400 border-neutral-700 bg-neutral-800/30',
+                          queued: 'text-blue-500 border-blue-500/30 bg-blue-500/10',
+                        }
+                        const isCurrent = sub && sub._id === item._id
+
+                        return (
+                          <div
+                            key={item._id || idx}
+                            className={cn(
+                              'rounded-lg border p-3 transition-colors',
+                              isCurrent ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/60 bg-muted/10'
+                            )}
+                          >
+                            <div className='flex items-center justify-between gap-2'>
+                              <div className='flex items-center gap-1.5'>
+                                <span className='font-semibold text-sm text-foreground'>{planName}</span>
+                                {isCurrent && (
+                                  <Badge className='bg-amber-500 text-black text-[10px] font-bold px-1.5 py-0'>
+                                    CURRENT
+                                  </Badge>
+                                )}
+                              </div>
+                              <Badge
+                                variant='outline'
+                                className={cn('capitalize text-xs font-medium', statusColors[item.status] || '')}
+                              >
+                                {item.status}
+                              </Badge>
+                            </div>
+
+                            <div className='mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground'>
+                              <div>
+                                <span className='text-[10px] uppercase font-medium text-muted-foreground/80 block'>
+                                  Usage
+                                </span>
+                                <span className='font-medium text-foreground'>
+                                  {item.componentCountUsed || 0} / {item.maxComponents >= 999999 ? '∞' : item.maxComponents} comps
+                                </span>
+                              </div>
+                              <div className='text-right'>
+                                <span className='text-[10px] uppercase font-medium text-muted-foreground/80 block'>
+                                  Billing Period
+                                </span>
+                                <span>
+                                  {item.startDate ? format(new Date(item.startDate), 'MMM d, yy') : 'N/A'}
+                                  {' - '}
+                                  {item.endDate ? format(new Date(item.endDate), 'MMM d, yy') : 'N/A'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Linked Transactions if any */}
+                            {Array.isArray(item.transactions) && item.transactions.length > 0 && (
+                              <div className='mt-2.5 pt-2 border-t border-border/40 space-y-1.5'>
+                                {item.transactions.map((tx: any, tIdx: number) => {
+                                  const txId = tx.razorpayPaymentId || tx.transactionId || tx._id
+                                  const bName = tx.bankName || (tx.paymentMethod ? tx.paymentMethod : '')
+                                  const txAmt = tx.amount !== undefined ? `₹${Math.floor(tx.amount / 100)}` : ''
+                                  const pDate = tx.paymentDate || tx.createdAt
+                                  return (
+                                    <div
+                                      key={tx._id || tIdx}
+                                      className='rounded-md bg-muted/40 p-2 space-y-1 text-xs border border-border/50'
+                                    >
+                                      <div className='flex items-center justify-between'>
+                                        <span
+                                          className='font-mono font-bold text-foreground text-[11px] truncate max-w-[200px]'
+                                          title={txId}
+                                        >
+                                          Txn: {txId}
+                                        </span>
+                                        <Badge
+                                          variant='outline'
+                                          className='text-[10px] font-semibold text-emerald-500 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0'
+                                        >
+                                          {txAmt ? `${txAmt} Paid` : 'Paid'}
+                                        </Badge>
+                                      </div>
+                                      <div className='flex items-center justify-between text-[11px] text-muted-foreground'>
+                                        <span>{bName || 'Manual Transfer'}</span>
+                                        <span>{pDate ? format(new Date(pDate), 'PP') : ''}</span>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   ) : (
                     <div className='rounded-lg border border-dashed p-6 text-center text-muted-foreground'>
-                      <p className='text-sm'>No previous transaction records found.</p>
+                      <p className='text-sm font-medium'>No previous subscription records found.</p>
+                      <p className='text-xs text-muted-foreground mt-1'>
+                        Transactions and manual assignments will appear here.
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -1327,6 +1784,286 @@ export function UserProfile() {
               disabled={rejectDialog.submitting}
             >
               {rejectDialog.submitting ? 'Submitting...' : 'Reject Component'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manual Plan Activation Confirmation Dialog */}
+      <Dialog
+        open={!!activatingPlan}
+        onOpenChange={(open) => !open && !activatingSubmit && setActivatingPlan(null)}
+      >
+        <DialogContent className='sm:max-w-lg'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2'>
+              {isPromotion ? (
+                <>
+                  <Gift className='h-5 w-5 text-purple-400' /> Promotional: {activatingPlan?.displayName}
+                </>
+              ) : (
+                <>
+                  <Zap className='h-5 w-5 text-amber-500' /> Activate {activatingPlan?.displayName}
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              {isPromotion
+                ? `Activate complimentary promotional subscription for ${user.name} (${user.email}).`
+                : `Assign and immediately activate this subscription for ${user.name} (${user.email}).`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {activatingPlan && (
+            <div className='space-y-4 py-2'>
+              {/* Type Switcher: Paid vs Promotion */}
+              <div className='grid grid-cols-2 p-1 rounded-lg bg-muted/40 border text-xs font-medium'>
+                <button
+                  type='button'
+                  onClick={() => setIsPromotion(false)}
+                  className={cn(
+                    'py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all',
+                    !isPromotion
+                      ? 'bg-background shadow-sm font-bold text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <CreditCard className='h-3.5 w-3.5 text-amber-500' /> Paid / Manual
+                </button>
+                <button
+                  type='button'
+                  onClick={() => setIsPromotion(true)}
+                  className={cn(
+                    'py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all',
+                    isPromotion
+                      ? 'bg-purple-600 text-white shadow-sm font-bold'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Gift className='h-3.5 w-3.5' /> Promotion (Free)
+                </button>
+              </div>
+
+              {isPromotion ? (
+                /* Promotional Callout Banner - No payment details required */
+                <div className='rounded-lg border border-purple-500/30 bg-purple-500/10 p-3.5 space-y-1.5'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-xs font-bold text-purple-400 flex items-center gap-1.5'>
+                      <Gift className='h-4 w-4 text-purple-400' /> Admin Promotion
+                    </span>
+                    <Badge className='bg-purple-500 text-white text-[10px] font-bold'>
+                      COMPLIMENTARY
+                    </Badge>
+                  </div>
+                  <p className='text-xs text-muted-foreground leading-relaxed'>
+                    No transaction ID, bank details, or payment amount required. This plan will be activated immediately as a promotional grant.
+                  </p>
+                </div>
+              ) : (
+                /* Paid / Manual Payment Details Section */
+                <div className='space-y-3 rounded-lg border p-3.5 bg-muted/20'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-xs font-bold text-foreground flex items-center gap-1.5'>
+                      <CreditCard className='h-3.5 w-3.5 text-amber-500' /> Payment Record Details
+                    </span>
+                    <Badge variant='outline' className='text-[10px] text-amber-500 border-amber-500/30'>
+                      Manual Payment
+                    </Badge>
+                  </div>
+
+                  <div className='grid grid-cols-2 gap-3'>
+                    <div className='space-y-1.5'>
+                      <Label htmlFor='plan-tx-id' className='text-xs font-medium flex items-center gap-1'>
+                        Transaction ID <span className='text-destructive'>*</span>
+                      </Label>
+                      <Input
+                        id='plan-tx-id'
+                        placeholder='e.g. UTR9284102948'
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        className='text-xs font-mono'
+                      />
+                    </div>
+
+                    <div className='space-y-1.5'>
+                      <Label htmlFor='plan-bank-name' className='text-xs font-medium flex items-center gap-1'>
+                        Bank Name <span className='text-destructive'>*</span>
+                      </Label>
+                      <Input
+                        id='plan-bank-name'
+                        placeholder='e.g. HDFC Bank, SBI'
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                        className='text-xs'
+                      />
+                    </div>
+
+                    <div className='space-y-1.5'>
+                      <Label htmlFor='plan-payment-date' className='text-xs font-medium flex items-center gap-1'>
+                        Payment Date <span className='text-destructive'>*</span>
+                      </Label>
+                      <Input
+                        id='plan-payment-date'
+                        type='date'
+                        value={paymentDate}
+                        onChange={(e) => setPaymentDate(e.target.value)}
+                        className='text-xs'
+                      />
+                    </div>
+
+                    <div className='space-y-1.5'>
+                      <Label htmlFor='plan-amount' className='text-xs font-medium flex items-center gap-1'>
+                        Amount (₹) <span className='text-destructive'>*</span>
+                      </Label>
+                      <Input
+                        id='plan-amount'
+                        type='number'
+                        min='0'
+                        step='any'
+                        placeholder='e.g. 199'
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className='text-xs font-bold'
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Plan parameters summary & overrides */}
+              <div className='rounded-lg border p-3 bg-muted/10 space-y-2.5 text-xs'>
+                <div className='flex items-center justify-between'>
+                  <span className='text-muted-foreground'>Selected Plan:</span>
+                  <span className='font-bold text-foreground'>
+                    {activatingPlan.displayName} ({activatingPlan.name})
+                  </span>
+                </div>
+
+                <div className='grid grid-cols-2 gap-3 pt-1'>
+                  <div className='space-y-1'>
+                    <Label htmlFor='plan-custom-duration' className='text-[11px] text-muted-foreground'>
+                      Duration (Days)
+                    </Label>
+                    <Input
+                      id='plan-custom-duration'
+                      type='number'
+                      min='1'
+                      value={customDurationDays}
+                      onChange={(e) => setCustomDurationDays(Number(e.target.value))}
+                      className='h-8 text-xs'
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    <Label htmlFor='plan-custom-quota' className='text-[11px] text-muted-foreground'>
+                      Component Limit
+                    </Label>
+                    <Input
+                      id='plan-custom-quota'
+                      type='number'
+                      min='1'
+                      value={customComponentLimit}
+                      onChange={(e) => setCustomComponentLimit(Number(e.target.value))}
+                      className='h-8 text-xs'
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <p className='text-[11px] text-muted-foreground leading-relaxed'>
+                {isPromotion
+                  ? 'Activation starts immediately upon confirmation as an admin promotion (₹0).'
+                  : 'Activation starts immediately upon confirmation and registers the manual transaction under billing records.'}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className='flex flex-wrap items-center justify-between gap-3 pt-3 sm:justify-between sm:space-x-0'>
+            <Button
+              type='button'
+              variant='outline'
+              className='h-9 px-4 font-medium'
+              disabled={activatingSubmit}
+              onClick={() => setActivatingPlan(null)}
+            >
+              Cancel
+            </Button>
+
+            <div>
+              {isPromotion ? (
+                <Button
+                  type='button'
+                  className='h-9 px-4 bg-purple-600 text-white hover:bg-purple-500 font-bold gap-1.5 shadow-sm transition-all'
+                  disabled={activatingSubmit}
+                  onClick={() => handleActivatePlan(true)}
+                  title='Activate as promotional grant (no payment details required)'
+                >
+                  {activatingSubmit ? (
+                    <>
+                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' /> Activating...
+                    </>
+                  ) : (
+                    <>
+                      <Gift className='mr-1.5 h-4 w-4' /> Promotion
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  type='button'
+                  className='h-9 px-4 bg-amber-500 text-black hover:bg-amber-400 font-bold gap-1.5 shadow-sm transition-all'
+                  disabled={activatingSubmit}
+                  onClick={() => handleActivatePlan(false)}
+                >
+                  {activatingSubmit ? (
+                    <>
+                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' /> Activating...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className='mr-1.5 h-4 w-4 fill-current' /> Confirm & Activate
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Revoke Plan Confirmation Dialog */}
+      <Dialog open={openRevokeDialog} onOpenChange={setOpenRevokeDialog}>
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <DialogTitle className='flex items-center gap-2 text-destructive'>
+              <XCircle className='h-5 w-5' /> Revoke Active Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel the active subscription for{' '}
+              <span className='font-semibold text-foreground'>{user.name}</span>? The user will be immediately downgraded to the Free Tier.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className='gap-2 sm:gap-0'>
+            <Button
+              type='button'
+              variant='outline'
+              disabled={revokingSubmit}
+              onClick={() => setOpenRevokeDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type='button'
+              variant='destructive'
+              disabled={revokingSubmit}
+              onClick={handleRevokeSubscription}
+            >
+              {revokingSubmit ? (
+                <>
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Revoking...
+                </>
+              ) : (
+                'Confirm Revoke'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
