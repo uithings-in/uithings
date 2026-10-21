@@ -29,6 +29,7 @@ export interface ComponentItem {
     _id?: string;
     name?: string;
     email?: string;
+    profilePicture?: string;
   };
   status?: "pending" | "approved" | "rejected";
   rejectionReason?: string;

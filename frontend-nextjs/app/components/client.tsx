@@ -127,6 +127,34 @@ function getInitials(name: string) {
     .join("");
 }
 
+function ContributorAvatar({
+  name,
+  profilePicture,
+}: {
+  name?: string;
+  profilePicture?: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(profilePicture) && !imageFailed;
+
+  return (
+    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#9FE870] to-[#54992e] flex items-center justify-center text-black font-extrabold text-xs shadow-sm shrink-0 overflow-hidden ring-1 ring-black/5">
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={profilePicture}
+          alt={name || "Contributor"}
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        getInitials(name || "System")
+      )}
+    </div>
+  );
+}
+
 function PreviewModal({
   item,
   onClose,
@@ -305,9 +333,10 @@ function PreviewModal({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 pb-3.5 sm:pb-5 pt-2 shrink-0 border-t border-gray-50 sm:border-t-0">
           {/* User Info */}
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-[#9FE870] to-[#54992e] flex items-center justify-center text-black font-extrabold text-xs shadow-sm shrink-0">
-              {getInitials(item.createdBy?.name || "System")}
-            </div>
+            <ContributorAvatar
+              name={item.createdBy?.name}
+              profilePicture={item.createdBy?.profilePicture}
+            />
             <div className="flex flex-col min-w-0">
               <span className="font-semibold text-[0.82rem] sm:text-[0.88rem] text-gray-900 tracking-tight leading-tight truncate max-w-[180px] sm:max-w-none">
                 {item.createdBy?.name || "System Uploader"}
