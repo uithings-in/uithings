@@ -30,7 +30,10 @@ interface AddComponentPageProps {
   onCancel?: () => void;
 }
 
-export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps) {
+export function AddComponentView({
+  onSuccess,
+  onCancel,
+}: AddComponentPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, refetchUser } = useAuth();
@@ -86,13 +89,22 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
         markTouched("figmaPayload");
         throw new Error("Please paste your Figma component payload.");
       }
-      if (!values.darkPreviewFile && !values.lightPreviewFile && !values.previewFile) {
+      if (
+        !values.darkPreviewFile &&
+        !values.lightPreviewFile &&
+        !values.previewFile
+      ) {
         markTouched("previewFile");
-        throw new Error("Please upload at least one preview screenshot (Dark or Light).");
+        throw new Error(
+          "Please upload at least one preview screenshot (Dark or Light).",
+        );
       }
 
       // 1. Upload preview images (dark & light)
-      const uploadPromises: [Promise<string | undefined>, Promise<string | undefined>] = [
+      const uploadPromises: [
+        Promise<string | undefined>,
+        Promise<string | undefined>,
+      ] = [
         values.darkPreviewFile
           ? uploadApi.uploadImage(values.darkPreviewFile)
           : Promise.resolve(undefined),
@@ -101,12 +113,15 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
           : Promise.resolve(undefined),
       ];
 
-      const [uploadedDarkUrl, uploadedLightUrl] = await Promise.all(uploadPromises);
+      const [uploadedDarkUrl, uploadedLightUrl] =
+        await Promise.all(uploadPromises);
 
       const resolvedPreviewUrl =
         uploadedDarkUrl ||
         uploadedLightUrl ||
-        (values.previewFile ? await uploadApi.uploadImage(values.previewFile) : "");
+        (values.previewFile
+          ? await uploadApi.uploadImage(values.previewFile)
+          : "");
 
       // 2. Combine tags with platform tag for discoverability
       const cleanTags = Array.from(
@@ -114,9 +129,11 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
           [...values.tags, values.platformTag]
             .filter(Boolean)
             .filter(
-              (tag) => !["web", "app"].includes(tag.toLowerCase()) || tag === values.platformTag
-            )
-        )
+              (tag) =>
+                !["web", "app"].includes(tag.toLowerCase()) ||
+                tag === values.platformTag,
+            ),
+        ),
       );
 
       // 3. Create component API call
@@ -192,7 +209,8 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
             </span>
           </div>
           <p className="text-xs text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-            Publish reusable Figma components to your workspace library and copy back anytime with vector accuracy.
+            Publish reusable Figma components to your workspace library and copy
+            back anytime with vector accuracy.
           </p>
         </div>
       </div>
@@ -205,7 +223,10 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
           className="flex items-center justify-between rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3.5 text-xs font-semibold text-emerald-900 dark:text-emerald-200 shadow-xs animate-in fade-in duration-150"
         >
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2
+              size={15}
+              className="text-emerald-600 dark:text-emerald-400"
+            />
             <span>{successToast}</span>
           </div>
           <Link
@@ -225,7 +246,10 @@ export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps)
           aria-live="assertive"
           className="flex items-center gap-2 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3.5 text-xs font-semibold text-rose-800 dark:text-rose-200 shadow-xs animate-in fade-in duration-150"
         >
-          <AlertCircle size={15} className="text-rose-600 dark:text-rose-400 shrink-0" />
+          <AlertCircle
+            size={15}
+            className="text-rose-600 dark:text-rose-400 shrink-0"
+          />
           <span className="flex-1">{submitError}</span>
           <button
             type="button"

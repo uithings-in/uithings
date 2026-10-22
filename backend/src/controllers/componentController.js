@@ -37,7 +37,10 @@ const listComponents = asyncHandler(async (req, res) => {
   } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 20, 1), 100);
-  const skip = skipQuery !== "" ? Math.max(Number(skipQuery) || 0, 0) : (pageNumber - 1) * perPage;
+  const skip =
+    skipQuery !== ""
+      ? Math.max(Number(skipQuery) || 0, 0)
+      : (pageNumber - 1) * perPage;
   const shouldIncludeData = String(includeData).toLowerCase() === "true";
 
   // ── Cache read ──────────────────────────────────────────────────────────────
@@ -51,7 +54,7 @@ const listComponents = asyncHandler(async (req, res) => {
     shouldIncludeData,
     designType,
     pricingType,
-    skip
+    skip,
   );
   const cached = await cacheGet(cacheKey);
   if (cached) {
@@ -86,20 +89,36 @@ const listComponents = asyncHandler(async (req, res) => {
   } else if (designType === "UI Design") {
     query.$and = [
       ...(query.$and || []),
-      { $or: [{ designType: "UI Design" }, { designType: { $exists: false } }, { designType: null }] },
+      {
+        $or: [
+          { designType: "UI Design" },
+          { designType: { $exists: false } },
+          { designType: null },
+        ],
+      },
     ];
   }
   if (pricingType === "Pro") {
     query.$and = [
       ...(query.$and || []),
-      { $or: [{ pricingType: "Pro" }, { tags: { $regex: "pro", $options: "i" } }] },
+      {
+        $or: [
+          { pricingType: "Pro" },
+          { tags: { $regex: "pro", $options: "i" } },
+        ],
+      },
     ];
   } else if (pricingType === "Free") {
     query.$and = [
       ...(query.$and || []),
       {
         $and: [
-          { $or: [{ pricingType: { $ne: "Pro" } }, { pricingType: { $exists: false } }] },
+          {
+            $or: [
+              { pricingType: { $ne: "Pro" } },
+              { pricingType: { $exists: false } },
+            ],
+          },
           { tags: { $not: /pro/i } },
         ],
       },
@@ -140,14 +159,31 @@ const listComponents = asyncHandler(async (req, res) => {
 
 // ─── GET /api/components/my ───────────────────────────────────────────────────
 const listMyComponents = asyncHandler(async (req, res) => {
-  const { q = "", tag = "", page = 1, limit = 20, skip: skipQuery = "" } = req.query;
+  const {
+    q = "",
+    tag = "",
+    page = 1,
+    limit = 20,
+    skip: skipQuery = "",
+  } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 20, 1), 100);
-  const skip = skipQuery !== "" ? Math.max(Number(skipQuery) || 0, 0) : (pageNumber - 1) * perPage;
+  const skip =
+    skipQuery !== ""
+      ? Math.max(Number(skipQuery) || 0, 0)
+      : (pageNumber - 1) * perPage;
 
   // ── Cache read ──────────────────────────────────────────────────────────────
   const version = await getListVersion();
-  const cacheKey = await myListKey(version, req.user.userId, q, tag, pageNumber, perPage, skip);
+  const cacheKey = await myListKey(
+    version,
+    req.user.userId,
+    q,
+    tag,
+    pageNumber,
+    perPage,
+    skip,
+  );
   const cached = await cacheGet(cacheKey);
   if (cached) {
     res.set("X-Cache", "HIT");
@@ -201,9 +237,14 @@ const listFavoriteComponents = asyncHandler(async (req, res) => {
   const { q = "", page = 1, limit = 20, skip: skipQuery = "" } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 20, 1), 100);
-  const skip = skipQuery !== "" ? Math.max(Number(skipQuery) || 0, 0) : (pageNumber - 1) * perPage;
+  const skip =
+    skipQuery !== ""
+      ? Math.max(Number(skipQuery) || 0, 0)
+      : (pageNumber - 1) * perPage;
 
-  const user = await User.findById(req.user.userId).select("favoriteComponents").lean();
+  const user = await User.findById(req.user.userId)
+    .select("favoriteComponents")
+    .lean();
   const favoriteIds = user?.favoriteComponents || [];
 
   if (favoriteIds.length === 0) {
@@ -269,7 +310,9 @@ const listFavoriteComponents = asyncHandler(async (req, res) => {
 
 // GET /api/components/favorites/ids
 const listFavoriteComponentIds = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.userId).select("favoriteComponents").lean();
+  const user = await User.findById(req.user.userId)
+    .select("favoriteComponents")
+    .lean();
 
   res.json({
     success: true,
@@ -281,14 +324,18 @@ const listFavoriteComponentIds = asyncHandler(async (req, res) => {
 
 // PATCH /api/components/:id/favorite
 const toggleFavoriteComponent = asyncHandler(async (req, res) => {
-  const component = await Component.findById(req.params.id).select("_id").lean();
+  const component = await Component.findById(req.params.id)
+    .select("_id")
+    .lean();
 
   if (!component) {
     res.status(404);
     throw new Error("Component not found");
   }
 
-  const user = await User.findById(req.user.userId).select("favoriteComponents");
+  const user = await User.findById(req.user.userId).select(
+    "favoriteComponents",
+  );
   if (!user) {
     res.status(404);
     throw new Error("User not found");
@@ -296,7 +343,7 @@ const toggleFavoriteComponent = asyncHandler(async (req, res) => {
 
   const componentId = component._id.toString();
   const isAlreadyFavorite = user.favoriteComponents.some(
-    (id) => id.toString() === componentId
+    (id) => id.toString() === componentId,
   );
 
   if (isAlreadyFavorite) {
@@ -385,7 +432,8 @@ const createComponent = asyncHandler(async (req, res) => {
   } = req.body;
   const userRole = req.user.role || "user";
 
-  const resolvedPreviewUrl = previewImageUrl || darkPreviewImageUrl || lightPreviewImageUrl;
+  const resolvedPreviewUrl =
+    previewImageUrl || darkPreviewImageUrl || lightPreviewImageUrl;
 
   if (!name || !resolvedPreviewUrl || !figmaDataBase64) {
     res.status(400);
@@ -393,8 +441,11 @@ const createComponent = asyncHandler(async (req, res) => {
   }
 
   // Check Pro upload permissions: admin or users granted canUploadPro
-  const currentUser = await User.findById(req.user.userId).select("role canUploadPro");
-  const canPostPro = currentUser?.role === "admin" || !!currentUser?.canUploadPro;
+  const currentUser = await User.findById(req.user.userId).select(
+    "role canUploadPro",
+  );
+  const canPostPro =
+    currentUser?.role === "admin" || !!currentUser?.canUploadPro;
 
   if (pricingType === "Pro" && !canPostPro) {
     res.status(403);
@@ -403,7 +454,9 @@ const createComponent = asyncHandler(async (req, res) => {
 
   // Logic: normal people can post atmost 20 components.
   if (userRole !== "admin") {
-    const userComponentCount = await Component.countDocuments({ createdBy: req.user.userId });
+    const userComponentCount = await Component.countDocuments({
+      createdBy: req.user.userId,
+    });
     if (userComponentCount >= 20) {
       res.status(403);
       throw new Error("You have reached the limit of 20 components");
@@ -415,7 +468,7 @@ const createComponent = asyncHandler(async (req, res) => {
   if (activeTags.length > 0) {
     const matchedTags = await Tag.find({ name: { $in: activeTags } });
     if (matchedTags.length > 0) {
-      tagOrder = Math.min(...matchedTags.map(t => t.order));
+      tagOrder = Math.min(...matchedTags.map((t) => t.order));
     }
   }
 
@@ -429,7 +482,7 @@ const createComponent = asyncHandler(async (req, res) => {
     darkPreviewImageUrl: darkPreviewImageUrl || resolvedPreviewUrl,
     figmaDataBase64,
     designType,
-    pricingType: canPostPro ? (pricingType || "Free") : "Free",
+    pricingType: canPostPro ? pricingType || "Free" : "Free",
     createdBy: req.user.userId,
     status: userRole === "admin" ? "approved" : "pending",
   });
@@ -484,7 +537,8 @@ const updateComponentStatus = asyncHandler(async (req, res) => {
 
   const updateFields = { status };
   if (status === "rejected") {
-    updateFields.rejectionReason = typeof rejectionReason === "string" ? rejectionReason.trim() : "";
+    updateFields.rejectionReason =
+      typeof rejectionReason === "string" ? rejectionReason.trim() : "";
   } else if (status === "approved") {
     updateFields.rejectionReason = "";
   }
@@ -492,7 +546,7 @@ const updateComponentStatus = asyncHandler(async (req, res) => {
   const component = await Component.findByIdAndUpdate(
     req.params.id,
     updateFields,
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 
   if (!component) {
@@ -622,7 +676,8 @@ const getComponentData = asyncHandler(async (req, res) => {
     success: true,
     data: {
       figmaDataBase64: component.figmaDataBase64,
-      remainingComponents: subscription.maxComponents - subscription.componentCountUsed,
+      remainingComponents:
+        subscription.maxComponents - subscription.componentCountUsed,
     },
   });
 });
@@ -633,7 +688,7 @@ const recordComponentDownload = asyncHandler(async (req, res) => {
   const component = await Component.findByIdAndUpdate(
     req.params.id,
     { $inc: { downloadCount: 1 } },
-    { returnDocument: "after", select: "downloadCount" }
+    { returnDocument: "after", select: "downloadCount" },
   ).lean();
 
   if (!component) {
@@ -668,8 +723,11 @@ const updateComponent = asyncHandler(async (req, res) => {
   }
 
   if (req.body.pricingType === "Pro" && component.pricingType !== "Pro") {
-    const currentUser = await User.findById(req.user.userId).select("role canUploadPro");
-    const canPostPro = currentUser?.role === "admin" || !!currentUser?.canUploadPro;
+    const currentUser = await User.findById(req.user.userId).select(
+      "role canUploadPro",
+    );
+    const canPostPro =
+      currentUser?.role === "admin" || !!currentUser?.canUploadPro;
     if (!canPostPro) {
       res.status(403);
       throw new Error("You do not have permission to mark components as Pro");
@@ -695,10 +753,15 @@ const updateComponent = asyncHandler(async (req, res) => {
   if (req.body.tags !== undefined) {
     updates.tags = req.body.tags;
     const matchedTags = await Tag.find({ name: { $in: req.body.tags } });
-    updates.tagOrder = matchedTags.length > 0 ? Math.min(...matchedTags.map(t => t.order)) : 999999;
+    updates.tagOrder =
+      matchedTags.length > 0
+        ? Math.min(...matchedTags.map((t) => t.order))
+        : 999999;
   }
 
-  const updated = await Component.findByIdAndUpdate(req.params.id, updates, { returnDocument: "after" });
+  const updated = await Component.findByIdAndUpdate(req.params.id, updates, {
+    returnDocument: "after",
+  });
 
   // Invalidate this component's cache + all list caches
   await Promise.all([
@@ -718,7 +781,10 @@ const deleteComponent = asyncHandler(async (req, res) => {
   }
 
   const userRole = req.user.role || "user";
-  if (component.createdBy.toString() !== req.user.userId && userRole !== "admin") {
+  if (
+    component.createdBy.toString() !== req.user.userId &&
+    userRole !== "admin"
+  ) {
     res.status(403);
     throw new Error("You can only delete your own components");
   }
@@ -783,7 +849,7 @@ const getTopCreators = asyncHandler(async (req, res) => {
 // ─── GET /api/components/tags ─────────────────────────────────────────────────
 const getApprovedTags = asyncHandler(async (req, res) => {
   const tagCount = await Tag.countDocuments();
-  
+
   if (tagCount === 0) {
     const query = {
       $or: [
@@ -814,16 +880,21 @@ const getApprovedTags = asyncHandler(async (req, res) => {
     const uniqueTags = Array.from(new Set(formattedTags));
 
     // Sort alphabetically (case-insensitive)
-    uniqueTags.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-    
+    uniqueTags.sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+
     if (uniqueTags.length > 0) {
-      const tagDocs = uniqueTags.map((name, index) => ({ name, order: index + 1 }));
+      const tagDocs = uniqueTags.map((name, index) => ({
+        name,
+        order: index + 1,
+      }));
       await Tag.insertMany(tagDocs);
     }
   }
 
   const tags = await Tag.find({}).sort({ order: 1 });
-  const tagNames = tags.map(t => t.name);
+  const tagNames = tags.map((t) => t.name);
 
   res.json({
     success: true,
@@ -848,4 +919,3 @@ module.exports = {
   listComponentsAdmin,
   getApprovedTags,
 };
-

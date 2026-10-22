@@ -20,7 +20,12 @@ import {
 // Social Icons as SVGs for pixel-perfect match
 function FacebookIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         fillRule="evenodd"
         d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
@@ -32,7 +37,12 @@ function FacebookIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 function TwitterIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
@@ -40,7 +50,12 @@ function TwitterIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 function LinkedInIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         fillRule="evenodd"
         d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
@@ -52,7 +67,12 @@ function LinkedInIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 function YouTubeIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         fillRule="evenodd"
         d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.254.418-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 12 5 12 5s6.255 0 7.812.418ZM15.194 12 10 15V9l5.194 3Z"
@@ -64,7 +84,12 @@ function YouTubeIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 function DribbbleIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         fillRule="evenodd"
         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 0 1 1.93 5.314c-.281-.059-2.73-.559-5.32-.23-.07-.156-.14-.316-.217-.478-.636-1.34-1.378-2.616-2.195-3.774 2.898-1.002 5.25-.87 5.802-.832zM12 3.518c2.09 0 4.004.764 5.485 2.036-.503.024-2.585.127-5.26 1.057a39.88 39.88 0 0 0-3.32-4.003c.96-.364 2-.59 3.095-.59zm-4.707 1.7c.94 1.135 1.986 2.378 3.12 3.69-2.13.682-4.66 1.01-7.25 1.077A8.47 8.47 0 0 1 7.293 5.218zM3.52 12c0-.12.006-.24.015-.36 2.77-.07 5.5-.423 7.785-1.155.08.167.155.334.227.502.576 1.34 1.05 2.68 1.417 3.993-3.69.96-6.85 3.04-8.384 5.28A8.46 8.46 0 0 1 3.52 12zm8.48 8.48c-1.89 0-3.64-.627-5.048-1.688 1.4-2.07 4.29-4.005 7.74-4.912.44 1.25.75 2.45.92 3.58a8.528 8.528 0 0 1-3.612 3.02zm5.18-4.2c-.17-1.04-.46-2.14-.87-3.29 2.4-.35 4.7.13 4.97.19a8.47 8.47 0 0 1-4.1 3.1z"
@@ -76,7 +101,11 @@ function DribbbleIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 // Left column and Right column services in exact order shown in the design
 const SERVICES_COLUMN_1 = ["Website design", "UX design", "User research"];
-const SERVICES_COLUMN_2 = ["Content creation", "Strategy & consulting", "Other"];
+const SERVICES_COLUMN_2 = [
+  "Content creation",
+  "Strategy & consulting",
+  "Other",
+];
 
 const COUNTRY_CODES = [
   { code: "US", dial: "+1", country: "United States" },
@@ -112,7 +141,9 @@ export default function ContactClient() {
 
   function handleToggleService(service: string) {
     setServices((prev) =>
-      prev.includes(service) ? prev.filter((s) => s !== service) : [...prev, service]
+      prev.includes(service)
+        ? prev.filter((s) => s !== service)
+        : [...prev, service],
     );
   }
 
@@ -120,7 +151,9 @@ export default function ContactClient() {
     e.preventDefault();
 
     if (!user) {
-      setError("Please sign in to send your message so we can track and reply to your account.");
+      setError(
+        "Please sign in to send your message so we can track and reply to your account.",
+      );
       setLoginModalOpen(true);
       return;
     }
@@ -135,7 +168,9 @@ export default function ContactClient() {
 
     // Structure services and phone into the contact message body cleanly
     const servicesPart =
-      services.length > 0 ? `[Selected Services: ${services.join(", ")}]\n` : "";
+      services.length > 0
+        ? `[Selected Services: ${services.join(", ")}]\n`
+        : "";
     const phonePart = phoneNumber.trim()
       ? `[Phone: ${selectedCountry.dial} ${phoneNumber.trim()}]\n`
       : "";
@@ -156,8 +191,8 @@ export default function ContactClient() {
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
-        err?.message ||
-        "Something went wrong while sending your message. Please try again."
+          err?.message ||
+          "Something went wrong while sending your message. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -176,8 +211,10 @@ export default function ContactClient() {
           alt=""
           className="pointer-events-none absolute -top-[90px] left-1/2 h-[1200px] w-[2140px] max-w-none -translate-x-1/2 object-cover opacity-90 select-none"
           style={{
-            maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%)",
-            WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%)",
+            maskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%)",
           }}
         />
 
@@ -238,7 +275,8 @@ export default function ContactClient() {
                     Get in touch
                   </h2>
                   <p className="mt-3 text-sm leading-relaxed text-[#E9D7FE] sm:text-base">
-                    We’ love to hear from you. Our friendly team is always here to chat.
+                    We’ love to hear from you. Our friendly team is always here
+                    to chat.
                   </p>
 
                   {/* Contact Information Blocks */}
@@ -249,7 +287,9 @@ export default function ContactClient() {
                         <Mail className="h-6 w-6 stroke-[1.75]" />
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-white">Chat to us</h3>
+                        <h3 className="text-base font-semibold text-white">
+                          Chat to us
+                        </h3>
                         <p className="mt-0.5 text-sm text-[#E9D7FE]">
                           Our friendly team is here to help.
                         </p>
@@ -268,7 +308,9 @@ export default function ContactClient() {
                         <MapPin className="h-6 w-6 stroke-[1.75]" />
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-white">Office</h3>
+                        <h3 className="text-base font-semibold text-white">
+                          Office
+                        </h3>
                         <p className="mt-0.5 text-sm text-[#E9D7FE]">
                           Come say hello at our office HQ.
                         </p>
@@ -286,7 +328,9 @@ export default function ContactClient() {
                         <Phone className="h-6 w-6 stroke-[1.75]" />
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-white">Phone</h3>
+                        <h3 className="text-base font-semibold text-white">
+                          Phone
+                        </h3>
                         <p className="mt-0.5 text-sm text-[#E9D7FE]">
                           Mon-Fri from 8am to 5pm.
                         </p>
@@ -373,9 +417,12 @@ export default function ContactClient() {
                     <div className="mt-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
                       <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                       <div className="text-sm">
-                        <p className="font-semibold">Thank you for getting in touch!</p>
+                        <p className="font-semibold">
+                          Thank you for getting in touch!
+                        </p>
                         <p className="mt-1 text-emerald-700">
-                          Our team has received your inquiry and will reply shortly.
+                          Our team has received your inquiry and will reply
+                          shortly.
                         </p>
                         <button
                           type="button"
@@ -453,7 +500,9 @@ export default function ContactClient() {
                             aria-label="Country Dial Code"
                             value={selectedCountry.code}
                             onChange={(e) => {
-                              const found = COUNTRY_CODES.find((c) => c.code === e.target.value);
+                              const found = COUNTRY_CODES.find(
+                                (c) => c.code === e.target.value,
+                              );
                               if (found) setSelectedCountry(found);
                             }}
                             className="h-full cursor-pointer appearance-none rounded-l-lg border-0 bg-transparent py-2.5 pl-3.5 pr-7 text-sm font-medium text-[#344054] focus:outline-none"
@@ -514,14 +563,19 @@ export default function ContactClient() {
                               >
                                 <div
                                   onClick={() => handleToggleService(service)}
-                                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${isChecked
+                                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
+                                    isChecked
                                       ? "border-[#7F56D9] bg-[#7F56D9] text-white"
                                       : "border-[#D0D5DD] bg-white group-hover:border-[#98A2B3]"
-                                    }`}
+                                  }`}
                                 >
-                                  {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                                  {isChecked && (
+                                    <Check className="h-3 w-3 stroke-[3]" />
+                                  )}
                                 </div>
-                                <span onClick={() => handleToggleService(service)}>
+                                <span
+                                  onClick={() => handleToggleService(service)}
+                                >
                                   {service}
                                 </span>
                               </label>
@@ -540,14 +594,19 @@ export default function ContactClient() {
                               >
                                 <div
                                   onClick={() => handleToggleService(service)}
-                                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${isChecked
+                                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
+                                    isChecked
                                       ? "border-[#7F56D9] bg-[#7F56D9] text-white"
                                       : "border-[#D0D5DD] bg-white group-hover:border-[#98A2B3]"
-                                    }`}
+                                  }`}
                                 >
-                                  {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                                  {isChecked && (
+                                    <Check className="h-3 w-3 stroke-[3]" />
+                                  )}
                                 </div>
-                                <span onClick={() => handleToggleService(service)}>
+                                <span
+                                  onClick={() => handleToggleService(service)}
+                                >
                                   {service}
                                 </span>
                               </label>

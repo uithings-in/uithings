@@ -206,17 +206,21 @@ const activateUserPlan = asyncHandler(async (req, res) => {
     formattedTxId = transactionId.trim();
 
     // Check if a transaction with this transaction ID already exists
-    const existingTx = await Transaction.findOne({ razorpayPaymentId: formattedTxId });
+    const existingTx = await Transaction.findOne({
+      razorpayPaymentId: formattedTxId,
+    });
     if (existingTx) {
       res.status(400);
-      throw new Error(`Transaction with ID "${formattedTxId}" already exists. Please use a unique transaction ID.`);
+      throw new Error(
+        `Transaction with ID "${formattedTxId}" already exists. Please use a unique transaction ID.`,
+      );
     }
   }
 
   // Cancel any existing active subscriptions for this user
   await Subscription.updateMany(
     { userId: user._id, status: "active" },
-    { $set: { status: "cancelled" } }
+    { $set: { status: "cancelled" } },
   );
 
   const durationDays = Number(customDurationDays) || plan.durationDays;
@@ -241,33 +245,35 @@ const activateUserPlan = asyncHandler(async (req, res) => {
   const amountInPaise = isPromotion
     ? 0
     : !isNaN(parsedAmount) && parsedAmount > 0
-    ? Math.round(parsedAmount * 100)
-    : plan.price;
+      ? Math.round(parsedAmount * 100)
+      : plan.price;
 
   const txDate = isPromotion
     ? new Date()
     : paymentDate
-    ? new Date(paymentDate)
-    : new Date();
+      ? new Date(paymentDate)
+      : new Date();
 
   const finalPaymentMethod = isPromotion
     ? "Admin Promotion (Complimentary)"
     : bankName && bankName.trim()
-    ? `Bank Transfer (${bankName.trim()})`
-    : "Manual Offline";
+      ? `Bank Transfer (${bankName.trim()})`
+      : "Manual Offline";
 
   const finalBankName = isPromotion
     ? "N/A (Promotion)"
     : bankName && bankName.trim()
-    ? bankName.trim()
-    : null;
+      ? bankName.trim()
+      : null;
 
   const transaction = await Transaction.create({
     userId: user._id,
     subscriptionId: subscription._id,
     planId: plan._id,
     razorpayPaymentId: formattedTxId,
-    razorpayOrderId: isPromotion ? `PROMO_ORD_${Date.now()}` : `MANUAL_ORD_${Date.now()}`,
+    razorpayOrderId: isPromotion
+      ? `PROMO_ORD_${Date.now()}`
+      : `MANUAL_ORD_${Date.now()}`,
     amount: amountInPaise,
     currency: "INR",
     status: "captured",
@@ -280,7 +286,11 @@ const activateUserPlan = asyncHandler(async (req, res) => {
       transactionId: formattedTxId,
       bankName: finalBankName || "",
       paymentDate: txDate.toISOString(),
-      amountInRupees: isPromotion ? 0 : !isNaN(parsedAmount) && parsedAmount > 0 ? parsedAmount : Math.floor(plan.price / 100),
+      amountInRupees: isPromotion
+        ? 0
+        : !isNaN(parsedAmount) && parsedAmount > 0
+          ? parsedAmount
+          : Math.floor(plan.price / 100),
       activatedByAdminId: req.user?._id || req.user?.userId || null,
     },
   });
@@ -308,7 +318,9 @@ const activateUserPlan = asyncHandler(async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         status: updatedUser.status || "active",
-        authProvider: updatedUser.authProvider || (updatedUser.googleId ? "google" : "local"),
+        authProvider:
+          updatedUser.authProvider ||
+          (updatedUser.googleId ? "google" : "local"),
         profilePicture: updatedUser.profilePicture || "",
         role: updatedUser.role || "user",
         isProUser: !!updatedUser.isProUser,
@@ -340,7 +352,7 @@ const cancelUserSubscription = asyncHandler(async (req, res) => {
 
   await Subscription.updateMany(
     { userId: user._id, status: "active" },
-    { $set: { status: "cancelled" } }
+    { $set: { status: "cancelled" } },
   );
 
   user.activeSubscription = null;
@@ -361,7 +373,9 @@ const cancelUserSubscription = asyncHandler(async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         status: updatedUser.status || "active",
-        authProvider: updatedUser.authProvider || (updatedUser.googleId ? "google" : "local"),
+        authProvider:
+          updatedUser.authProvider ||
+          (updatedUser.googleId ? "google" : "local"),
         profilePicture: updatedUser.profilePicture || "",
         role: updatedUser.role || "user",
         isProUser: !!updatedUser.isProUser,

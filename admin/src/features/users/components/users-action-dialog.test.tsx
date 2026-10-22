@@ -48,7 +48,9 @@ describe('UsersActionDialog', () => {
         level: 2,
         name: /Edit User Profile/i,
       })
-      const desc = getByText(new RegExp(`Manage permissions and status for ${MOCK_USER.name}`, 'i'))
+      const desc = getByText(
+        new RegExp(`Manage permissions and status for ${MOCK_USER.name}`, 'i')
+      )
 
       await expect.element(title).toBeInTheDocument()
       await expect.element(desc).toBeInTheDocument()

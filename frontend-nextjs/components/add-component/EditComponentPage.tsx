@@ -113,16 +113,23 @@ export function EditComponentView({
     const existingTags = component.tags || [];
     const isApp = existingTags.some((t) => t.toLowerCase() === "app");
     setPlatformTag(isApp ? "app" : "web");
-    setTags(existingTags.filter((t) => !["web", "app"].includes(t.toLowerCase())));
+    setTags(
+      existingTags.filter((t) => !["web", "app"].includes(t.toLowerCase())),
+    );
 
     setFigmaPayload(component.figmaDataBase64 || "");
 
-    const darkImg = component.darkPreviewImageUrl || component.previewImageUrl || "";
-    const lightImg = component.lightPreviewImageUrl || component.previewImageUrl || "";
+    const darkImg =
+      component.darkPreviewImageUrl || component.previewImageUrl || "";
+    const lightImg =
+      component.lightPreviewImageUrl || component.previewImageUrl || "";
     setDarkPreviewUrl(darkImg);
     setLightPreviewUrl(lightImg);
 
-    if (component.designType === "Wireframe" || component.designType === "UI Design") {
+    if (
+      component.designType === "Wireframe" ||
+      component.designType === "UI Design"
+    ) {
       setDesignType(component.designType);
     }
     if (component.pricingType === "Pro" || component.pricingType === "Free") {
@@ -177,21 +184,47 @@ export function EditComponentView({
     if (touched.figmaPayload && !figmaDataBase64.trim()) {
       errs.figmaPayload = "Figma component payload is required.";
     }
-    if (touched.previewFile && !darkPreviewUrl && !lightPreviewUrl && !darkPreviewFile && !lightPreviewFile) {
+    if (
+      touched.previewFile &&
+      !darkPreviewUrl &&
+      !lightPreviewUrl &&
+      !darkPreviewFile &&
+      !lightPreviewFile
+    ) {
       errs.previewFile = "At least one preview screenshot is required.";
     }
     return errs;
-  }, [name, figmaDataBase64, darkPreviewUrl, lightPreviewUrl, darkPreviewFile, lightPreviewFile, touched]);
+  }, [
+    name,
+    figmaDataBase64,
+    darkPreviewUrl,
+    lightPreviewUrl,
+    darkPreviewFile,
+    lightPreviewFile,
+    touched,
+  ]);
 
   const missingFields = useMemo(() => {
     const missing: string[] = [];
     if (!name.trim()) missing.push("Component name");
     if (!figmaDataBase64.trim()) missing.push("Figma payload");
-    if (!darkPreviewUrl && !lightPreviewUrl && !darkPreviewFile && !lightPreviewFile) {
+    if (
+      !darkPreviewUrl &&
+      !lightPreviewUrl &&
+      !darkPreviewFile &&
+      !lightPreviewFile
+    ) {
       missing.push("Preview screenshot");
     }
     return missing;
-  }, [name, figmaDataBase64, darkPreviewUrl, lightPreviewUrl, darkPreviewFile, lightPreviewFile]);
+  }, [
+    name,
+    figmaDataBase64,
+    darkPreviewUrl,
+    lightPreviewUrl,
+    darkPreviewFile,
+    lightPreviewFile,
+  ]);
 
   const canPublish = missingFields.length === 0;
 
@@ -224,7 +257,7 @@ export function EditComponentView({
       designType,
       pricingType,
       platformTag,
-    ]
+    ],
   );
 
   // Verification Checklist items
@@ -239,7 +272,12 @@ export function EditComponentView({
       {
         id: "preview",
         label: "Preview screenshot",
-        completed: !!(darkPreviewUrl || lightPreviewUrl || darkPreviewFile || lightPreviewFile),
+        completed: !!(
+          darkPreviewUrl ||
+          lightPreviewUrl ||
+          darkPreviewFile ||
+          lightPreviewFile
+        ),
         required: true,
       },
       {
@@ -261,7 +299,16 @@ export function EditComponentView({
         required: false,
       },
     ],
-    [figmaDataBase64, darkPreviewUrl, lightPreviewUrl, darkPreviewFile, lightPreviewFile, name, tags, description]
+    [
+      figmaDataBase64,
+      darkPreviewUrl,
+      lightPreviewUrl,
+      darkPreviewFile,
+      lightPreviewFile,
+      name,
+      tags,
+      description,
+    ],
   );
 
   const completedCount = checklist.filter((item) => item.completed).length;
@@ -278,21 +325,38 @@ export function EditComponentView({
         markTouched("figmaPayload");
         throw new Error("Please paste your Figma component payload.");
       }
-      if (!darkPreviewUrl && !lightPreviewUrl && !darkPreviewFile && !lightPreviewFile) {
+      if (
+        !darkPreviewUrl &&
+        !lightPreviewUrl &&
+        !darkPreviewFile &&
+        !lightPreviewFile
+      ) {
         markTouched("previewFile");
         throw new Error("Please upload at least one preview screenshot.");
       }
 
       // 1. Upload preview images if new files were selected
-      const uploadPromises: [Promise<string | undefined>, Promise<string | undefined>] = [
-        darkPreviewFile ? uploadApi.uploadImage(darkPreviewFile) : Promise.resolve(undefined),
-        lightPreviewFile ? uploadApi.uploadImage(lightPreviewFile) : Promise.resolve(undefined),
+      const uploadPromises: [
+        Promise<string | undefined>,
+        Promise<string | undefined>,
+      ] = [
+        darkPreviewFile
+          ? uploadApi.uploadImage(darkPreviewFile)
+          : Promise.resolve(undefined),
+        lightPreviewFile
+          ? uploadApi.uploadImage(lightPreviewFile)
+          : Promise.resolve(undefined),
       ];
 
-      const [uploadedDarkUrl, uploadedLightUrl] = await Promise.all(uploadPromises);
+      const [uploadedDarkUrl, uploadedLightUrl] =
+        await Promise.all(uploadPromises);
 
-      const finalDarkUrl = uploadedDarkUrl || (darkPreviewUrl.startsWith("blob:") ? "" : darkPreviewUrl);
-      const finalLightUrl = uploadedLightUrl || (lightPreviewUrl.startsWith("blob:") ? "" : lightPreviewUrl);
+      const finalDarkUrl =
+        uploadedDarkUrl ||
+        (darkPreviewUrl.startsWith("blob:") ? "" : darkPreviewUrl);
+      const finalLightUrl =
+        uploadedLightUrl ||
+        (lightPreviewUrl.startsWith("blob:") ? "" : lightPreviewUrl);
       const finalPreviewUrl = finalDarkUrl || finalLightUrl || "";
 
       // 2. Combine tags with platform tag for discoverability
@@ -301,9 +365,11 @@ export function EditComponentView({
           [...tags, platformTag]
             .filter(Boolean)
             .filter(
-              (tag) => !["web", "app"].includes(tag.toLowerCase()) || tag === platformTag
-            )
-        )
+              (tag) =>
+                !["web", "app"].includes(tag.toLowerCase()) ||
+                tag === platformTag,
+            ),
+        ),
       );
 
       // 3. Update component API call
@@ -322,8 +388,12 @@ export function EditComponentView({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["components"] });
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
-      queryClient.invalidateQueries({ queryKey: ["components", "detail-edit", componentId] });
-      queryClient.invalidateQueries({ queryKey: ["components", "detail", componentId] });
+      queryClient.invalidateQueries({
+        queryKey: ["components", "detail-edit", componentId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["components", "detail", componentId],
+      });
 
       setSuccessToast(`"${name}" updated successfully!`);
 
@@ -377,9 +447,13 @@ export function EditComponentView({
     return (
       <div className="rounded-2xl border border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[#121316] p-8 text-center space-y-3">
         <AlertCircle size={28} className="mx-auto text-rose-500" />
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white">Could not load component</h3>
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+          Could not load component
+        </h3>
         <p className="text-xs text-gray-500 dark:text-neutral-400">
-          {error instanceof Error ? error.message : "The component could not be found or you don't have access."}
+          {error instanceof Error
+            ? error.message
+            : "The component could not be found or you don't have access."}
         </p>
         <button
           type="button"
@@ -428,7 +502,10 @@ export function EditComponentView({
           className="flex items-center justify-between rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3.5 text-xs font-semibold text-emerald-900 dark:text-emerald-200 shadow-xs animate-in fade-in duration-150"
         >
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2
+              size={15}
+              className="text-emerald-600 dark:text-emerald-400"
+            />
             <span>{successToast}</span>
           </div>
           <button
@@ -449,7 +526,10 @@ export function EditComponentView({
           aria-live="assertive"
           className="flex items-center gap-2 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3.5 text-xs font-semibold text-rose-800 dark:text-rose-200 shadow-xs animate-in fade-in duration-150"
         >
-          <AlertCircle size={15} className="text-rose-600 dark:text-rose-400 shrink-0" />
+          <AlertCircle
+            size={15}
+            className="text-rose-600 dark:text-rose-400 shrink-0"
+          />
           <span className="flex-1">{submitError}</span>
           <button
             type="button"

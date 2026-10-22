@@ -2,12 +2,19 @@ import { apiClient } from "./client";
 import type { AuthPayload, User } from "../lib/types";
 
 export const authApi = {
-  async register(input: { name: string; email: string; password: string }): Promise<AuthPayload> {
+  async register(input: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<AuthPayload> {
     const response = await apiClient.post("/auth/register", input);
     return response.data.data;
   },
 
-  async login(input: { email: string; password: string }): Promise<AuthPayload> {
+  async login(input: {
+    email: string;
+    password: string;
+  }): Promise<AuthPayload> {
     const response = await apiClient.post("/auth/login", input);
     return response.data.data;
   },
@@ -16,7 +23,6 @@ export const authApi = {
     const response = await apiClient.post("/auth/google", { idToken });
     return response.data.data;
   },
-
 
   async me(): Promise<User> {
     const response = await apiClient.get("/auth/me");

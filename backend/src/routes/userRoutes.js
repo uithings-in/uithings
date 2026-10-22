@@ -25,4 +25,3 @@ router.post("/:id/cancel-subscription", cancelUserSubscription);
 router.route("/:id").get(getUserById).patch(updateUser).delete(deleteUser);
 
 module.exports = router;
-

@@ -1,12 +1,29 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { paymentsApi, type CurrentSubscriptionData, type PurchasedSubscriptionRecord } from "../../api/payments";
+import {
+  paymentsApi,
+  type CurrentSubscriptionData,
+  type PurchasedSubscriptionRecord,
+} from "../../api/payments";
 import { componentsApi } from "../../api/components";
 import { uploadApi } from "../../api/upload";
 import { contactApi, type ContactInput } from "../../api/contact";
@@ -194,7 +211,13 @@ const INITIAL_LEADS: LeadRecord[] = [
 ];
 
 // Mini SVG Sparkline Component
-function Sparkline({ points, color = "#F97316" }: { points: number[]; color?: string }) {
+function Sparkline({
+  points,
+  color = "#F97316",
+}: {
+  points: number[];
+  color?: string;
+}) {
   const min = Math.min(...points);
   const max = Math.max(...points);
   const range = max - min || 1;
@@ -234,29 +257,44 @@ function ScoreMeter({ score, max = 10 }: { score: number; max?: number }) {
       else if (score >= 5) colorClass = "bg-[#FBBF24]";
       else colorClass = "bg-[#F87171]";
     }
-    return <span key={i} className={`h-3 w-[2.5px] rounded-full transition-colors ${colorClass}`} />;
+    return (
+      <span
+        key={i}
+        className={`h-3 w-[2.5px] rounded-full transition-colors ${colorClass}`}
+      />
+    );
   });
 
   return (
     <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-gray-600">
       <div className="flex items-center gap-[2px]">{bars}</div>
-      <span className="text-[10px] text-gray-400 font-sans">{score}/{max}</span>
+      <span className="text-[10px] text-gray-400 font-sans">
+        {score}/{max}
+      </span>
     </div>
   );
 }
 
 // Status Badge Component
 function StatusPill({ status }: { status: LeadRecord["status"] }) {
-  const configs: Record<string, { bg: string; text: string; border?: string }> = {
-    HOT: { bg: "bg-[#FFF4ED]", text: "text-[#EA580C]" },
-    OPEN: { bg: "bg-[#F1F5F9]", text: "text-[#475569]" },
-    NEW: { bg: "bg-[#EFF6FF]", text: "text-[#2563EB]" },
-    QUALIFIED: { bg: "bg-[#ECFDF5]", text: "text-[#059669]" },
-    "IN PROGRESS": { bg: "bg-[#F8FAFC]", text: "text-[#64748B]", border: "border border-gray-200" },
-    PENDING: { bg: "bg-[#FFFBEB]", text: "text-[#D97706]" },
-  };
+  const configs: Record<string, { bg: string; text: string; border?: string }> =
+    {
+      HOT: { bg: "bg-[#FFF4ED]", text: "text-[#EA580C]" },
+      OPEN: { bg: "bg-[#F1F5F9]", text: "text-[#475569]" },
+      NEW: { bg: "bg-[#EFF6FF]", text: "text-[#2563EB]" },
+      QUALIFIED: { bg: "bg-[#ECFDF5]", text: "text-[#059669]" },
+      "IN PROGRESS": {
+        bg: "bg-[#F8FAFC]",
+        text: "text-[#64748B]",
+        border: "border border-gray-200",
+      },
+      PENDING: { bg: "bg-[#FFFBEB]", text: "text-[#D97706]" },
+    };
 
-  const current = configs[status] || { bg: "bg-gray-100", text: "text-gray-600" };
+  const current = configs[status] || {
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+  };
 
   return (
     <span
@@ -288,10 +326,14 @@ function DeleteConfirmModal({
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-100"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="mb-1 text-base font-bold text-gray-900">Delete component?</h3>
+        <h3 className="mb-1 text-base font-bold text-gray-900">
+          Delete component?
+        </h3>
         <p className="mb-5 text-xs leading-relaxed text-gray-500">
-          <span className="font-semibold text-gray-700">&quot;{name}&quot;</span> will be permanently removed.
-          This action cannot be undone.
+          <span className="font-semibold text-gray-700">
+            &quot;{name}&quot;
+          </span>{" "}
+          will be permanently removed. This action cannot be undone.
         </p>
         <div className="flex justify-end gap-2.5">
           <button
@@ -350,17 +392,19 @@ function ToastPopup({
     message.toLowerCase().includes("error") ||
     message.toLowerCase().includes("no figma");
 
-  const isWarning = type === "warning" || message.toLowerCase().includes("warning");
+  const isWarning =
+    type === "warning" || message.toLowerCase().includes("warning");
 
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-sm flex items-start gap-3 rounded-2xl bg-white p-3.5 shadow-[0_15px_40px_rgba(0,0,0,0.16)] border border-gray-200 text-xs animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5 ${isError
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5 ${
+          isError
             ? "bg-rose-50 text-rose-600 border border-rose-100"
             : isWarning
               ? "bg-amber-50 text-amber-600 border border-amber-100"
               : "bg-emerald-50 text-emerald-600 border border-emerald-100"
-          }`}
+        }`}
       >
         {isError ? (
           <XCircle size={16} />
@@ -376,9 +420,7 @@ function ToastPopup({
             {title}
           </h5>
         )}
-        <p className="text-[11.5px] text-gray-600 leading-snug">
-          {message}
-        </p>
+        <p className="text-[11.5px] text-gray-600 leading-snug">{message}</p>
         {actionLabel && onAction && (
           <button
             type="button"
@@ -424,7 +466,10 @@ function MyComponentsPanel({
   const [search, setSearch] = useState("");
   const [copyingId, setCopyingId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -442,8 +487,14 @@ function MyComponentsPanel({
     queryFn: ({ pageParam }: { pageParam: { skip: number; limit: number } }) =>
       componentsApi.listMine(search, 1, pageParam.limit, pageParam.skip),
     initialPageParam: { skip: 0, limit: MY_COMPONENTS_PAGE_SIZE },
-    getNextPageParam: (lastPage: PaginatedComponentResponse, allPages: PaginatedComponentResponse[]) => {
-      const totalLoaded = allPages.reduce((acc, page) => acc + (page?.items?.length || 0), 0);
+    getNextPageParam: (
+      lastPage: PaginatedComponentResponse,
+      allPages: PaginatedComponentResponse[],
+    ) => {
+      const totalLoaded = allPages.reduce(
+        (acc, page) => acc + (page?.items?.length || 0),
+        0,
+      );
       return totalLoaded < (lastPage?.pagination?.total ?? 0)
         ? { skip: totalLoaded, limit: MY_COMPONENTS_PAGE_SIZE }
         : undefined;
@@ -455,7 +506,10 @@ function MyComponentsPanel({
     refetchOnWindowFocus: true,
   });
 
-  const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const items = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data],
+  );
   const total = data?.pages[0]?.pagination?.total ?? items.length;
 
   useEffect(() => {
@@ -468,7 +522,7 @@ function MyComponentsPanel({
           fetchNextPage();
         }
       },
-      { root: null, rootMargin: "500px 0px", threshold: 0 }
+      { root: null, rootMargin: "500px 0px", threshold: 0 },
     );
 
     observer.observe(target);
@@ -495,7 +549,11 @@ function MyComponentsPanel({
     },
   });
 
-  async function handleCopy(id: string, name: string, figmaDataBase64?: string) {
+  async function handleCopy(
+    id: string,
+    name: string,
+    figmaDataBase64?: string,
+  ) {
     setCopyStatus("");
     setCopyingId(id);
     try {
@@ -529,7 +587,7 @@ function MyComponentsPanel({
 
   const toggleSelectOne = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -539,7 +597,10 @@ function MyComponentsPanel({
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
             <input
               type="text"
               placeholder="Search components..."
@@ -564,15 +625,21 @@ function MyComponentsPanel({
           <div className="flex items-center rounded-lg border border-gray-200 bg-white p-0.5 shadow-sm">
             <button
               onClick={() => setViewMode("table")}
-              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${viewMode === "table" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
-                }`}
+              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${
+                viewMode === "table"
+                  ? "bg-gray-100 text-gray-900 font-bold"
+                  : "text-gray-400 hover:text-gray-700"
+              }`}
             >
               <List size={13} />
             </button>
             <button
               onClick={() => setViewMode("grid")}
-              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${viewMode === "grid" ? "bg-gray-100 text-gray-900 font-bold" : "text-gray-400 hover:text-gray-700"
-                }`}
+              className={`flex h-7 w-7 items-center justify-center rounded-md text-xs transition cursor-pointer ${
+                viewMode === "grid"
+                  ? "bg-gray-100 text-gray-900 font-bold"
+                  : "text-gray-400 hover:text-gray-700"
+              }`}
             >
               <LayoutGrid size={13} />
             </button>
@@ -580,7 +647,11 @@ function MyComponentsPanel({
 
           <button
             type="button"
-            onClick={onNavigateToAdd ? onNavigateToAdd : () => router.push("/dashboard?page=add-components")}
+            onClick={
+              onNavigateToAdd
+                ? onNavigateToAdd
+                : () => router.push("/dashboard?page=add-components")
+            }
             className="flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3 text-xs font-semibold text-white shadow-sm hover:bg-[#EA580C] transition cursor-pointer"
           >
             <Plus size={14} strokeWidth={2.5} />
@@ -610,7 +681,8 @@ function MyComponentsPanel({
           <p className="mt-1 text-xs text-red-500/90 max-w-sm">
             {axios.isAxiosError(error) && error.response?.data?.message
               ? error.response.data.message
-              : (error as Error)?.message || "Please check your network connection or try again."}
+              : (error as Error)?.message ||
+                "Please check your network connection or try again."}
           </p>
           <div className="mt-4 flex items-center gap-2">
             {axios.isAxiosError(error) && error.response?.status === 401 ? (
@@ -639,13 +711,20 @@ function MyComponentsPanel({
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-[#F97316]">
             <Package size={24} strokeWidth={1.8} />
           </div>
-          <p className="text-sm font-bold text-gray-800">You haven&apos;t uploaded any components yet.</p>
+          <p className="text-sm font-bold text-gray-800">
+            You haven&apos;t uploaded any components yet.
+          </p>
           <p className="text-xs text-gray-400 mt-1 max-w-sm">
-            Publish custom components to your library and copy them directly to Figma anytime.
+            Publish custom components to your library and copy them directly to
+            Figma anytime.
           </p>
           <button
             type="button"
-            onClick={onNavigateToAdd ? onNavigateToAdd : () => router.push("/dashboard?page=add-components")}
+            onClick={
+              onNavigateToAdd
+                ? onNavigateToAdd
+                : () => router.push("/dashboard?page=add-components")
+            }
             className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#F97316] px-3.5 text-xs font-semibold text-white transition hover:bg-[#EA580C] cursor-pointer"
           >
             <Plus size={14} strokeWidth={2.5} />
@@ -664,7 +743,11 @@ function MyComponentsPanel({
               >
                 <div
                   className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
-                  style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
+                  style={
+                    item.previewImageUrl
+                      ? { backgroundImage: `url(${item.previewImageUrl})` }
+                      : {}
+                  }
                   aria-label={item.name}
                 >
                   {!item.previewImageUrl && (
@@ -674,12 +757,13 @@ function MyComponentsPanel({
                   )}
                   {item.status && (
                     <span
-                      className={`absolute right-2.5 top-2.5 rounded px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm ${item.status === "approved"
+                      className={`absolute right-2.5 top-2.5 rounded px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm ${
+                        item.status === "approved"
                           ? "bg-emerald-500"
                           : item.status === "rejected"
                             ? "bg-rose-500"
                             : "bg-amber-500"
-                        }`}
+                      }`}
                     >
                       {item.status}
                     </span>
@@ -688,7 +772,9 @@ function MyComponentsPanel({
 
                 <div className="p-3.5 flex flex-col flex-1 justify-between">
                   <div>
-                    <h4 className="truncate text-xs font-bold text-gray-900 leading-snug">{item.name}</h4>
+                    <h4 className="truncate text-xs font-bold text-gray-900 leading-snug">
+                      {item.name}
+                    </h4>
                     {item.tags.length > 0 && (
                       <div className="mt-1.5 flex flex-wrap gap-1">
                         {item.tags.slice(0, 3).map((tag) => (
@@ -706,7 +792,9 @@ function MyComponentsPanel({
                   <div className="mt-3.5 flex items-center gap-1.5 pt-2 border-t border-gray-100">
                     <button
                       type="button"
-                      onClick={() => handleCopy(item._id, item.name, item.figmaDataBase64)}
+                      onClick={() =>
+                        handleCopy(item._id, item.name, item.figmaDataBase64)
+                      }
                       disabled={copyingId === item._id}
                       className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white py-1.5 text-[11px] font-semibold text-gray-700 transition hover:bg-gray-50 hover:text-gray-900 disabled:opacity-60 cursor-pointer"
                     >
@@ -723,7 +811,9 @@ function MyComponentsPanel({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDeleteTarget({ id: item._id, name: item.name })}
+                      onClick={() =>
+                        setDeleteTarget({ id: item._id, name: item.name })
+                      }
                       className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-red-50 hover:text-red-500 hover:border-red-200 cursor-pointer"
                       aria-label="Delete component"
                     >
@@ -735,7 +825,10 @@ function MyComponentsPanel({
             ))}
           </div>
 
-          <div ref={loadMoreRef} className="flex min-h-8 items-center justify-center py-2">
+          <div
+            ref={loadMoreRef}
+            className="flex min-h-8 items-center justify-center py-2"
+          >
             {isFetchingNextPage ? (
               <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-400">
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F97316]" />
@@ -744,7 +837,9 @@ function MyComponentsPanel({
             ) : hasNextPage ? (
               <span className="sr-only">Load more</span>
             ) : (
-              <span className="text-[11px] font-medium text-gray-300">All components loaded</span>
+              <span className="text-[11px] font-medium text-gray-300">
+                All components loaded
+              </span>
             )}
           </div>
         </>
@@ -758,7 +853,9 @@ function MyComponentsPanel({
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={selectedIds.length === items.length && items.length > 0}
+                    checked={
+                      selectedIds.length === items.length && items.length > 0
+                    }
                     onChange={toggleSelectAll}
                     className="h-3.5 w-3.5 rounded border-gray-300 accent-[#F97316] cursor-pointer"
                   />
@@ -792,42 +889,62 @@ function MyComponentsPanel({
                         <div className="h-8 w-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
                           {item.previewImageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={item.previewImageUrl} alt={item.name} className="h-full w-full object-cover" />
+                            <img
+                              src={item.previewImageUrl}
+                              alt={item.name}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <Package size={14} className="text-gray-400" />
                           )}
                         </div>
-                        <span className="truncate max-w-[180px] font-bold">{item.name}</span>
+                        <span className="truncate max-w-[180px] font-bold">
+                          {item.name}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {item.tags.slice(0, 2).map((t) => (
-                          <span key={t} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">
+                          <span
+                            key={t}
+                            className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500"
+                          >
                             {t}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 font-medium">{item.designType || "UI Design"}</td>
+                    <td className="px-4 py-3 text-gray-500 font-medium">
+                      {item.designType || "UI Design"}
+                    </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${item.status === "approved"
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${
+                          item.status === "approved"
                             ? "bg-emerald-50 text-emerald-700"
                             : item.status === "rejected"
                               ? "bg-rose-50 text-rose-700"
                               : "bg-amber-50 text-amber-700"
-                          }`}
+                        }`}
                       >
                         {item.status || "Approved"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 font-medium">{item.pricingType || "Free"}</td>
+                    <td className="px-4 py-3 text-gray-500 font-medium">
+                      {item.pricingType || "Free"}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
-                          onClick={() => handleCopy(item._id, item.name, item.figmaDataBase64)}
+                          onClick={() =>
+                            handleCopy(
+                              item._id,
+                              item.name,
+                              item.figmaDataBase64,
+                            )
+                          }
                           className="rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
                         >
                           Copy
@@ -841,7 +958,9 @@ function MyComponentsPanel({
                         </button>
                         <button
                           type="button"
-                          onClick={() => setDeleteTarget({ id: item._id, name: item.name })}
+                          onClick={() =>
+                            setDeleteTarget({ id: item._id, name: item.name })
+                          }
                           className="rounded-lg p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
                         >
                           <Trash2 size={13} />
@@ -871,13 +990,14 @@ function MyComponentsPanel({
 // ==========================================
 // ADD COMPONENT DASHBOARD PANEL (FULL WIDTH)
 // ==========================================
-function AddComponentDashboardPanel({ onSuccess, onCancel }: { onSuccess?: () => void; onCancel?: () => void }) {
-  return (
-    <AddComponentPanel
-      onSuccess={onSuccess}
-      onCancel={onCancel}
-    />
-  );
+function AddComponentDashboardPanel({
+  onSuccess,
+  onCancel,
+}: {
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
+  return <AddComponentPanel onSuccess={onSuccess} onCancel={onCancel} />;
 }
 
 // ==========================================
@@ -955,7 +1075,10 @@ function FavoriteComponentsPanel() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
           <input
             type="text"
             placeholder="Search favorites..."
@@ -995,7 +1118,8 @@ function FavoriteComponentsPanel() {
           <p className="mt-1 text-xs text-red-500/90 max-w-sm">
             {axios.isAxiosError(error) && error.response?.data?.message
               ? error.response.data.message
-              : (error as Error)?.message || "Please check your network connection or try again."}
+              : (error as Error)?.message ||
+                "Please check your network connection or try again."}
           </p>
           <div className="mt-4 flex items-center gap-2">
             {axios.isAxiosError(error) && error.response?.status === 401 ? (
@@ -1024,9 +1148,12 @@ function FavoriteComponentsPanel() {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-rose-500">
             <Heart size={24} strokeWidth={1.8} />
           </div>
-          <p className="text-sm font-bold text-gray-800">No favorite components saved yet.</p>
+          <p className="text-sm font-bold text-gray-800">
+            No favorite components saved yet.
+          </p>
           <p className="text-xs text-gray-400 mt-1 max-w-sm">
-            Save components from the UI library to access and copy them instantly here.
+            Save components from the UI library to access and copy them
+            instantly here.
           </p>
           <Link
             href="/components"
@@ -1047,7 +1174,11 @@ function FavoriteComponentsPanel() {
             >
               <div
                 className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
-                style={item.previewImageUrl ? { backgroundImage: `url(${item.previewImageUrl})` } : {}}
+                style={
+                  item.previewImageUrl
+                    ? { backgroundImage: `url(${item.previewImageUrl})` }
+                    : {}
+                }
                 aria-label={item.name}
               >
                 {!item.previewImageUrl && (
@@ -1058,7 +1189,10 @@ function FavoriteComponentsPanel() {
                 <button
                   type="button"
                   onClick={() => toggleFavoriteMutation.mutate(item._id)}
-                  disabled={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === item._id}
+                  disabled={
+                    toggleFavoriteMutation.isPending &&
+                    toggleFavoriteMutation.variables === item._id
+                  }
                   className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-rose-500 shadow-sm backdrop-blur transition hover:scale-105 cursor-pointer"
                   title="Remove from favorites"
                 >
@@ -1068,7 +1202,9 @@ function FavoriteComponentsPanel() {
 
               <div className="p-3.5 flex flex-col flex-1 justify-between">
                 <div>
-                  <h4 className="truncate text-xs font-bold text-gray-900 leading-snug">{item.name}</h4>
+                  <h4 className="truncate text-xs font-bold text-gray-900 leading-snug">
+                    {item.name}
+                  </h4>
                   {item.tags.length > 0 && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       {item.tags.slice(0, 3).map((tag) => (
@@ -1152,7 +1288,11 @@ function BillingPanel() {
   const queryClient = useQueryClient();
   const [activationStatus, setActivationStatus] = useState("");
 
-  const { data: purchases = [], isLoading, isError } = useQuery({
+  const {
+    data: purchases = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["subscription", "history"],
     queryFn: () => paymentsApi.getSubscriptionHistory(),
   });
@@ -1163,7 +1303,8 @@ function BillingPanel() {
   });
 
   const isPremiumPlusActive = !!(
-    currentSub?.plan?.displayName?.toLowerCase().replace(/\s+/g, "") === "premium+" ||
+    currentSub?.plan?.displayName?.toLowerCase().replace(/\s+/g, "") ===
+      "premium+" ||
     currentSub?.plan?.name === "pro_annual" ||
     (currentSub?.maxComponents ?? 0) >= 999999
   );
@@ -1171,7 +1312,7 @@ function BillingPanel() {
   const activePlan = purchases.find((p) => p.status === "active");
   const queuedPlans = purchases.filter((p) => p.status === "queued");
   const pastPlans = purchases.filter(
-    (p) => p.status !== "active" && p.status !== "queued"
+    (p) => p.status !== "active" && p.status !== "queued",
   );
 
   const activateMutation = useMutation({
@@ -1183,7 +1324,7 @@ function BillingPanel() {
     },
     onError: (error) => {
       setActivationStatus(
-        error instanceof Error ? error.message : "Activation failed"
+        error instanceof Error ? error.message : "Activation failed",
       );
     },
   });
@@ -1202,8 +1343,12 @@ function BillingPanel() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
         <div>
-          <h2 className="text-base font-extrabold text-gray-900">Subscription & Credits</h2>
-          <p className="text-xs text-gray-500">Manage plan tiers, validity, limits, and billing history.</p>
+          <h2 className="text-base font-extrabold text-gray-900">
+            Subscription & Credits
+          </h2>
+          <p className="text-xs text-gray-500">
+            Manage plan tiers, validity, limits, and billing history.
+          </p>
         </div>
 
         <Link
@@ -1216,7 +1361,10 @@ function BillingPanel() {
       </div>
 
       {/* Floating Bottom-Right Toast Popup */}
-      <ToastPopup message={activationStatus} onClose={() => setActivationStatus("")} />
+      <ToastPopup
+        message={activationStatus}
+        onClose={() => setActivationStatus("")}
+      />
 
       {isLoading && (
         <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-20 text-xs font-medium text-gray-400">
@@ -1237,15 +1385,22 @@ function BillingPanel() {
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Current Plan</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Current Plan
+                </span>
                 <h3 className="text-lg font-extrabold text-gray-900 mt-0.5">
-                  {currentSub?.status === "active" ? (currentSub.plan?.displayName || "Pro Plan") : "Free Tier"}
+                  {currentSub?.status === "active"
+                    ? currentSub.plan?.displayName || "Pro Plan"
+                    : "Free Tier"}
                 </h3>
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${currentSub?.status === "active" ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-gray-100 text-gray-600"
-                    }`}
+                  className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                    currentSub?.status === "active"
+                      ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
                 >
                   {currentSub?.status === "active" ? "Active" : "Free Plan"}
                 </span>
@@ -1260,26 +1415,41 @@ function BillingPanel() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
               <div>
-                <span className="text-gray-400 font-medium block">Components Used</span>
+                <span className="text-gray-400 font-medium block">
+                  Components Used
+                </span>
                 <span className="font-bold text-gray-800 text-sm mt-0.5 block">
-                  {currentSub?.componentCountUsed ?? 0} / {currentSub?.maxComponents ?? 0}
+                  {currentSub?.componentCountUsed ?? 0} /{" "}
+                  {currentSub?.maxComponents ?? 0}
                 </span>
               </div>
               <div>
-                <span className="text-gray-400 font-medium block">Days Remaining</span>
+                <span className="text-gray-400 font-medium block">
+                  Days Remaining
+                </span>
                 <span className="font-bold text-gray-800 text-sm mt-0.5 block">
-                  {currentSub?.endDate ? `${getDaysLeft(currentSub.endDate)} days` : "Lifetime"}
+                  {currentSub?.endDate
+                    ? `${getDaysLeft(currentSub.endDate)} days`
+                    : "Lifetime"}
                 </span>
               </div>
               <div>
-                <span className="text-gray-400 font-medium block">Expires On</span>
+                <span className="text-gray-400 font-medium block">
+                  Expires On
+                </span>
                 <span className="font-bold text-gray-800 text-sm mt-0.5 block">
-                  {currentSub?.endDate ? formatDate(currentSub.endDate) : "Never"}
+                  {currentSub?.endDate
+                    ? formatDate(currentSub.endDate)
+                    : "Never"}
                 </span>
               </div>
               <div>
-                <span className="text-gray-400 font-medium block">Workspace Seats</span>
-                <span className="font-bold text-gray-800 text-sm mt-0.5 block">1 Seat</span>
+                <span className="text-gray-400 font-medium block">
+                  Workspace Seats
+                </span>
+                <span className="font-bold text-gray-800 text-sm mt-0.5 block">
+                  1 Seat
+                </span>
               </div>
             </div>
           </div>
@@ -1293,15 +1463,24 @@ function BillingPanel() {
               </h3>
               <div className="space-y-2">
                 {queuedPlans.map((qp) => (
-                  <div key={qp._id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100 text-xs">
+                  <div
+                    key={qp._id}
+                    className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100 text-xs"
+                  >
                     <div>
-                      <span className="font-bold text-gray-900">{getPlanName(qp)}</span>
-                      <span className="text-gray-400 ml-2">Purchased {formatDate(qp.createdAt)}</span>
+                      <span className="font-bold text-gray-900">
+                        {getPlanName(qp)}
+                      </span>
+                      <span className="text-gray-400 ml-2">
+                        Purchased {formatDate(qp.createdAt)}
+                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => activateMutation.mutate(qp._id)}
-                      disabled={activateMutation.isPending || isPremiumPlusActive}
+                      disabled={
+                        activateMutation.isPending || isPremiumPlusActive
+                      }
                       className="rounded-lg bg-[#F97316] px-3 py-1 text-xs font-semibold text-white hover:bg-[#EA580C] disabled:opacity-50 cursor-pointer"
                     >
                       Activate Now
@@ -1315,8 +1494,12 @@ function BillingPanel() {
           {/* Past Transactions Table */}
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
             <div className="px-5 py-3.5 border-b border-gray-100 bg-[#F8F9FA] flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Order & Billing History</h3>
-              <span className="text-[11px] text-gray-400 font-medium">{purchases.length} records</span>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Order & Billing History
+              </h3>
+              <span className="text-[11px] text-gray-400 font-medium">
+                {purchases.length} records
+              </span>
             </div>
             {purchases.length === 0 ? (
               <div className="py-12 text-center text-xs text-gray-400 font-medium">
@@ -1338,19 +1521,24 @@ function BillingPanel() {
                     const tx = purchase.transactions?.[0];
                     return (
                       <tr key={purchase._id} className="hover:bg-gray-50/70">
-                        <td className="px-5 py-3 font-semibold text-gray-900">{getPlanName(purchase)}</td>
-                        <td className="px-5 py-3 text-gray-500">{formatDate(purchase.createdAt)}</td>
+                        <td className="px-5 py-3 font-semibold text-gray-900">
+                          {getPlanName(purchase)}
+                        </td>
+                        <td className="px-5 py-3 text-gray-500">
+                          {formatDate(purchase.createdAt)}
+                        </td>
                         <td className="px-5 py-3 font-semibold text-gray-800">
                           {formatCurrency(tx?.amount, tx?.currency)}
                         </td>
                         <td className="px-5 py-3">
                           <span
-                            className={`px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${purchase.status === "active"
+                            className={`px-2 py-0.5 rounded text-[9.5px] font-extrabold uppercase ${
+                              purchase.status === "active"
                                 ? "bg-emerald-50 text-emerald-600"
                                 : purchase.status === "queued"
                                   ? "bg-blue-50 text-blue-600"
                                   : "bg-gray-100 text-gray-500"
-                              }`}
+                            }`}
                           >
                             {purchase.status}
                           </span>
@@ -1403,11 +1591,16 @@ function ContactPanel() {
       queryClient.invalidateQueries({ queryKey: ["contact-history"] });
     },
     onError: (error) => {
-      setStatusMessage(error instanceof Error ? error.message : "Could not send your message.");
+      setStatusMessage(
+        error instanceof Error ? error.message : "Could not send your message.",
+      );
     },
   });
 
-  function handleChange<K extends keyof ContactInput>(key: K, value: ContactInput[K]) {
+  function handleChange<K extends keyof ContactInput>(
+    key: K,
+    value: ContactInput[K],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -1444,9 +1637,12 @@ function ContactPanel() {
     <div className="space-y-6">
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="max-w-xl">
-          <h2 className="text-lg font-extrabold text-gray-900">Get in touch with support</h2>
+          <h2 className="text-lg font-extrabold text-gray-900">
+            Get in touch with support
+          </h2>
           <p className="mt-1 text-xs text-gray-500">
-            Have questions about custom component licenses, enterprise team access, or bugs? We respond within 24h.
+            Have questions about custom component licenses, enterprise team
+            access, or bugs? We respond within 24h.
           </p>
         </div>
 
@@ -1519,24 +1715,38 @@ function ContactPanel() {
       </div>
 
       {/* Floating Bottom-Right Toast Popup */}
-      <ToastPopup message={statusMessage} onClose={() => setStatusMessage("")} />
+      <ToastPopup
+        message={statusMessage}
+        onClose={() => setStatusMessage("")}
+      />
 
       {/* Ticket History */}
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 bg-[#F8F9FA]">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Submitted Inquiries</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            Submitted Inquiries
+          </h3>
         </div>
         {historyLoading ? (
-          <div className="py-10 text-center text-xs text-gray-400">Loading history...</div>
+          <div className="py-10 text-center text-xs text-gray-400">
+            Loading history...
+          </div>
         ) : !history || history.length === 0 ? (
-          <div className="py-10 text-center text-xs text-gray-400">No previous messages found.</div>
+          <div className="py-10 text-center text-xs text-gray-400">
+            No previous messages found.
+          </div>
         ) : (
           <div className="divide-y divide-gray-100 text-xs">
             {history.map((h) => (
-              <div key={h._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div
+                key={h._id}
+                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+              >
                 <div>
                   <p className="font-semibold text-gray-800">{h.message}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{new Date(h.createdAt).toLocaleString()}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {new Date(h.createdAt).toLocaleString()}
+                  </p>
                 </div>
                 <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-gray-100 text-gray-600 w-fit">
                   {h.status || "Received"}
@@ -1576,19 +1786,25 @@ function OverviewPanel({
   durationDays: number;
   queuedCount: number;
 }) {
-  const [selectedPeriod, setSelectedPeriod] = useState<"current" | "lifetime">("current");
-  const [chartRange, setChartRange] = useState<"7 d" | "30 d" | "90 d" | "Month">("30 d");
+  const [selectedPeriod, setSelectedPeriod] = useState<"current" | "lifetime">(
+    "current",
+  );
+  const [chartRange, setChartRange] = useState<
+    "7 d" | "30 d" | "90 d" | "Month"
+  >("30 d");
 
   return (
     <div className="space-y-4">
-
       {/* Queued plans notification banner */}
       {queuedCount > 0 && (
         <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3.5 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <p className="text-xs font-semibold text-blue-800">
-              You have {queuedCount} queued plan{queuedCount > 1 ? "s" : ""} waiting to be activated.
-              {isPremiumPlus ? " Premium+ is active, so queued plans will activate after it expires." : ""}
+              You have {queuedCount} queued plan{queuedCount > 1 ? "s" : ""}{" "}
+              waiting to be activated.
+              {isPremiumPlus
+                ? " Premium+ is active, so queued plans will activate after it expires."
+                : ""}
             </p>
             <Link
               href="/dashboard?page=plans-billing"
@@ -1602,14 +1818,17 @@ function OverviewPanel({
 
       {/* TOP ROW: ACTIVE PLAN & TEAM DETAILS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-
         {/* Active Plan Card */}
         <div className="rounded-xl border border-gray-200/90 bg-white p-4 shadow-sm flex flex-col justify-between min-h-[140px]">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Active Plan</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Active Plan
+              </span>
               <h2 className="text-lg font-black text-gray-900 mt-1">
-                {isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Plan"}
+                {isPro
+                  ? subscription?.plan?.displayName || "Pro Plan"
+                  : "Free Plan"}
               </h2>
             </div>
 
@@ -1628,7 +1847,8 @@ function OverviewPanel({
             {isPro && subscription?.endDate ? (
               <span className="flex items-center gap-1.5 text-emerald-600 text-[11px] font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Active subscription expires {formatDDMMYYYY(subscription.endDate)}
+                Active subscription expires{" "}
+                {formatDDMMYYYY(subscription.endDate)}
               </span>
             ) : (
               <span className="text-[11px]">No active subscription</span>
@@ -1641,7 +1861,7 @@ function OverviewPanel({
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                {(user?.name ? user.name.split(" ")[0] : "My")}&apos;s Team
+                {user?.name ? user.name.split(" ")[0] : "My"}&apos;s Team
               </span>
             </div>
             <span className="text-[9.5px] font-extrabold uppercase bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
@@ -1651,22 +1871,31 @@ function OverviewPanel({
 
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100">
             <div>
-              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">Seats</span>
-              <span className="text-xs font-bold text-gray-800 mt-0.5 block">1 out of 1</span>
+              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">
+                Seats
+              </span>
+              <span className="text-xs font-bold text-gray-800 mt-0.5 block">
+                1 out of 1
+              </span>
             </div>
             <div>
-              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">Components</span>
+              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">
+                Components
+              </span>
               <span className="text-xs font-bold text-gray-800 mt-0.5 block">
                 {isPro ? `${maxComponents}/mo` : "0/mo"}
               </span>
             </div>
             <div>
-              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">Templates</span>
-              <span className="text-xs font-bold text-gray-800 mt-0.5 block">0/mo</span>
+              <span className="text-[9.5px] text-gray-400 font-bold block uppercase tracking-wider">
+                Templates
+              </span>
+              <span className="text-xs font-bold text-gray-800 mt-0.5 block">
+                0/mo
+              </span>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* PERIOD SELECTION BAR & RESET INDICATOR */}
@@ -1674,19 +1903,21 @@ function OverviewPanel({
         <div className="flex gap-1 p-0.5 bg-white border border-gray-200 rounded-lg w-fit shadow-sm">
           <button
             onClick={() => setSelectedPeriod("current")}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${selectedPeriod === "current"
+            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+              selectedPeriod === "current"
                 ? "bg-[#F97316]/10 text-[#F97316]"
                 : "text-gray-400 hover:text-gray-700"
-              }`}
+            }`}
           >
             Current Period
           </button>
           <button
             onClick={() => setSelectedPeriod("lifetime")}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${selectedPeriod === "lifetime"
+            className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+              selectedPeriod === "lifetime"
                 ? "bg-[#F97316]/10 text-[#F97316]"
                 : "text-gray-400 hover:text-gray-700"
-              }`}
+            }`}
           >
             Lifetime Total
           </button>
@@ -1694,7 +1925,8 @@ function OverviewPanel({
 
         {isPro && subscription?.endDate && (
           <span className="text-[11px] text-gray-400 font-medium italic">
-            * Limits reset on {new Date(subscription.endDate).toLocaleDateString(undefined, {
+            * Limits reset on{" "}
+            {new Date(subscription.endDate).toLocaleDateString(undefined, {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -1705,12 +1937,13 @@ function OverviewPanel({
 
       {/* 4 USAGE METRIC CARDS WITH SPARKLINE CHARTS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-
         {/* Metric 1: Components Copied */}
         <div className="rounded-xl border border-gray-200/90 bg-white p-3.5 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Components Copied</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                Components Copied
+              </span>
               <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-2xl font-black tracking-tight text-gray-900">
                   {String(componentCountUsed).padStart(2, "0")}
@@ -1720,7 +1953,10 @@ function OverviewPanel({
                 </span>
               </div>
             </div>
-            <Sparkline points={[2, 4, 3, 6, 8, 7, componentCountUsed || 5]} color="#F97316" />
+            <Sparkline
+              points={[2, 4, 3, 6, 8, 7, componentCountUsed || 5]}
+              color="#F97316"
+            />
           </div>
           <span className="text-[10px] font-medium text-gray-400 mt-2 block">
             out of {isPro ? maxComponents : "0"}
@@ -1731,9 +1967,13 @@ function OverviewPanel({
         <div className="rounded-xl border border-gray-200/90 bg-white p-3.5 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Templates Unlocked</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                Templates Unlocked
+              </span>
               <div className="flex items-baseline gap-1.5 mt-1">
-                <span className="text-2xl font-black tracking-tight text-gray-900">00</span>
+                <span className="text-2xl font-black tracking-tight text-gray-900">
+                  00
+                </span>
                 <span className="inline-flex items-center text-[10px] font-bold text-gray-400">
                   0%
                 </span>
@@ -1750,7 +1990,9 @@ function OverviewPanel({
         <div className="rounded-xl border border-gray-200/90 bg-white p-3.5 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Days Remaining</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                Days Remaining
+              </span>
               <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-2xl font-black tracking-tight text-gray-900">
                   {String(daysLeft).padStart(2, "0")}
@@ -1760,7 +2002,10 @@ function OverviewPanel({
                 </span>
               </div>
             </div>
-            <Sparkline points={[30, 26, 22, 18, 14, 10, daysLeft || 8]} color="#F97316" />
+            <Sparkline
+              points={[30, 26, 22, 18, 14, 10, daysLeft || 8]}
+              color="#F97316"
+            />
           </div>
           <span className="text-[10px] font-medium text-gray-400 mt-2 block">
             out of {isPro ? durationDays : "0"} total days
@@ -1771,7 +2016,9 @@ function OverviewPanel({
         <div className="rounded-xl border border-gray-200/90 bg-white p-3.5 shadow-sm flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Library Access</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                Library Access
+              </span>
               <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-2xl font-black tracking-tight text-gray-900">
                   {isPro ? "01" : "00"}
@@ -1787,7 +2034,6 @@ function OverviewPanel({
             active libraries
           </span>
         </div>
-
       </div>
 
       {/* ACTIVITY & COMPONENT USAGE GRAPH */}
@@ -1798,21 +2044,23 @@ function OverviewPanel({
               <button
                 key={d}
                 onClick={() => setChartRange(d)}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${chartRange === d
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                  chartRange === d
                     ? "bg-[#F97316]/10 text-[#F97316]"
                     : "text-gray-400 hover:text-gray-700"
-                  }`}
+                }`}
               >
                 {d}
               </button>
             ))}
           </div>
-          <span className="text-xs font-semibold text-gray-400">Activity Overview &middot; Last 30 days</span>
+          <span className="text-xs font-semibold text-gray-400">
+            Activity Overview &middot; Last 30 days
+          </span>
         </div>
 
         {/* SVG line chart mimic with orange theme */}
         <div className="h-44 w-full relative flex flex-col justify-between pt-2">
-
           {/* grid lines */}
           <div className="w-full border-b border-gray-100 flex justify-between text-[10px] text-gray-300 font-bold pb-1">
             <span>4</span>
@@ -1852,10 +2100,8 @@ function OverviewPanel({
             <span>May 18</span>
             <span>May 21</span>
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }
@@ -1864,7 +2110,13 @@ function OverviewPanel({
 // MAIN DASHBOARD LAYOUT
 // ==========================================
 function DashboardContent() {
-  const { user, loading: authLoading, isInitialized, setLoginModalOpen, logout } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    isInitialized,
+    setLoginModalOpen,
+    logout,
+  } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -1873,11 +2125,16 @@ function DashboardContent() {
 
   useEffect(() => {
     const page = searchParams.get("page");
-    const editId = searchParams.get("edit") || (page === "edit-component" ? searchParams.get("id") : null);
+    const editId =
+      searchParams.get("edit") ||
+      (page === "edit-component" ? searchParams.get("id") : null);
 
     if (editId || page === "edit-component") {
       window.setTimeout(() => setActiveTab("Edit Component"), 0);
-    } else if (page === "my-components" || searchParams.get("tab") === "my-components") {
+    } else if (
+      page === "my-components" ||
+      searchParams.get("tab") === "my-components"
+    ) {
       window.setTimeout(() => setActiveTab("My Components"), 0);
     } else if (page === "add-components" || page === "add-component") {
       window.setTimeout(() => setActiveTab("Add Components"), 0);
@@ -1915,7 +2172,9 @@ function DashboardContent() {
     }
 
     const query = params.toString();
-    router.replace(query ? `/dashboard?${query}` : "/dashboard", { scroll: false });
+    router.replace(query ? `/dashboard?${query}` : "/dashboard", {
+      scroll: false,
+    });
   }
 
   // Fetch current subscription details
@@ -1933,7 +2192,7 @@ function DashboardContent() {
     staleTime: 60 * 1000,
   });
   const queuedCount = (historyData ?? []).filter(
-    (s) => s.status === "queued"
+    (s) => s.status === "queued",
   ).length;
 
   const subscription = subscriptionResponse || null;
@@ -1942,11 +2201,14 @@ function DashboardContent() {
   const maxComponents = subscription?.maxComponents ?? 0;
 
   // Check if Premium+ / unlimited plan
-  const isPremiumPlus = isPro && (
-    subscription?.plan?.name === "premium_plus" ||
-    subscription?.plan?.displayName?.toLowerCase().replace(/\s+/g, '').includes("premium+") ||
-    maxComponents >= 999999
-  );
+  const isPremiumPlus =
+    isPro &&
+    (subscription?.plan?.name === "premium_plus" ||
+      subscription?.plan?.displayName
+        ?.toLowerCase()
+        .replace(/\s+/g, "")
+        .includes("premium+") ||
+      maxComponents >= 999999);
 
   let daysLeft = 0;
   let durationDays = 0;
@@ -1971,13 +2233,20 @@ function DashboardContent() {
 
   // Page Header Title + Count
   const getHeaderTitle = () => {
-    if (activeTab === "Overview") return { title: "Overview", count: isPro ? "Pro Member" : "Free Plan" };
-    if (activeTab === "My Components") return { title: "My Components", count: "Library" };
-    if (activeTab === "Edit Component") return { title: "Edit Component", count: "Edit" };
-    if (activeTab === "Add Components") return { title: "Add Components", count: "New" };
-    if (activeTab === "Favorites") return { title: "Favorites", count: "Saved" };
-    if (activeTab === "Plans & Billing") return { title: "Plans & Billing", count: isPro ? "Pro" : "Free" };
-    if (activeTab === "Contact Us") return { title: "Contact Us", count: "Support" };
+    if (activeTab === "Overview")
+      return { title: "Overview", count: isPro ? "Pro Member" : "Free Plan" };
+    if (activeTab === "My Components")
+      return { title: "My Components", count: "Library" };
+    if (activeTab === "Edit Component")
+      return { title: "Edit Component", count: "Edit" };
+    if (activeTab === "Add Components")
+      return { title: "Add Components", count: "New" };
+    if (activeTab === "Favorites")
+      return { title: "Favorites", count: "Saved" };
+    if (activeTab === "Plans & Billing")
+      return { title: "Plans & Billing", count: isPro ? "Pro" : "Free" };
+    if (activeTab === "Contact Us")
+      return { title: "Contact Us", count: "Support" };
     return { title: "Dashboard", count: "" };
   };
 
@@ -2026,7 +2295,9 @@ function DashboardContent() {
 
   // Notifications State & Logic
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notificationFilter, setNotificationFilter] = useState<"all" | "unread">("all");
+  const [notificationFilter, setNotificationFilter] = useState<
+    "all" | "unread"
+  >("all");
   const notificationRef = useRef<HTMLDivElement | null>(null);
 
   // Profile Navbar Menu State
@@ -2040,7 +2311,8 @@ function DashboardContent() {
     const savedTheme = localStorage.getItem("theme");
     const isDark =
       savedTheme === "dark" ||
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      (!savedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
     setIsDarkMode(isDark);
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -2076,20 +2348,22 @@ function DashboardContent() {
   >([
     ...(queuedCount > 0
       ? [
-        {
-          id: "queued-plan",
-          title: "Queued Plan Ready",
-          message: `You have ${queuedCount} plan(s) waiting to be activated.`,
-          time: "Just now",
-          read: false,
-          type: "plan" as const,
-          link: "/dashboard?page=plans-billing",
-        },
-      ]
+          {
+            id: "queued-plan",
+            title: "Queued Plan Ready",
+            message: `You have ${queuedCount} plan(s) waiting to be activated.`,
+            time: "Just now",
+            read: false,
+            type: "plan" as const,
+            link: "/dashboard?page=plans-billing",
+          },
+        ]
       : []),
     {
       id: "active-plan-status",
-      title: isPro ? `${subscription?.plan?.displayName || "Pro Plan"} Active` : "Free Plan Active",
+      title: isPro
+        ? `${subscription?.plan?.displayName || "Pro Plan"} Active`
+        : "Free Plan Active",
       message: isPro
         ? `Your plan expires in ${daysLeft} days. ${componentCountUsed}/${maxComponents} component copies used.`
         : "Upgrade to Pro to unlock unlimited premium components.",
@@ -2101,7 +2375,8 @@ function DashboardContent() {
     {
       id: "lib-update-notif",
       title: "New UI Components Added",
-      message: "10+ new hero sections, navbars, and cards added to the library.",
+      message:
+        "10+ new hero sections, navbars, and cards added to the library.",
       time: "2h ago",
       read: false,
       type: "component" as const,
@@ -2122,9 +2397,13 @@ function DashboardContent() {
     if (!userComponentsData?.items) return;
 
     const currentItems = userComponentsData.items;
-    const rejectedItems = currentItems.filter((comp) => comp.status === "rejected");
+    const rejectedItems = currentItems.filter(
+      (comp) => comp.status === "rejected",
+    );
     const nonRejectedIds = new Set(
-      currentItems.filter((comp) => comp.status !== "rejected").map((c) => c._id)
+      currentItems
+        .filter((comp) => comp.status !== "rejected")
+        .map((c) => c._id),
     );
 
     // Show warning in the bottom right corner when a component is rejected
@@ -2150,15 +2429,18 @@ function DashboardContent() {
         title: "Component Verification Notice",
         message: firstRejected.rejectionReason
           ? `"${firstRejected.name}" was rejected: ${firstRejected.rejectionReason}`
-          : `${rejectedItems.length} of your uploaded component${rejectedItems.length > 1 ? "s were" : " was"
-          } rejected during verification.`,
+          : `${rejectedItems.length} of your uploaded component${
+              rejectedItems.length > 1 ? "s were" : " was"
+            } rejected during verification.`,
         type: "warning",
         actionLabel: "Review in Library",
         actionLink: `/dashboard?page=my-components&edit=${firstRejected._id}`,
       });
     }
 
-    previouslyKnownRejectionsRef.current = new Set(rejectedItems.map((c) => c._id));
+    previouslyKnownRejectionsRef.current = new Set(
+      rejectedItems.map((c) => c._id),
+    );
     isFirstLoadRef.current = false;
 
     setNotifications((prev) => {
@@ -2184,7 +2466,8 @@ function DashboardContent() {
           link: `/dashboard?page=my-components&edit=${c._id}`,
         }));
 
-      if (newNotifs.length === 0 && filtered.length === prev.length) return prev;
+      if (newNotifs.length === 0 && filtered.length === prev.length)
+        return prev;
       return [...newNotifs, ...filtered];
     });
   }, [userComponentsData]);
@@ -2193,10 +2476,16 @@ function DashboardContent() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
         setNotificationsOpen(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     }
@@ -2214,7 +2503,7 @@ function DashboardContent() {
 
   const markOneAsRead = (id: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
   };
 
@@ -2238,18 +2527,25 @@ function DashboardContent() {
   useEffect(() => {
     if (isInitialized && !authLoading && !user) {
       const currentQuery = searchParams.toString();
-      const redirectPath = currentQuery ? `/dashboard?${currentQuery}` : "/dashboard";
+      const redirectPath = currentQuery
+        ? `/dashboard?${currentQuery}`
+        : "/dashboard";
       router.replace(`/?redirect=${encodeURIComponent(redirectPath)}`);
       setLoginModalOpen(true);
     }
-  }, [isInitialized, authLoading, user, router, searchParams, setLoginModalOpen]);
+  }, [
+    isInitialized,
+    authLoading,
+    user,
+    router,
+    searchParams,
+    setLoginModalOpen,
+  ]);
 
   // Loading or redirecting states - dashboard is only rendered when logged in
   if (!isInitialized || authLoading || !user || (user && subLoading)) {
     return (
-      <div
-        className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors duration-150 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
-      >
+      <div className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors duration-150 bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]">
         <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
         <p className="font-medium text-xs text-gray-500 dark:text-neutral-400">
           Loading dashboard...
@@ -2258,24 +2554,25 @@ function DashboardContent() {
     );
   }
 
-
-
   return (
     <div
-      className={`dashboard-container h-screen max-h-screen w-full flex flex-col md:flex-row font-sans antialiased overflow-hidden transition-colors duration-200 ${isDarkMode
+      className={`dashboard-container h-screen max-h-screen w-full flex flex-col md:flex-row font-sans antialiased overflow-hidden transition-colors duration-200 ${
+        isDarkMode
           ? "dark bg-[#000000] text-[#EDEDED]"
           : "bg-[#FAFAFB] text-[#1E293B]"
-        }`}
+      }`}
     >
-
       {/* ==========================================
           LEFT SIDEBAR (CONCEPTZILLA STYLE)
           ========================================== */}
       <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] dark:bg-[#08080A] border-r border-gray-200/90 dark:border-white/[0.08] p-4 flex flex-col justify-between shrink-0 select-none md:h-full overflow-y-auto">
         <div>
           {/* Brand Logo & Name */}
-          <div className="flex items-center justify-between gap-2.5 pb-4 mb-3 border-b border-gray-100">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-85 transition">
+          <div className="flex items-center justify-between gap-2.5 pb-4 mb-3 border-b border-gray-100 dark:border-white/[0.08]">
+            <Link
+              href="/"
+              className="flex items-center gap-2 hover:opacity-85 transition"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/assets/logo.svg"
@@ -2283,99 +2580,136 @@ function DashboardContent() {
                 className={`h-7 w-auto object-contain transition ${isDarkMode ? "invert-0" : "invert"}`}
               />
             </Link>
-            <ChevronDown size={14} className="text-gray-400 cursor-pointer hover:text-gray-600" />
+            <ChevronDown
+              size={14}
+              className="text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
+            />
           </div>
 
-
-          {/* SALES OPERATIONS / MAIN NAV */}
-          <div className="mb-4">
-            <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 uppercase">
-              Sales Operations
-            </span>
-            <nav className="mt-1 space-y-0.5">
-              {mainNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.label || (item.label === "My Components" && activeTab === "Edit Component");
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handleSidebarSelect(item.label)}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${isActive
-                        ? "bg-[#F3F4F6] text-gray-900 font-bold"
-                        : "text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
+          {/* SALES OPERATIONS & INSIGHTS NAV WITH SMOOTH PILL SWIPE ANIMATION */}
+          <LayoutGroup id="dashboard-sidebar-nav">
+            {/* SALES OPERATIONS / MAIN NAV */}
+            <div className="mb-4">
+              <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 dark:text-[#71717A] uppercase">
+                Sales Operations
+              </span>
+              <nav className="mt-1 space-y-0.5">
+                {mainNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    activeTab === item.label ||
+                    (item.label === "My Components" &&
+                      activeTab === "Edit Component");
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => handleSidebarSelect(item.label)}
+                      className={`relative flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors duration-150 cursor-pointer select-none ${
+                        isActive
+                          ? "text-gray-900 dark:text-white font-bold"
+                          : "text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100/70 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white"
                       }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon
-                        size={15}
-                        className={isActive ? "text-gray-900" : "text-gray-400"}
-                      />
-                      <span>{item.label}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="dashboard-sidebar-active-pill"
+                          className="absolute inset-0 rounded-lg bg-[#F3F4F6] dark:bg-white/[0.08] pointer-events-none"
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 35,
+                          }}
+                        />
+                      )}
+                      <div className="relative z-10 flex items-center gap-2.5 transition-colors duration-150">
+                        <Icon
+                          size={15}
+                          className={`transition-colors duration-150 ${isActive ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-[#71717A]"}`}
+                        />
+                        <span>{item.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
 
-          {/* INSIGHTS & MANAGEMENT NAV */}
-          <div className="mb-4">
-            <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 uppercase">
-              Insights & Management
-            </span>
-            <nav className="mt-1 space-y-0.5">
-              {secondaryNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.label;
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handleSidebarSelect(item.label)}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer ${isActive
-                        ? "bg-[#F3F4F6] text-gray-900 font-bold"
-                        : "text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
+            {/* INSIGHTS & MANAGEMENT NAV */}
+            <div className="mb-4">
+              <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 dark:text-[#71717A] uppercase">
+                Insights & Management
+              </span>
+              <nav className="mt-1 space-y-0.5">
+                {secondaryNavItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.label;
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => handleSidebarSelect(item.label)}
+                      className={`relative flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors duration-150 cursor-pointer select-none ${
+                        isActive
+                          ? "text-gray-900 dark:text-white font-bold"
+                          : "text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100/70 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white"
                       }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon
-                        size={15}
-                        className={isActive ? "text-gray-900" : "text-gray-400"}
-                      />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="rounded bg-gray-200 px-1.5 py-0.2 text-[9.5px] font-bold text-gray-600">
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="dashboard-sidebar-active-pill"
+                          className="absolute inset-0 rounded-lg bg-[#F3F4F6] dark:bg-white/[0.08] pointer-events-none"
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 35,
+                          }}
+                        />
+                      )}
+                      <div className="relative z-10 flex items-center gap-2.5 transition-colors duration-150">
+                        <Icon
+                          size={15}
+                          className={`transition-colors duration-150 ${isActive ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-[#71717A]"}`}
+                        />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="relative z-10 rounded bg-gray-200 dark:bg-white/10 px-1.5 py-0.2 text-[9.5px] font-bold text-gray-600 dark:text-[#D4D4D8]">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </LayoutGroup>
 
           {/* SUPPORT & PREFERENCES */}
           <div>
-            <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 uppercase">
+            <span className="px-2 text-[9.5px] font-bold tracking-wider text-gray-400 dark:text-[#71717A] uppercase">
               Support
             </span>
             <nav className="mt-1 space-y-0.5">
-
               <Link
                 href="/faq"
-                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100/70 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white"
               >
-                <HelpCircle size={14} className="text-gray-400" />
+                <HelpCircle
+                  size={14}
+                  className="text-gray-400 dark:text-[#71717A]"
+                />
                 <span>Help Center</span>
               </Link>
 
               <Link
                 href="/components"
-                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100/70 hover:text-gray-900"
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-[#A1A1AA] hover:bg-gray-100/70 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white"
               >
-                <ArrowLeft size={14} className="text-gray-400" />
+                <ArrowLeft
+                  size={14}
+                  className="text-gray-400 dark:text-[#71717A]"
+                />
                 <span>Back to Components</span>
               </Link>
             </nav>
@@ -2383,7 +2717,7 @@ function DashboardContent() {
         </div>
 
         {/* BOTTOM PROFILE CARD (EXACT USER AVATAR + ONLINE BADGE) */}
-        <div className="pt-4 border-t border-gray-100 mt-4">
+        <div className="pt-4 border-t border-gray-100 dark:border-white/[0.08] mt-4">
           {user ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -2402,18 +2736,22 @@ function DashboardContent() {
                     )}
                   </div>
                   {/* Green online indicator */}
-                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+                  <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#08080A]" />
                 </div>
                 <div className="truncate max-w-[130px]">
-                  <p className="text-xs font-bold text-gray-900 truncate leading-tight">{user.name}</p>
-                  <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+                  <p className="text-xs font-bold text-gray-900 dark:text-white truncate leading-tight">
+                    {user.name}
+                  </p>
+                  <p className="text-[10px] text-gray-400 dark:text-[#71717A] truncate">
+                    {user.email}
+                  </p>
                 </div>
               </div>
 
               <button
                 onClick={logout}
                 title="Log Out"
-                className="p-1 text-gray-400 hover:text-rose-500 rounded transition cursor-pointer"
+                className="p-1 text-gray-400 dark:text-gray-500 hover:text-rose-500 rounded transition cursor-pointer"
               >
                 <LogOut size={14} />
               </button>
@@ -2434,11 +2772,13 @@ function DashboardContent() {
           MAIN CONTENT AREA (WITH FIXED NAVBAR)
           ========================================== */}
       <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-[#FAFAFB] dark:bg-[#000000]">
-
         {/* FIXED TOPBAR HEADER */}
         <header className="sticky top-0 z-30 shrink-0 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-md border-b border-gray-200/80 dark:border-white/[0.08] px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
           {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#A1A1AA]">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#A1A1AA]"
+          >
             <button
               type="button"
               onClick={() => handleSidebarSelect("Overview")}
@@ -2446,7 +2786,10 @@ function DashboardContent() {
             >
               Dashboard
             </button>
-            <ChevronRight size={13} className="text-gray-400 dark:text-[#71717A]" />
+            <ChevronRight
+              size={13}
+              className="text-gray-400 dark:text-[#71717A]"
+            />
             <span className="font-semibold text-gray-900 dark:text-[#F5F5F5]">
               {headerInfo.title}
             </span>
@@ -2470,10 +2813,11 @@ function DashboardContent() {
                 <button
                   type="button"
                   onClick={() => setNotificationsOpen((prev) => !prev)}
-                  className={`relative p-1.5 rounded-lg transition cursor-pointer ${notificationsOpen
+                  className={`relative p-1.5 rounded-lg transition cursor-pointer ${
+                    notificationsOpen
                       ? "bg-orange-50 text-[#F97316]"
                       : "hover:text-gray-700 hover:bg-gray-100 text-gray-400"
-                    }`}
+                  }`}
                   title="Notifications"
                   aria-label="Toggle notifications"
                 >
@@ -2492,7 +2836,9 @@ function DashboardContent() {
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-[#FAFAFB]">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xs font-bold text-gray-900">Notifications</h3>
+                        <h3 className="text-xs font-bold text-gray-900">
+                          Notifications
+                        </h3>
                         {unreadCount > 0 && (
                           <span className="rounded-full bg-orange-100 text-[#EA580C] px-2 py-0.2 text-[10px] font-extrabold">
                             {unreadCount} new
@@ -2515,19 +2861,21 @@ function DashboardContent() {
                     <div className="flex items-center gap-2 px-4 pt-2.5 pb-1.5 border-b border-gray-100 bg-white">
                       <button
                         onClick={() => setNotificationFilter("all")}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${notificationFilter === "all"
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                          notificationFilter === "all"
                             ? "bg-gray-100 text-gray-900"
                             : "text-gray-400 hover:text-gray-600"
-                          }`}
+                        }`}
                       >
                         All ({notifications.length})
                       </button>
                       <button
                         onClick={() => setNotificationFilter("unread")}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${notificationFilter === "unread"
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
+                          notificationFilter === "unread"
                             ? "bg-gray-100 text-gray-900"
                             : "text-gray-400 hover:text-gray-600"
-                          }`}
+                        }`}
                       >
                         Unread ({unreadCount})
                       </button>
@@ -2544,11 +2892,34 @@ function DashboardContent() {
                         displayedNotifications.map((n) => {
                           const isRejection = n.type === "rejection";
                           const getIcon = () => {
-                            if (isRejection) return <XCircle size={14} className="text-rose-600" />;
-                            if (n.type === "plan") return <ShieldCheck size={14} className="text-blue-600" />;
-                            if (n.type === "credits") return <CreditCard size={14} className="text-amber-600" />;
-                            if (n.type === "component") return <Package size={14} className="text-[#F97316]" />;
-                            return <Sparkles size={14} className="text-emerald-600" />;
+                            if (isRejection)
+                              return (
+                                <XCircle size={14} className="text-rose-600" />
+                              );
+                            if (n.type === "plan")
+                              return (
+                                <ShieldCheck
+                                  size={14}
+                                  className="text-blue-600"
+                                />
+                              );
+                            if (n.type === "credits")
+                              return (
+                                <CreditCard
+                                  size={14}
+                                  className="text-amber-600"
+                                />
+                              );
+                            if (n.type === "component")
+                              return (
+                                <Package size={14} className="text-[#F97316]" />
+                              );
+                            return (
+                              <Sparkles
+                                size={14}
+                                className="text-emerald-600"
+                              />
+                            );
                           };
 
                           return (
@@ -2561,18 +2932,20 @@ function DashboardContent() {
                                   setNotificationsOpen(false);
                                 }
                               }}
-                              className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${isRejection && !n.read
+                              className={`p-3.5 flex items-start gap-3 transition cursor-pointer ${
+                                isRejection && !n.read
                                   ? "bg-rose-50/50 hover:bg-rose-50/80 border-l-2 border-rose-500"
                                   : isRejection
                                     ? "bg-rose-50/20 hover:bg-rose-50/50"
                                     : !n.read
                                       ? "bg-orange-50/20 hover:bg-orange-50/40"
                                       : "hover:bg-gray-50/80"
-                                }`}
+                              }`}
                             >
                               <div
-                                className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${isRejection ? "bg-rose-100/70" : "bg-gray-100"
-                                  }`}
+                                className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                                  isRejection ? "bg-rose-100/70" : "bg-gray-100"
+                                }`}
                               >
                                 {getIcon()}
                               </div>
@@ -2581,12 +2954,13 @@ function DashboardContent() {
                                 <div className="flex items-center justify-between gap-1">
                                   <div className="flex items-center gap-1.5 min-w-0">
                                     <h4
-                                      className={`text-xs truncate ${isRejection
+                                      className={`text-xs truncate ${
+                                        isRejection
                                           ? "font-bold text-rose-950"
                                           : !n.read
                                             ? "font-bold text-gray-900"
                                             : "font-semibold text-gray-700"
-                                        }`}
+                                      }`}
                                     >
                                       {n.title}
                                     </h4>
@@ -2596,11 +2970,16 @@ function DashboardContent() {
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-[10px] text-gray-400 shrink-0">{n.time}</span>
+                                  <span className="text-[10px] text-gray-400 shrink-0">
+                                    {n.time}
+                                  </span>
                                 </div>
                                 <p
-                                  className={`text-[11px] mt-0.5 leading-snug line-clamp-2 ${isRejection ? "text-rose-800/80" : "text-gray-500"
-                                    }`}
+                                  className={`text-[11px] mt-0.5 leading-snug line-clamp-2 ${
+                                    isRejection
+                                      ? "text-rose-800/80"
+                                      : "text-gray-500"
+                                  }`}
                                 >
                                   {n.message}
                                 </p>
@@ -2609,8 +2988,11 @@ function DashboardContent() {
                               <div className="flex items-center gap-1.5 shrink-0 self-center">
                                 {!n.read && (
                                   <span
-                                    className={`h-2 w-2 rounded-full ${isRejection ? "bg-rose-500" : "bg-[#F97316]"
-                                      }`}
+                                    className={`h-2 w-2 rounded-full ${
+                                      isRejection
+                                        ? "bg-rose-500"
+                                        : "bg-[#F97316]"
+                                    }`}
                                   />
                                 )}
                                 <button
@@ -2656,8 +3038,12 @@ function DashboardContent() {
                 type="button"
                 onClick={toggleTheme}
                 className="p-1.5 rounded-lg hover:text-gray-700 hover:bg-gray-100 transition cursor-pointer text-gray-400"
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                title={
+                  isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+                }
+                aria-label={
+                  isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+                }
               >
                 {isDarkMode ? (
                   <Sun size={15} className="text-amber-500" />
@@ -2676,10 +3062,11 @@ function DashboardContent() {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition cursor-pointer border ${userMenuOpen
-                      ? "bg-gray-100/90 border-gray-300 shadow-sm"
-                      : "hover:bg-gray-50/90 border-gray-200/90 bg-white shadow-xs"
-                    }`}
+                  className={`flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition cursor-pointer border ${
+                    userMenuOpen
+                      ? "bg-gray-100/90 dark:bg-white/10 border-gray-300 dark:border-white/20 shadow-sm"
+                      : "hover:bg-gray-50/90 dark:hover:bg-white/[0.06] border-gray-200/90 dark:border-white/[0.08] bg-white dark:bg-[#0A0A0B] shadow-xs"
+                  }`}
                   aria-label="User Profile Menu"
                 >
                   <div className="relative shrink-0">
@@ -2696,22 +3083,25 @@ function DashboardContent() {
                         (user.name || "U").slice(0, 2).toUpperCase()
                       )}
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white dark:ring-[#0A0A0B]" />
                   </div>
 
                   <div className="text-left hidden sm:block">
-                    <p className="text-xs font-bold text-gray-900 leading-none truncate max-w-[120px]">
+                    <p className="text-xs font-bold text-gray-900 dark:text-white leading-none truncate max-w-[120px]">
                       {user.name}
                     </p>
-                    <span className="text-[9.5px] font-semibold text-gray-400 leading-none mt-0.5 block">
+                    <span className="text-[9.5px] font-semibold text-gray-400 dark:text-[#71717A] leading-none mt-0.5 block">
                       {isPro ? "Pro Member" : "Free Plan"}
                     </span>
                   </div>
 
                   <ChevronDown
                     size={12}
-                    className={`text-gray-400 transition-transform duration-200 ${userMenuOpen ? "rotate-180 text-gray-700" : ""
-                      }`}
+                    className={`text-gray-400 dark:text-gray-500 transition-transform duration-200 ${
+                      userMenuOpen
+                        ? "rotate-180 text-gray-700 dark:text-gray-300"
+                        : ""
+                    }`}
                   />
                 </button>
 
@@ -2719,11 +3109,19 @@ function DashboardContent() {
                 {userMenuOpen && (
                   <div className="absolute right-0 top-11 z-50 w-56 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.12)] border border-gray-200/90 py-2 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
                     <div className="px-3.5 py-2 border-b border-gray-100">
-                      <p className="text-xs font-bold text-gray-900 truncate">{user.name}</p>
-                      <p className="text-[11px] text-gray-400 truncate mt-0.5">{user.email}</p>
+                      <p className="text-xs font-bold text-gray-900 truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                        {user.email}
+                      </p>
                       <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-[#EA580C]">
                         <Sparkles size={11} />
-                        <span>{isPro ? (subscription?.plan?.displayName || "Pro Plan") : "Free Tier"}</span>
+                        <span>
+                          {isPro
+                            ? subscription?.plan?.displayName || "Pro Plan"
+                            : "Free Tier"}
+                        </span>
                       </div>
                     </div>
 
@@ -2812,7 +3210,9 @@ function DashboardContent() {
         >
           {activeTab === "Edit Component" ? (
             <EditComponentDashboardPanel
-              componentId={searchParams.get("edit") || searchParams.get("id") || ""}
+              componentId={
+                searchParams.get("edit") || searchParams.get("id") || ""
+              }
               onSuccess={() => handleSidebarSelect("My Components")}
               onCancel={() => handleSidebarSelect("My Components")}
             />
@@ -2828,7 +3228,9 @@ function DashboardContent() {
                 const params = new URLSearchParams(searchParams.toString());
                 params.set("page", "my-components");
                 params.set("edit", id);
-                router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+                router.replace(`/dashboard?${params.toString()}`, {
+                  scroll: false,
+                });
                 setActiveTab("Edit Component");
               }}
             />
@@ -2852,7 +3254,6 @@ function DashboardContent() {
             />
           )}
         </main>
-
       </div>
 
       {/* Real-time Toast Popup Alert (Bottom Right Warning / Notice) */}
@@ -2868,16 +3269,13 @@ function DashboardContent() {
             : undefined
         }
       />
-
     </div>
   );
 }
 
 function DashboardFallback() {
   return (
-    <div
-      className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]"
-    >
+    <div className="fixed inset-0 z-[999] h-screen w-screen flex min-h-screen flex-col items-center justify-center gap-3 transition-colors bg-[#FAFAFB] dark:bg-[#000000] text-[#1E293B] dark:text-[#EDEDED]">
       <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
       <p className="text-xs font-medium text-gray-500 dark:text-neutral-400">
         Loading your dashboard...

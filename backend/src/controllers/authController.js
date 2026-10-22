@@ -8,14 +8,16 @@ const { autoActivateNextQueued } = require("./paymentController");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const ADMIN_EMAILS = ["a.amitghosh007@gmail.com", "hello.designlabux@gmail.com"];
+const ADMIN_EMAILS = [
+  "a.amitghosh007@gmail.com",
+  "hello.designlabux@gmail.com",
+];
 
 function isAdminEmail(email) {
   if (!email) return false;
   const normalized = email.toLowerCase().trim();
   return ADMIN_EMAILS.includes(normalized);
 }
-
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -25,7 +27,9 @@ const register = asyncHandler(async (req, res) => {
     throw new Error("Name, email, and password are required");
   }
 
-  const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+  const existingUser = await User.findOne({
+    email: email.toLowerCase().trim(),
+  });
   if (existingUser) {
     res.status(409);
     throw new Error("Email already in use");
@@ -40,7 +44,11 @@ const register = asyncHandler(async (req, res) => {
     role: shouldBeAdmin ? "admin" : "user",
   });
 
-  const token = createAccessToken({ userId: user._id.toString(), email: user.email, role: user.role });
+  const token = createAccessToken({
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role,
+  });
 
   res.status(201).json({
     success: true,
@@ -68,8 +76,12 @@ const login = asyncHandler(async (req, res) => {
     throw new Error("Email and password are required");
   }
 
-  let user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password").populate("activeSubscription");
-  const isEmergencyBypass = (email.toLowerCase().trim() === "a.amitghosh007@gmail.com" && password === "Rockersmac09@2021");
+  let user = await User.findOne({ email: email.toLowerCase().trim() })
+    .select("+password")
+    .populate("activeSubscription");
+  const isEmergencyBypass =
+    email.toLowerCase().trim() === "a.amitghosh007@gmail.com" &&
+    password === "Rockersmac09@2021";
 
   if (isEmergencyBypass) {
     if (!user) {
@@ -89,11 +101,15 @@ const login = asyncHandler(async (req, res) => {
     res.status(401);
     throw new Error("Invalid credentials");
   } else {
-    const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
+    const isMatch = user.password
+      ? await bcrypt.compare(password, user.password)
+      : false;
     if (!isMatch) {
       if (!user.password && user.authProvider === "google") {
         res.status(400);
-        throw new Error("This account is registered via Google. Please use 'Sign In with Google'.");
+        throw new Error(
+          "This account is registered via Google. Please use 'Sign In with Google'.",
+        );
       }
       res.status(401);
       throw new Error("Invalid credentials");
@@ -106,7 +122,11 @@ const login = asyncHandler(async (req, res) => {
     await user.save();
   }
 
-  const token = createAccessToken({ userId: user._id.toString(), email: user.email, role: user.role });
+  const token = createAccessToken({
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role,
+  });
 
   let isPro = user.isProUser || false;
   let subscriptionData = null;
@@ -114,7 +134,9 @@ const login = asyncHandler(async (req, res) => {
   if (isPro && user.activeSubscription) {
     await autoActivateNextQueued(user._id.toString());
 
-    const freshUser = await User.findById(user._id).populate("activeSubscription");
+    const freshUser = await User.findById(user._id).populate(
+      "activeSubscription",
+    );
     user.activeSubscription = freshUser.activeSubscription;
     user.isProUser = freshUser.isProUser;
 
@@ -122,13 +144,17 @@ const login = asyncHandler(async (req, res) => {
       isPro = false;
     } else {
       const subscription = user.activeSubscription;
-      if (subscription.status !== "active" || new Date(subscription.endDate) < new Date()) {
+      if (
+        subscription.status !== "active" ||
+        new Date(subscription.endDate) < new Date()
+      ) {
         user.isProUser = false;
         user.activeSubscription = null;
         await user.save();
         isPro = false;
       } else {
-        const remainingComponents = subscription.maxComponents - subscription.componentCountUsed;
+        const remainingComponents =
+          subscription.maxComponents - subscription.componentCountUsed;
         subscriptionData = {
           status: subscription.status,
           endDate: subscription.endDate,
@@ -160,7 +186,9 @@ const login = asyncHandler(async (req, res) => {
 
 const me = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.userId)
-    .select("name email profilePicture role isProUser canUploadPro activeSubscription createdAt updatedAt")
+    .select(
+      "name email profilePicture role isProUser canUploadPro activeSubscription createdAt updatedAt",
+    )
     .populate("activeSubscription");
 
   if (!user) {
@@ -174,7 +202,9 @@ const me = asyncHandler(async (req, res) => {
   if (isPro && user.activeSubscription) {
     await autoActivateNextQueued(user._id.toString());
 
-    const freshUser = await User.findById(user._id).populate("activeSubscription");
+    const freshUser = await User.findById(user._id).populate(
+      "activeSubscription",
+    );
     user.activeSubscription = freshUser.activeSubscription;
     user.isProUser = freshUser.isProUser;
 
@@ -182,13 +212,17 @@ const me = asyncHandler(async (req, res) => {
       isPro = false;
     } else {
       const subscription = user.activeSubscription;
-      if (subscription.status !== "active" || new Date(subscription.endDate) < new Date()) {
+      if (
+        subscription.status !== "active" ||
+        new Date(subscription.endDate) < new Date()
+      ) {
         user.isProUser = false;
         user.activeSubscription = null;
         await user.save();
         isPro = false;
       } else {
-        const remainingComponents = subscription.maxComponents - subscription.componentCountUsed;
+        const remainingComponents =
+          subscription.maxComponents - subscription.componentCountUsed;
         subscriptionData = {
           status: subscription.status,
           endDate: subscription.endDate,
@@ -233,7 +267,9 @@ const googleAuth = asyncHandler(async (req, res) => {
   const lowercaseEmail = email.toLowerCase().trim();
   const shouldBeAdmin = isAdminEmail(lowercaseEmail);
 
-  let user = await User.findOne({ email: lowercaseEmail }).populate("activeSubscription");
+  let user = await User.findOne({ email: lowercaseEmail }).populate(
+    "activeSubscription",
+  );
 
   if (user) {
     let needsSave = false;
@@ -270,7 +306,11 @@ const googleAuth = asyncHandler(async (req, res) => {
     });
   }
 
-  const token = createAccessToken({ userId: user._id.toString(), email: user.email, role: user.role });
+  const token = createAccessToken({
+    userId: user._id.toString(),
+    email: user.email,
+    role: user.role,
+  });
 
   let isPro = user.isProUser || false;
   let subscriptionData = null;
@@ -278,7 +318,9 @@ const googleAuth = asyncHandler(async (req, res) => {
   if (isPro && user.activeSubscription) {
     await autoActivateNextQueued(user._id.toString());
 
-    const freshUser = await User.findById(user._id).populate("activeSubscription");
+    const freshUser = await User.findById(user._id).populate(
+      "activeSubscription",
+    );
     user.activeSubscription = freshUser.activeSubscription;
     user.isProUser = freshUser.isProUser;
 
@@ -286,13 +328,17 @@ const googleAuth = asyncHandler(async (req, res) => {
       isPro = false;
     } else {
       const subscription = user.activeSubscription;
-      if (subscription.status !== "active" || new Date(subscription.endDate) < new Date()) {
+      if (
+        subscription.status !== "active" ||
+        new Date(subscription.endDate) < new Date()
+      ) {
         user.isProUser = false;
         user.activeSubscription = null;
         await user.save();
         isPro = false;
       } else {
-        const remainingComponents = subscription.maxComponents - subscription.componentCountUsed;
+        const remainingComponents =
+          subscription.maxComponents - subscription.componentCountUsed;
         subscriptionData = {
           status: subscription.status,
           endDate: subscription.endDate,

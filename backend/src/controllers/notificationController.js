@@ -8,8 +8,10 @@ const { User } = require("../models/User");
 // @access  Private/Admin
 const getNotifications = asyncHandler(async (req, res) => {
   // Check if we need to sync initial notifications for existing uploaded components
-  const notifCount = await Notification.countDocuments({ type: "component_uploaded" });
-  
+  const notifCount = await Notification.countDocuments({
+    type: "component_uploaded",
+  });
+
   if (notifCount === 0) {
     // Populate notifications from recent components
     const recentComponents = await Component.find({})
@@ -68,7 +70,7 @@ const markNotificationRead = asyncHandler(async (req, res) => {
   const notification = await Notification.findByIdAndUpdate(
     id,
     { read: true },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 
   if (!notification) {
@@ -86,7 +88,10 @@ const markNotificationRead = asyncHandler(async (req, res) => {
 // @route   PATCH /api/notifications/mark-all-read
 // @access  Private/Admin
 const markAllNotificationsRead = asyncHandler(async (req, res) => {
-  await Notification.updateMany({ recipientRole: "admin", read: false }, { read: true });
+  await Notification.updateMany(
+    { recipientRole: "admin", read: false },
+    { read: true },
+  );
 
   res.status(200).json({
     success: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Crown, ChevronRight, Infinity, Sparkles } from "lucide-react";
+import { Crown, ChevronRight, Infinity } from "lucide-react";
 import {
   type SubscriptionSummary,
   type SubscriptionCardState,
@@ -16,51 +16,52 @@ export interface SubscriptionCardProps {
   className?: string;
 }
 
-export function SubscriptionCardSkeleton({ className = "" }: { className?: string }) {
+export function SubscriptionCardSkeleton({
+  className = "",
+}: {
+  className?: string;
+}) {
   return (
     <div
       aria-busy="true"
       aria-label="Loading subscription details"
-      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans animate-pulse ${className}`}
+      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans animate-pulse h-[243px] flex flex-col justify-between ${className}`}
     >
       {/* Header skeleton */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="h-8 w-8 rounded-full bg-white/10 shrink-0" />
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <div className="h-4 w-24 bg-white/20 rounded" />
-            <div className="h-3 w-28 bg-white/10 rounded" />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="h-7 w-7 rounded-full bg-white/10 shrink-0" />
+          <div className="space-y-1 flex-1 min-w-0">
+            <div className="h-3.5 w-24 bg-white/20 rounded" />
+            <div className="h-3 w-16 bg-white/10 rounded" />
           </div>
         </div>
-        <div className="h-4 w-12 bg-white/15 rounded shrink-0 mt-0.5" />
+        <div className="h-3.5 w-14 bg-white/15 rounded shrink-0" />
       </div>
 
       {/* Hero headline skeleton */}
-      <div className="mt-3.5 space-y-1">
-        <div className="h-6 w-32 bg-white/20 rounded" />
-        <div className="h-3.5 w-40 bg-white/10 rounded" />
+      <div className="mt-3 space-y-1.5">
+        <div className="h-4 w-40 bg-white/20 rounded" />
+        <div className="h-3.5 w-44 bg-white/10 rounded" />
       </div>
-
-      {/* Progress bar skeleton */}
-      <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full" />
 
       {/* Hairline divider */}
       <div className="my-3.5 border-t border-white/[0.08]" />
 
       {/* Stats skeleton */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
           <div className="h-3 w-16 bg-white/10 rounded" />
-          <div className="h-4 w-20 bg-white/20 rounded" />
+          <div className="h-4 w-16 bg-white/20 rounded" />
         </div>
-        <div className="space-y-1">
-          <div className="h-3 w-16 bg-white/10 rounded" />
-          <div className="h-4 w-12 bg-white/20 rounded" />
+        <div className="space-y-1.5">
+          <div className="h-3 w-12 bg-white/10 rounded" />
+          <div className="h-4 w-10 bg-white/20 rounded" />
         </div>
       </div>
 
       {/* Button skeleton */}
-      <div className="mt-3.5 h-11 w-full rounded-xl border border-white/[0.14] bg-transparent" />
+      <div className="mt-3.5 h-10 w-full rounded-xl border border-white/[0.14] bg-transparent shrink-0" />
     </div>
   );
 }
@@ -81,7 +82,9 @@ export function SubscriptionCard({
   // ── Collapsed mode ───────────────────────────────────────────────────────────
   if (collapsed) {
     return (
-      <div className={`mx-2 mb-4 flex justify-center relative group/collapsed ${className}`}>
+      <div
+        className={`mx-2 mb-4 flex justify-center relative group/collapsed ${className}`}
+      >
         <button
           type="button"
           onClick={onManage}
@@ -130,12 +133,15 @@ export function SubscriptionCard({
     pulseDot = false;
   }
 
-  const isUrgentOrExpired = info.state === "urgent" || info.state === "expired" || info.state === "none";
+  const isUrgentOrExpired =
+    info.state === "urgent" ||
+    info.state === "expired" ||
+    info.state === "none";
 
   return (
     <section
       aria-label="Subscription summary"
-      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans ${className}`}
+      className={`mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans min-h-[232px] ${className}`}
     >
       {/* ── 1. Header (two lines, never wraps price) ─────── */}
       <div className="flex items-center justify-between gap-2">
@@ -162,20 +168,26 @@ export function SubscriptionCard({
         </div>
 
         {/* Status: small dot + text, NO pill background */}
-        <div className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium ${statusTextColor}`}>
+        <div
+          className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium ${statusTextColor}`}
+        >
           <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
             {pulseDot && (
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusDotColor}`} />
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusDotColor}`}
+              />
             )}
-            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${statusDotColor}`} />
+            <span
+              className={`relative inline-flex rounded-full h-1.5 w-1.5 ${statusDotColor}`}
+            />
           </span>
           <span>{info.statusLabel}</span>
         </div>
       </div>
 
       {/* ── 2. Hero Headline ─────────────────────────────────────────────────── */}
-      <div className="mt-3.5">
-        <p className="text-[18px] sm:text-[19px] font-bold text-white leading-[1.25] tracking-[-0.02em]">
+      <div className="mt-3">
+        <p className="text-[14.5px] sm:text-[15px] font-bold text-white leading-snug tracking-tight">
           {info.headline}
         </p>
         {info.subline && (
@@ -215,7 +227,12 @@ export function SubscriptionCard({
             <dd className="text-sm font-semibold text-white tabular-nums">
               {info.isUnlimited ? (
                 <span className="flex items-center gap-1.5">
-                  <Infinity size={15} strokeWidth={2.2} className="text-white/80 shrink-0" aria-hidden="true" />
+                  <Infinity
+                    size={15}
+                    strokeWidth={2.2}
+                    className="text-white/80 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>Unlimited</span>
                 </span>
               ) : (
@@ -237,12 +254,7 @@ export function SubscriptionCard({
         <dl className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-0.5 min-w-0">
             <dt className="text-[11px] font-medium text-white/55">Downloads</dt>
-            <dd className="text-sm font-semibold text-white">
-              <span className="flex items-center gap-1.5">
-                <Sparkles size={14} className="text-[#9FE870] shrink-0" aria-hidden="true" />
-                <span>Unlimited</span>
-              </span>
-            </dd>
+            <dd className="text-sm font-semibold text-white">Unlimited</dd>
           </div>
 
           <div className="flex flex-col gap-0.5 min-w-0">

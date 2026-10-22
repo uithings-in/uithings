@@ -176,7 +176,8 @@ export default async function BlogDetailPage({ params }: PageProps) {
                 Similar Blogs
               </h2>
               <p className="mt-2.5 text-xs sm:text-sm text-[#A6A6C1] max-w-md mx-auto leading-relaxed">
-                From the captivating realm of creativity to complex realm of AI, our collection encompasses a vibrant spectrum of insights.
+                From the captivating realm of creativity to complex realm of AI,
+                our collection encompasses a vibrant spectrum of insights.
               </p>
             </div>
 

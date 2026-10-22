@@ -71,7 +71,7 @@ const transactionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 transactionSchema.index({ userId: 1 });

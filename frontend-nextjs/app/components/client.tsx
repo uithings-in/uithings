@@ -1,17 +1,46 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { componentsApi } from "../../api/components";
-import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from "../../api/payments";
+import {
+  paymentsApi,
+  type CurrentSubscriptionData,
+  type SubscriptionData,
+} from "../../api/payments";
 import { copyToFigma } from "../../lib/clipboard";
 import cloudinaryLoader from "../../lib/cloudinaryLoader";
-import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types";
+import type {
+  PaginatedComponentResponse,
+  ComponentItem,
+} from "../../lib/types";
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
-import { SubscriptionCard, SubscriptionCardSkeleton } from "../../components/sidebar/SubscriptionCard";
-import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Layers, Search, SquarePen, Moon, Sun, ChevronRight, Sparkles, Clock } from "lucide-react";
+import {
+  SubscriptionCard,
+  SubscriptionCardSkeleton,
+} from "../../components/sidebar/SubscriptionCard";
+import {
+  Scaling,
+  Frame,
+  Copy,
+  ArrowDownToLine,
+  Crown,
+  Heart,
+  Search,
+  SquarePen,
+  Moon,
+  Sun,
+  ChevronRight,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 
 // ── icons (inline SVGs to avoid extra deps) ──────────────────────────────────
 function IconGrid() {
@@ -27,7 +56,13 @@ function IconGrid() {
 function IconChevron() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M5 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M5 4l3 3-3 3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -40,7 +75,12 @@ function IconPalette() {
 function IconX() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M2 2l8 8M10 2l-8 8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -62,8 +102,10 @@ function isProComponent(item: Pick<ComponentItem, "pricingType" | "tags">) {
 }
 
 function formatCompactCount(value: number) {
-  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}m`;
-  if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
+  if (value >= 1_000_000)
+    return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}m`;
+  if (value >= 1_000)
+    return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`;
   return String(value);
 }
 
@@ -85,14 +127,10 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   );
 }
 
-
-
 // ── SkeletonCard ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <article
-      className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10"
-    >
+    <article className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-sm flex flex-col p-2.5 animate-pulse bg-white/10">
       {/* Preview placeholder */}
       <div className="w-full aspect-[16/9] bg-white/20 rounded-[8px] shrink-0" />
 
@@ -179,19 +217,34 @@ function PreviewModal({
 
   // Compute carousel slides from darkPreviewImageUrl, lightPreviewImageUrl, previewImageUrl
   const slides = useMemo(() => {
-    const list: { url: string; mode: "dark" | "light" | "default"; label: string }[] = [];
+    const list: {
+      url: string;
+      mode: "dark" | "light" | "default";
+      label: string;
+    }[] = [];
 
     if (item.darkPreviewImageUrl) {
       list.push({ url: item.darkPreviewImageUrl, mode: "dark", label: "Dark" });
     }
 
-    if (item.lightPreviewImageUrl && item.lightPreviewImageUrl !== item.darkPreviewImageUrl) {
-      list.push({ url: item.lightPreviewImageUrl, mode: "light", label: "Light" });
+    if (
+      item.lightPreviewImageUrl &&
+      item.lightPreviewImageUrl !== item.darkPreviewImageUrl
+    ) {
+      list.push({
+        url: item.lightPreviewImageUrl,
+        mode: "light",
+        label: "Light",
+      });
     }
 
     // Fallbacks if one or neither is explicitly set
     if (list.length === 0 && item.previewImageUrl) {
-      list.push({ url: item.previewImageUrl, mode: "default", label: "Preview" });
+      list.push({
+        url: item.previewImageUrl,
+        mode: "default",
+        label: "Preview",
+      });
     } else if (
       list.length === 1 &&
       item.previewImageUrl &&
@@ -203,7 +256,11 @@ function PreviewModal({
     }
 
     return list;
-  }, [item.darkPreviewImageUrl, item.lightPreviewImageUrl, item.previewImageUrl]);
+  }, [
+    item.darkPreviewImageUrl,
+    item.lightPreviewImageUrl,
+    item.previewImageUrl,
+  ]);
 
   // Reset to first slide when item changes
   useEffect(() => {
@@ -259,9 +316,6 @@ function PreviewModal({
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 shrink-0 border-b border-gray-100/80 w-full">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
-            <div className="text-[#238B45] w-5 h-5 flex items-center justify-center shrink-0">
-              <Layers size={18} strokeWidth={2.25} />
-            </div>
             <span className="font-bold text-[0.88rem] sm:text-[0.95rem] text-gray-900 tracking-tight truncate">
               {item.name}
             </span>
@@ -279,7 +333,12 @@ function PreviewModal({
             aria-label="Close preview modal"
           >
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-              <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <path
+                d="M2 2l8 8M10 2l-8 8"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
         </div>
@@ -293,7 +352,10 @@ function PreviewModal({
           >
             {/* Image Slide */}
             {currentSlide?.url ? (
-              <div key={currentSlide.url} className="relative w-full h-full animate-in fade-in duration-200">
+              <div
+                key={currentSlide.url}
+                className="relative w-full h-full animate-in fade-in duration-200"
+              >
                 <Image
                   loader={cloudinaryLoader}
                   src={currentSlide.url}
@@ -319,12 +381,22 @@ function PreviewModal({
               }}
               disabled={isFavoritePending}
               aria-pressed={isFavorite}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-              className={`absolute right-2.5 sm:right-3 top-2.5 sm:top-3 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-                }`}
+              className={`absolute right-2.5 sm:right-3 top-2.5 sm:top-3 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-gray-700 shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-500 disabled:cursor-wait disabled:opacity-70 ${
+                isFavorite
+                  ? "opacity-100 text-red-500"
+                  : "opacity-0 group-hover/preview:opacity-100"
+              }`}
             >
-              <Heart size={16} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} className="sm:size-[18px]" />
+              <Heart
+                size={16}
+                strokeWidth={2}
+                fill={isFavorite ? "currentColor" : "none"}
+                className="sm:size-[18px]"
+              />
             </button>
           </div>
         </div>
@@ -341,7 +413,9 @@ function PreviewModal({
               <span className="font-semibold text-[0.82rem] sm:text-[0.88rem] text-gray-900 tracking-tight leading-tight truncate max-w-[180px] sm:max-w-none">
                 {item.createdBy?.name || "System Uploader"}
               </span>
-              <span className="text-[0.68rem] sm:text-[0.72rem] text-gray-400 font-medium">Contributor</span>
+              <span className="text-[0.68rem] sm:text-[0.72rem] text-gray-400 font-medium">
+                Contributor
+              </span>
             </div>
           </div>
 
@@ -361,17 +435,28 @@ function PreviewModal({
                         e.stopPropagation();
                         setCurrentIndex(idx);
                       }}
-                      className={`flex items-center gap-1 sm:gap-1.5 h-full px-2 sm:px-3 rounded-lg text-[0.72rem] sm:text-xs font-bold transition-all cursor-pointer border ${isActive
-                        ? isDark
-                          ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
-                          : "bg-white text-gray-900 shadow-xs border-gray-200/60"
-                        : "text-gray-500 hover:text-gray-900 border-transparent"
-                        }`}
+                      className={`flex items-center gap-1 sm:gap-1.5 h-full px-2 sm:px-3 rounded-lg text-[0.72rem] sm:text-xs font-bold transition-all cursor-pointer border ${
+                        isActive
+                          ? isDark
+                            ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
+                            : "bg-white text-gray-900 shadow-xs border-gray-200/60"
+                          : "text-gray-500 hover:text-gray-900 border-transparent"
+                      }`}
                     >
                       {isDark ? (
-                        <Moon size={11} className={isActive ? "text-indigo-400" : "text-gray-400"} />
+                        <Moon
+                          size={11}
+                          className={
+                            isActive ? "text-indigo-400" : "text-gray-400"
+                          }
+                        />
                       ) : (
-                        <Sun size={11} className={isActive ? "text-amber-500" : "text-gray-400"} />
+                        <Sun
+                          size={11}
+                          className={
+                            isActive ? "text-amber-500" : "text-gray-400"
+                          }
+                        />
                       )}
                       <span>{slide.label}</span>
                     </button>
@@ -384,29 +469,60 @@ function PreviewModal({
               type="button"
               onClick={handleCopy}
               disabled={isCopying || isSuccess}
-              className={`flex-1 sm:flex-initial sm:w-[120px] h-8 sm:h-9 shrink-0 rounded-xl border text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${isSuccess
-                ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
-                : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
-                }`}
+              className={`flex-1 sm:flex-initial sm:w-[120px] h-8 sm:h-9 shrink-0 rounded-xl border text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                isSuccess
+                  ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
+                  : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
+              }`}
             >
               {isSuccess ? (
                 <span className="flex items-center gap-1.5 animate-in fade-in zoom-in duration-300">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white"
+                  >
                     <polyline points="13.33 4 5.33 12 2.67 9.33" />
                   </svg>
                   Copied!
                 </span>
               ) : isCopying ? (
                 <span className="flex items-center gap-1.5">
-                  <svg className="animate-spin h-3.5 w-3.5 text-current" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M12 2a10 10 0 00-10 10h2a8 8 0 018-8V2z" />
+                  <svg
+                    className="animate-spin h-3.5 w-3.5 text-current"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M12 2a10 10 0 00-10 10h2a8 8 0 018-8V2z"
+                    />
                   </svg>
                   Copying...
                 </span>
               ) : (
                 <>
-                  <Copy size={16} color="currentColor" strokeWidth={2} className="mr-0.5 sm:size-[18px]" />
+                  <Copy
+                    size={16}
+                    color="currentColor"
+                    strokeWidth={2}
+                    className="mr-0.5 sm:size-[18px]"
+                  />
                   Copy
                 </>
               )}
@@ -447,7 +563,9 @@ const ComponentCard = memo(function ComponentCard({
   const isPro = isProComponent(item);
   const showLock = isPro && !isProUser;
   const [isSuccess, setIsSuccess] = useState(false);
-  const [downloadCountOverride, setDownloadCountOverride] = useState<number | null>(null);
+  const [downloadCountOverride, setDownloadCountOverride] = useState<
+    number | null
+  >(null);
   const downloadCount = downloadCountOverride ?? item.downloadCount ?? 0;
 
   async function handleCopy() {
@@ -468,7 +586,8 @@ const ComponentCard = memo(function ComponentCard({
     <article
       className="w-full rounded-[12px] border border-[rgba(229,231,235,0.8)] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1)] transition-shadow group flex flex-col p-2.5 font-manrope"
       style={{
-        background: "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
+        background:
+          "radial-gradient(100% 100% at 50% 50%, rgba(255,255,255,0.26), rgba(255,255,255,0.06))",
       }}
     >
       {/* Preview */}
@@ -504,17 +623,26 @@ const ComponentCard = memo(function ComponentCard({
           aria-pressed={isFavorite}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-300 disabled:cursor-wait disabled:opacity-70 ${isFavorite ? "opacity-100 text-red-500" : "opacity-0 group-hover/preview:opacity-100"
-            }`}
+          className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/50 text-white shadow-sm backdrop-blur transition-all hover:scale-105 hover:text-red-300 disabled:cursor-wait disabled:opacity-70 ${
+            isFavorite
+              ? "opacity-100 text-red-500"
+              : "opacity-0 group-hover/preview:opacity-100"
+          }`}
         >
-          <Heart size={16} strokeWidth={2} fill={isFavorite ? "currentColor" : "none"} />
+          <Heart
+            size={16}
+            strokeWidth={2}
+            fill={isFavorite ? "currentColor" : "none"}
+          />
         </button>
       </div>
 
       {/* Footer row */}
       <div className="px-2 pt-2 pb-1.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1 min-w-0">
-          <span className="font-semibold text-white text-[12.5px] truncate">{item.name}</span>
+          <span className="font-semibold text-white text-[12.5px] truncate">
+            {item.name}
+          </span>
           {isPro ? (
             <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
               <Crown size={18} color="#f19239ff" strokeWidth={2} />
@@ -528,10 +656,15 @@ const ComponentCard = memo(function ComponentCard({
 
         <div className="flex items-center gap-1 text-white text-[11.5px]">
           <div className="flex items-center ml-1">
-            <button type="button" className="hover:text-red-500 transition-colors">
+            <button
+              type="button"
+              className="hover:text-red-500 transition-colors"
+            >
               <ArrowDownToLine size={15} strokeWidth={1.5} />
             </button>
-            <span className="font-medium ml-0.5">{formatCompactCount(downloadCount)}</span>
+            <span className="font-medium ml-0.5">
+              {formatCompactCount(downloadCount)}
+            </span>
           </div>
         </div>
       </div>
@@ -542,23 +675,45 @@ const ComponentCard = memo(function ComponentCard({
           type="button"
           onClick={handleCopy}
           disabled={isCopying || isSuccess}
-          className={`w-full flex items-center justify-center gap-1.5 text-[13px] font-semibold rounded-full py-1.5 mt-1 transition-all duration-300 cursor-pointer font-manrope border ${isSuccess
-            ? "bg-green-50 text-green-600 border-green-200"
-            : showLock
-              ? "bg-white/10 text-white/50 border-white/30"
-              : "text-white bg-white/10 hover:bg-white/20 border-[rgba(229,231,235,0.5)] hover:border-white/80"
-            } disabled:opacity-100`}
+          className={`w-full flex items-center justify-center gap-1.5 text-[13px] font-semibold rounded-full py-1.5 mt-1 transition-all duration-300 cursor-pointer font-manrope border ${
+            isSuccess
+              ? "bg-green-50 text-green-600 border-green-200"
+              : showLock
+                ? "bg-white/10 text-white/50 border-white/30"
+                : "text-white bg-white/10 hover:bg-white/20 border-[rgba(229,231,235,0.5)] hover:border-white/80"
+          } disabled:opacity-100`}
         >
           {isSuccess ? (
             <span className="flex items-center gap-1.5 animate-in fade-in zoom-in duration-300">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-green-500">
-                <path d="M3 8.5L6 11.5L13 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                className="text-green-500"
+              >
+                <path
+                  d="M3 8.5L6 11.5L13 4.5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
               Copied
             </span>
           ) : showLock ? (
             <span className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
@@ -578,7 +733,7 @@ const ComponentCard = memo(function ComponentCard({
 });
 
 // ── QUERY CONFIG (shared) ─────────────────────────────────────────────────────
-const STALE_TIME = 5 * 60 * 1000;  // 5 minutes — cached data treated as fresh
+const STALE_TIME = 5 * 60 * 1000; // 5 minutes — cached data treated as fresh
 const GC_TIME = 10 * 60 * 1000; // 10 minutes — data kept in memory after unmount
 
 function getDesignType(viewMode: ViewMode): "Wireframe" | "UI Design" {
@@ -602,9 +757,22 @@ function useDebouncedValue<T>(value: T, delay = 250) {
   return debounced;
 }
 
-function buildQueryOptions(search: string, tag: string, viewMode: ViewMode, priceMode: PriceMode) {
+function buildQueryOptions(
+  search: string,
+  tag: string,
+  viewMode: ViewMode,
+  priceMode: PriceMode,
+) {
   return {
-    queryKey: ["components", "list", search, tag, viewMode, priceMode, PAGE_SIZE],
+    queryKey: [
+      "components",
+      "list",
+      search,
+      tag,
+      viewMode,
+      priceMode,
+      PAGE_SIZE,
+    ],
     queryFn: ({ pageParam }: { pageParam: { skip: number; limit: number } }) =>
       componentsApi.list(search, tag, 1, pageParam.limit, {
         designType: getDesignType(viewMode),
@@ -612,9 +780,14 @@ function buildQueryOptions(search: string, tag: string, viewMode: ViewMode, pric
         skip: pageParam.skip,
       }),
     initialPageParam: { skip: 0, limit: PAGE_SIZE },
-    getNextPageParam: (lastPage: PaginatedComponentResponse, allPages: PaginatedComponentResponse[]) => {
+    getNextPageParam: (
+      lastPage: PaginatedComponentResponse,
+      allPages: PaginatedComponentResponse[],
+    ) => {
       const totalLoaded = allPages.reduce((acc, p) => acc + p.items.length, 0);
-      return totalLoaded < lastPage.pagination.total ? { skip: totalLoaded, limit: PAGE_SIZE } : undefined;
+      return totalLoaded < lastPage.pagination.total
+        ? { skip: totalLoaded, limit: PAGE_SIZE }
+        : undefined;
     },
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -629,7 +802,8 @@ export default function ComponentsClient({
   initialPage: PaginatedComponentResponse | null;
   initialTags?: string[];
 }) {
-  const { user, isInitialized, setLoginModalOpen, setPricingModalOpen } = useAuth();
+  const { user, isInitialized, setLoginModalOpen, setPricingModalOpen } =
+    useAuth();
   const queryClient = useQueryClient();
 
   const { data: tags = [] } = useQuery({
@@ -646,13 +820,14 @@ export default function ComponentsClient({
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [viewMode, setViewMode] = useState<ViewMode>(INITIAL_VIEW_MODE);
   const [priceMode, setPriceMode] = useState<PriceMode>(INITIAL_PRICE_MODE);
-  const [platformMode, setPlatformMode] = useState<PlatformMode>(INITIAL_PLATFORM_MODE);
+  const [platformMode, setPlatformMode] = useState<PlatformMode>(
+    INITIAL_PLATFORM_MODE,
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [previewItem, setPreviewItem] = useState<null | ComponentItem>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<number | null>(null);
-
 
   const debouncedSearch = useDebouncedValue(search.trim());
   const activeTag = activeCategory === "All" ? "" : activeCategory;
@@ -671,14 +846,19 @@ export default function ComponentsClient({
 
   const isProUser = subscriptionData?.isProUser ?? user?.isProUser ?? false;
 
-  const { data: currentSubscription, isLoading: isCurrentSubLoading } = useQuery({
-    queryKey: ["subscription", "current"],
-    queryFn: () => paymentsApi.getCurrentSubscription(),
-    enabled: !!user && isProUser,
-    staleTime: 60 * 1000,
-  });
+  const { data: currentSubscription, isLoading: isCurrentSubLoading } =
+    useQuery({
+      queryKey: ["subscription", "current"],
+      queryFn: () => paymentsApi.getCurrentSubscription(),
+      enabled: !!user && isProUser,
+      staleTime: 60 * 1000,
+    });
 
-  const activeSubscription = currentSubscription ?? subscriptionData?.subscription ?? user?.subscription ?? null;
+  const activeSubscription =
+    currentSubscription ??
+    subscriptionData?.subscription ??
+    user?.subscription ??
+    null;
 
   const { data: favoriteIdData } = useQuery({
     queryKey: ["favorite-component-ids"],
@@ -689,7 +869,7 @@ export default function ComponentsClient({
 
   const favoriteIds = useMemo(
     () => new Set(favoriteIdData ?? []),
-    [favoriteIdData]
+    [favoriteIdData],
   );
 
   const showToast = useCallback((message: string) => {
@@ -697,7 +877,10 @@ export default function ComponentsClient({
     if (toastTimeoutRef.current) {
       window.clearTimeout(toastTimeoutRef.current);
     }
-    toastTimeoutRef.current = window.setTimeout(() => setToastMessage(null), 3000);
+    toastTimeoutRef.current = window.setTimeout(
+      () => setToastMessage(null),
+      3000,
+    );
   }, []);
 
   useEffect(() => {
@@ -720,33 +903,44 @@ export default function ComponentsClient({
     isFetchingNextPage,
   } = useInfiniteQuery({
     ...buildQueryOptions(debouncedSearch, activeTag, viewMode, priceMode),
-    initialData: isInitialQuery && initialPage
-      ? {
-        pages: [initialPage],
-        pageParams: [{ skip: 0, limit: PAGE_SIZE }],
-      }
-      : undefined,
+    initialData:
+      isInitialQuery && initialPage
+        ? {
+            pages: [initialPage],
+            pageParams: [{ skip: 0, limit: PAGE_SIZE }],
+          }
+        : undefined,
   });
 
-  const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
-  const total = data?.pages[0]?.pagination?.total ?? (initialPage?.pagination?.total || 0);
+  const items = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data],
+  );
+  const total =
+    data?.pages[0]?.pagination?.total ?? (initialPage?.pagination?.total || 0);
 
   // ── Prefetch a category on hover ───────────────────────────────────────────
   const toggleFavoriteMutation = useMutation({
-    mutationFn: (componentId: string) => componentsApi.toggleFavorite(componentId),
+    mutationFn: (componentId: string) =>
+      componentsApi.toggleFavorite(componentId),
     onMutate: async (componentId) => {
       await queryClient.cancelQueries({ queryKey: ["favorite-components"] });
       await queryClient.cancelQueries({ queryKey: ["favorite-component-ids"] });
-      const previous = queryClient.getQueryData<PaginatedComponentResponse>(["favorite-components"]);
-      const previousIds = queryClient.getQueryData<string[]>(["favorite-component-ids"]);
+      const previous = queryClient.getQueryData<PaginatedComponentResponse>([
+        "favorite-components",
+      ]);
+      const previousIds = queryClient.getQueryData<string[]>([
+        "favorite-component-ids",
+      ]);
       const fallbackItem = items.find((item) => item._id === componentId);
-      const isFavoriteId = previousIds?.includes(componentId) ?? favoriteIds.has(componentId);
+      const isFavoriteId =
+        previousIds?.includes(componentId) ?? favoriteIds.has(componentId);
 
       queryClient.setQueryData<string[]>(
         ["favorite-component-ids"],
         isFavoriteId
           ? (previousIds ?? []).filter((id) => id !== componentId)
-          : [componentId, ...(previousIds ?? [])]
+          : [componentId, ...(previousIds ?? [])],
       );
 
       if (previous || fallbackItem) {
@@ -759,22 +953,30 @@ export default function ComponentsClient({
             totalPages: 0,
           },
         };
-        const alreadyFavorite = current.items.some((item) => item._id === componentId);
+        const alreadyFavorite = current.items.some(
+          (item) => item._id === componentId,
+        );
         const nextItems = alreadyFavorite
           ? current.items.filter((item) => item._id !== componentId)
           : fallbackItem
             ? [{ ...fallbackItem, isFavorite: true }, ...current.items]
             : current.items;
-        const totalFavorites = Math.max(0, current.pagination.total + (alreadyFavorite ? -1 : 1));
+        const totalFavorites = Math.max(
+          0,
+          current.pagination.total + (alreadyFavorite ? -1 : 1),
+        );
 
-        queryClient.setQueryData<PaginatedComponentResponse>(["favorite-components"], {
-          items: nextItems,
-          pagination: {
-            ...current.pagination,
-            total: totalFavorites,
-            totalPages: Math.ceil(totalFavorites / current.pagination.limit),
+        queryClient.setQueryData<PaginatedComponentResponse>(
+          ["favorite-components"],
+          {
+            items: nextItems,
+            pagination: {
+              ...current.pagination,
+              total: totalFavorites,
+              totalPages: Math.ceil(totalFavorites / current.pagination.limit),
+            },
           },
-        });
+        );
       }
 
       return { previous, previousIds };
@@ -784,7 +986,10 @@ export default function ComponentsClient({
         queryClient.setQueryData(["favorite-components"], context.previous);
       }
       if (context?.previousIds) {
-        queryClient.setQueryData(["favorite-component-ids"], context.previousIds);
+        queryClient.setQueryData(
+          ["favorite-component-ids"],
+          context.previousIds,
+        );
       }
       showToast("Could not update favorite. Please try again.");
     },
@@ -804,7 +1009,7 @@ export default function ComponentsClient({
 
       toggleFavoriteMutation.mutate(item._id);
     },
-    [setLoginModalOpen, showToast, toggleFavoriteMutation, user]
+    [setLoginModalOpen, showToast, toggleFavoriteMutation, user],
   );
 
   const prefetchCategory = useCallback(
@@ -815,11 +1020,13 @@ export default function ComponentsClient({
         // Only prefetch if data isn't already cached / fresh
       });
     },
-    [debouncedSearch, priceMode, queryClient, viewMode]
+    [debouncedSearch, priceMode, queryClient, viewMode],
   );
 
   const selectCategory = useCallback((cat: string) => {
-    setActiveCategory((current) => (cat === "All" || current === cat ? "All" : cat));
+    setActiveCategory((current) =>
+      cat === "All" || current === cat ? "All" : cat,
+    );
   }, []);
 
   const togglePriceMode = useCallback((mode: Exclude<PriceMode, "all">) => {
@@ -831,18 +1038,33 @@ export default function ComponentsClient({
     let out = items;
     if (activeCategory !== "All") {
       out = out.filter((i) =>
-        i.tags.some((t) => t.toLowerCase().includes(activeCategory.toLowerCase()))
+        i.tags.some((t) =>
+          t.toLowerCase().includes(activeCategory.toLowerCase()),
+        ),
       );
     }
     if (priceMode === "pro") {
-      out = out.filter((i) => i.pricingType === "Pro" || i.tags.some((t) => /pro/i.test(t)));
+      out = out.filter(
+        (i) => i.pricingType === "Pro" || i.tags.some((t) => /pro/i.test(t)),
+      );
     } else if (priceMode === "free") {
-      out = out.filter((i) => i.pricingType !== "Pro" && !i.tags.some((t) => /pro/i.test(t)));
+      out = out.filter(
+        (i) => i.pricingType !== "Pro" && !i.tags.some((t) => /pro/i.test(t)),
+      );
     }
     if (viewMode === "wireframe") {
-      out = out.filter((i) => i.designType === "Wireframe" || i.tags.some((t) => /wireframe/i.test(t)));
+      out = out.filter(
+        (i) =>
+          i.designType === "Wireframe" ||
+          i.tags.some((t) => /wireframe/i.test(t)),
+      );
     } else if (viewMode === "ui-design") {
-      out = out.filter((i) => i.designType === "UI Design" || !i.designType || i.tags.some((t) => /ui[\s-]*design/i.test(t)));
+      out = out.filter(
+        (i) =>
+          i.designType === "UI Design" ||
+          !i.designType ||
+          i.tags.some((t) => /ui[\s-]*design/i.test(t)),
+      );
     }
     if (platformMode === "web") {
       out = out.filter((i) => i.tags.some((t) => t.toLowerCase() === "web"));
@@ -862,7 +1084,7 @@ export default function ComponentsClient({
           fetchNextPage();
         }
       },
-      { root: null, rootMargin: "600px 0px", threshold: 0 }
+      { root: null, rootMargin: "600px 0px", threshold: 0 },
     );
 
     observer.observe(target);
@@ -870,7 +1092,10 @@ export default function ComponentsClient({
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // ── Copy handler ───────────────────────────────────────────────────────────
-  async function onCopy(item: ComponentItem, closePreview?: () => void): Promise<boolean> {
+  async function onCopy(
+    item: ComponentItem,
+    closePreview?: () => void,
+  ): Promise<boolean> {
     if (isProComponent(item) && !isProUser) {
       closePreview?.();
       setPricingModalOpen(true);
@@ -988,8 +1213,9 @@ export default function ComponentsClient({
             className="block object-cover w-full h-full"
           />
         </div>
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
         .no-scrollbar::-webkit-scrollbar {
           display: none !important;
         }
@@ -1030,26 +1256,32 @@ export default function ComponentsClient({
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
-      `}} />
+      `,
+          }}
+        />
         {/* ── Left Sidebar ───────────────────────────────────────────────── */}
         <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-sans h-full self-start">
-
           {/* Plan / Subscription Summary Card */}
-          {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
-            <SubscriptionCardSkeleton />
-          ) : (
-            <SubscriptionCard
-              subscription={isProUser ? activeSubscription : null}
-              onManage={() => setPricingModalOpen(true)}
-            />
-          )}
+          <div className="min-h-[267px] shrink-0">
+            {!isInitialized ||
+            (!!user && isSubLoading && subscriptionData === undefined) ||
+            (isProUser &&
+              isCurrentSubLoading &&
+              currentSubscription === undefined) ? (
+              <SubscriptionCardSkeleton />
+            ) : (
+              <SubscriptionCard
+                subscription={isProUser ? activeSubscription : null}
+                onManage={() => setPricingModalOpen(true)}
+              />
+            )}
+          </div>
 
           {/* Components section (Fixed in Position) */}
           <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-            <span className="text-[#d66a04]"><Layers size={20} strokeWidth={2.25} /></span>
             <span className="font-bold text-white text-[15px]">Components</span>
             <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
-              {total}
+              {total > 0 ? `${total}+` : total}
             </span>
           </div>
 
@@ -1063,13 +1295,20 @@ export default function ComponentsClient({
                   onClick={() => selectCategory(cat)}
                   onMouseEnter={() => prefetchCategory(cat)}
                   onFocus={() => prefetchCategory(cat)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[0.85rem] font-medium transition-all cursor-pointer font-manrope border ${activeCategory === cat
-                    ? "text-white font-bold bg-white/5 border-white/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
-                    : "text-white hover:text-white hover:bg-white/5 border-transparent"
-                    }`}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[0.85rem] font-medium transition-all cursor-pointer font-manrope border ${
+                    activeCategory === cat
+                      ? "text-white font-bold bg-white/5 border-white/20 shadow-[0_1px_2px_rgba(35,139,69,0.05)]"
+                      : "text-white hover:text-white hover:bg-white/5 border-transparent"
+                  }`}
                 >
                   {cat}
-                  <span className={activeCategory === cat ? "text-white" : "text-white/55"}><IconChevron /></span>
+                  <span
+                    className={
+                      activeCategory === cat ? "text-white" : "text-white/55"
+                    }
+                  >
+                    <IconChevron />
+                  </span>
                 </button>
               ))}
             </nav>
@@ -1099,7 +1338,10 @@ export default function ComponentsClient({
             </div>
 
             {/* Toolbar Section (Sticky under navbar with transparent background) */}
-            <div ref={filterRef} className="py-2.5 bg-transparent border-b border-transparent -ml-8 pl-8 pr-8">
+            <div
+              ref={filterRef}
+              className="py-2.5 bg-transparent border-b border-transparent -ml-8 pl-8 pr-8"
+            >
               <div className="flex flex-wrap items-center gap-3">
                 {/* 1. Search Box */}
                 <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white transition-all focus-within:border-white/40 focus-within:ring-1 focus-within:ring-white/10">
@@ -1124,7 +1366,11 @@ export default function ComponentsClient({
                       <motion.div
                         layoutId="browse-view-mode-pill"
                         className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span
@@ -1147,7 +1393,11 @@ export default function ComponentsClient({
                       <motion.div
                         layoutId="browse-view-mode-pill"
                         className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span
@@ -1174,7 +1424,11 @@ export default function ComponentsClient({
                       <motion.div
                         layoutId="browse-platform-mode-pill"
                         className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span
@@ -1196,7 +1450,11 @@ export default function ComponentsClient({
                       <motion.div
                         layoutId="browse-platform-mode-pill"
                         className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span
@@ -1218,7 +1476,11 @@ export default function ComponentsClient({
                       <motion.div
                         layoutId="browse-platform-mode-pill"
                         className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     <span
@@ -1244,7 +1506,11 @@ export default function ComponentsClient({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-[#5c6679] border border-white/20 shadow-sm pointer-events-none"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                     {priceMode === "pro" && (
@@ -1255,7 +1521,11 @@ export default function ComponentsClient({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="absolute right-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-[#5c6679] border border-white/20 shadow-sm pointer-events-none"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 35,
+                        }}
                       />
                     )}
                   </AnimatePresence>
@@ -1335,12 +1605,13 @@ export default function ComponentsClient({
                     isCopying={activeId === item._id}
                     onCopy={() => onCopy(item)}
                     onDownloadRecorded={() => recordDownload(item)}
-                    onPreview={() =>
-                      setPreviewItem(item)
-                    }
+                    onPreview={() => setPreviewItem(item)}
                     isFavorite={favoriteIds.has(item._id)}
                     onFavoriteToggle={() => handleFavoriteToggle(item)}
-                    isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === item._id}
+                    isFavoritePending={
+                      toggleFavoriteMutation.isPending &&
+                      toggleFavoriteMutation.variables === item._id
+                    }
                     isProUser={isProUser}
                   />
                 ))}
@@ -1376,16 +1647,16 @@ export default function ComponentsClient({
             isCopying={activeId === previewItem._id}
             isFavorite={favoriteIds.has(previewItem._id)}
             onFavoriteToggle={handleFavoriteToggle}
-            isFavoritePending={toggleFavoriteMutation.isPending && toggleFavoriteMutation.variables === previewItem._id}
+            isFavoritePending={
+              toggleFavoriteMutation.isPending &&
+              toggleFavoriteMutation.variables === previewItem._id
+            }
             onDownloadRecorded={recordDownload}
           />
         )}
 
         {toastMessage && (
-          <Toast
-            message={toastMessage}
-            onClose={() => setToastMessage(null)}
-          />
+          <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
         )}
       </div>
     </>

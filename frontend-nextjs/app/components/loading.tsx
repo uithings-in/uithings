@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Navbar from "../../components/landing/Navbar";
-import { Layers, Search, Scaling, Frame, Crown } from "lucide-react";
+import { Search, Scaling, Frame, Crown } from "lucide-react";
 
 function SkeletonCard() {
   return (
@@ -49,23 +49,60 @@ export default function ComponentsLoading() {
 
         {/* Left Sidebar Skeleton */}
         <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope h-full self-start">
-          <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <div className="flex flex-col items-center justify-center py-3 gap-3 animate-pulse">
-              <div className="h-6 w-6 rounded-full bg-white/20" />
-              <div className="h-3 w-20 rounded bg-white/20" />
+          <div className="min-h-[267px] shrink-0">
+            <div
+              aria-busy="true"
+              aria-label="Loading subscription details"
+              className="mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans animate-pulse h-[243px] flex flex-col justify-between"
+            >
+              {/* Header skeleton */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="h-7 w-7 rounded-full bg-white/10 shrink-0" />
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="h-3.5 w-24 bg-white/20 rounded" />
+                    <div className="h-3 w-16 bg-white/10 rounded" />
+                  </div>
+                </div>
+                <div className="h-3.5 w-14 bg-white/15 rounded shrink-0" />
+              </div>
+
+              {/* Hero headline skeleton */}
+              <div className="mt-3 space-y-1.5">
+                <div className="h-4 w-40 bg-white/20 rounded" />
+                <div className="h-3.5 w-44 bg-white/10 rounded" />
+              </div>
+
+              {/* Hairline divider */}
+              <div className="my-3.5 border-t border-white/[0.08]" />
+
+              {/* Stats skeleton */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <div className="h-3 w-16 bg-white/10 rounded" />
+                  <div className="h-4 w-16 bg-white/20 rounded" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-3 w-12 bg-white/10 rounded" />
+                  <div className="h-4 w-10 bg-white/20 rounded" />
+                </div>
+              </div>
+
+              {/* Button skeleton */}
+              <div className="mt-3.5 h-10 w-full rounded-xl border border-white/[0.14] bg-transparent shrink-0" />
             </div>
           </div>
 
           <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-            <span className="text-[#d66a04]">
-              <Layers size={20} strokeWidth={2.25} />
-            </span>
             <span className="font-bold text-white text-[15px]">Components</span>
           </div>
 
           <div className="flex-1 overflow-hidden px-3 space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-9 w-full rounded-lg bg-white/5 animate-pulse" />
+              <div
+                key={i}
+                className="h-9 w-full rounded-lg bg-white/5 animate-pulse"
+              />
             ))}
           </div>
         </aside>
@@ -88,7 +125,9 @@ export default function ComponentsLoading() {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white">
                   <Search size={15} className="text-white/50 shrink-0 mr-2.5" />
-                  <span className="text-[13px] text-white/40">Search components...</span>
+                  <span className="text-[13px] text-white/40">
+                    Search components...
+                  </span>
                 </div>
 
                 <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">

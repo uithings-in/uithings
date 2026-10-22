@@ -1,8 +1,16 @@
-import type { CurrentSubscriptionData, SubscriptionData } from "../../api/payments";
+import type {
+  CurrentSubscriptionData,
+  SubscriptionData,
+} from "../../api/payments";
 
 export type SubscriptionSummary = CurrentSubscriptionData | SubscriptionData;
 
-export type SubscriptionCardState = "healthy" | "warning" | "urgent" | "expired" | "none";
+export type SubscriptionCardState =
+  | "healthy"
+  | "warning"
+  | "urgent"
+  | "expired"
+  | "none";
 
 export interface DerivedSubscriptionInfo {
   state: SubscriptionCardState;
@@ -25,7 +33,8 @@ export function formatPlanPrice(price?: number, durationDays?: number): string {
   if (price === undefined || price === null || !durationDays) {
     return "Active plan";
   }
-  const num = price % 100 === 0 ? (price / 100).toFixed(0) : (price / 100).toFixed(2);
+  const num =
+    price % 100 === 0 ? (price / 100).toFixed(0) : (price / 100).toFixed(2);
   return `₹${num} · ${durationDays} days`;
 }
 
@@ -33,7 +42,8 @@ export function getDaysBetween(startDate?: string, endDate?: string): number {
   if (!startDate || !endDate) return 0;
   const start = new Date(startDate).getTime();
   const end = new Date(endDate).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)
+    return 0;
   return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 }
 
@@ -44,7 +54,10 @@ export function getDaysLeft(endDate?: string, now = Date.now()): number {
   return Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
 }
 
-export function formatDateLocale(dateString?: string, locale = "en-GB"): string | null {
+export function formatDateLocale(
+  dateString?: string,
+  locale = "en-GB",
+): string | null {
   if (!dateString) return null;
   const dateObj = new Date(dateString);
   if (Number.isNaN(dateObj.getTime())) return null;
@@ -64,7 +77,7 @@ export function deriveSubscriptionInfo(
   options?: {
     now?: number;
     locale?: string;
-  }
+  },
 ): DerivedSubscriptionInfo {
   const now = options?.now ?? Date.now();
   const locale = options?.locale ?? "en-GB";
@@ -99,7 +112,7 @@ export function deriveSubscriptionInfo(
     plan?.durationDays ||
     getDaysBetween(
       "startDate" in subscription ? subscription.startDate : undefined,
-      subscription.endDate
+      subscription.endDate,
     ) ||
     180;
 
@@ -141,7 +154,8 @@ export function deriveSubscriptionInfo(
 
     case "urgent":
       statusLabel = "Expiring";
-      headline = daysLeft === 1 ? "Only 1 day left" : `Only ${daysLeft} days left`;
+      headline =
+        daysLeft === 1 ? "Only 1 day left" : `Only ${daysLeft} days left`;
       subline = formattedEndDate ? `Ends ${formattedEndDate}` : "";
       buttonLabel = "Renew plan";
       break;

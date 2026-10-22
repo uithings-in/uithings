@@ -65,9 +65,11 @@ function ThemeDropzone({
 
   const validateAndSet = (selected: File) => {
     setError(null);
-    const hasValidType = Boolean(selected.type && ALLOWED_MIME_TYPES.includes(selected.type));
+    const hasValidType = Boolean(
+      selected.type && ALLOWED_MIME_TYPES.includes(selected.type),
+    );
     const hasValidExt = ALLOWED_EXTENSIONS.some((ext) =>
-      selected.name.toLowerCase().endsWith(ext)
+      selected.name.toLowerCase().endsWith(ext),
     );
 
     if (!hasValidType && !hasValidExt) {
@@ -135,10 +137,11 @@ function ThemeDropzone({
       <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-gray-200/60 dark:border-white/[0.06]">
         <div className="flex items-center gap-2">
           <div
-            className={`flex h-6 w-6 items-center justify-center rounded-md ${isDarkMode
+            className={`flex h-6 w-6 items-center justify-center rounded-md ${
+              isDarkMode
                 ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400"
                 : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-              }`}
+            }`}
           >
             {isDarkMode ? <Moon size={13} /> : <Sun size={13} />}
           </div>
@@ -147,7 +150,9 @@ function ThemeDropzone({
               {label}
             </span>
             <span className="text-[10px] text-gray-500 dark:text-[#A1A1AA] block">
-              {isDarkMode ? "Dark background preview" : "Light background preview"}
+              {isDarkMode
+                ? "Dark background preview"
+                : "Light background preview"}
             </span>
           </div>
         </div>
@@ -217,20 +222,22 @@ function ThemeDropzone({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`flex-1 group relative flex min-h-[130px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-3.5 text-center transition-all duration-150 ${isDragOver
+          className={`flex-1 group relative flex min-h-[130px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed p-3.5 text-center transition-all duration-150 ${
+            isDragOver
               ? "border-[#F97316] bg-orange-500/[0.06] shadow-2xs"
               : error
                 ? "border-rose-400 bg-rose-500/[0.03]"
                 : "border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#111113] hover:border-[#F97316] hover:bg-orange-500/[0.02]"
-            }`}
+          }`}
         >
           <div
-            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${isDragOver
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${
+              isDragOver
                 ? "scale-105 bg-orange-500/20 text-[#F97316]"
                 : isDarkMode
                   ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:scale-105"
                   : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105"
-              }`}
+            }`}
           >
             <UploadCloud size={16} />
           </div>
@@ -291,13 +298,14 @@ export function ScreenshotUploader({
   // Fallbacks for backwards compatibility if caller only provided single preview
   const resolvedDarkFile = darkPreviewFile ?? previewFile ?? null;
   const resolvedDarkUrl = darkPreviewUrl || previewUrl || "";
-  const handleDarkSelect = onDarkFileSelect ?? onFileSelect ?? (() => { });
+  const handleDarkSelect = onDarkFileSelect ?? onFileSelect ?? (() => {});
 
   const resolvedLightFile = lightPreviewFile ?? null;
   const resolvedLightUrl = lightPreviewUrl || "";
-  const handleLightSelect = onLightFileSelect ?? (() => { });
+  const handleLightSelect = onLightFileSelect ?? (() => {});
 
-  const totalUploaded = (resolvedDarkFile ? 1 : 0) + (resolvedLightFile ? 1 : 0);
+  const totalUploaded =
+    (resolvedDarkFile ? 1 : 0) + (resolvedLightFile ? 1 : 0);
 
   return (
     <div className="rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-4 sm:p-5 shadow-xs transition-colors">
@@ -312,12 +320,16 @@ export function ScreenshotUploader({
               <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-[#F5F5F5]">
                 Preview Screenshots
               </h3>
-              <span className="text-[#EA580C] dark:text-[#FB923C] text-xs font-bold" aria-hidden="true">
+              <span
+                className="text-[#EA580C] dark:text-[#FB923C] text-xs font-bold"
+                aria-hidden="true"
+              >
                 *
               </span>
             </div>
             <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-              Upload distinct screenshots in any ratio or size (PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
+              Upload distinct screenshots in any ratio or size
+              (PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
             </p>
           </div>
         </div>

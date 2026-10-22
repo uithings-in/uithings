@@ -45,7 +45,8 @@ export function ClassificationCard({
             Classification & Access
           </h3>
           <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-            Configure system categorization, responsive platform target, and member permissions.
+            Configure system categorization, responsive platform target, and
+            member permissions.
           </p>
         </div>
       </div>
@@ -206,7 +207,11 @@ export function ClassificationCard({
               type="button"
               disabled={!allowPro}
               onClick={() => allowPro && onPricingTypeChange("Pro")}
-              title={!allowPro ? "Only admin can activate Pro component uploads for your account" : undefined}
+              title={
+                !allowPro
+                  ? "Only admin can activate Pro component uploads for your account"
+                  : undefined
+              }
               className={`relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors select-none ${
                 !allowPro
                   ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-[#71717A]"
