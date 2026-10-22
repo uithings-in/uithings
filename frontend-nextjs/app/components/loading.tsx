@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Navbar from "../../components/landing/Navbar";
-import { Layers, Search, Scaling, Frame, Crown } from "lucide-react";
+import { Search, Scaling, Frame, Crown } from "lucide-react";
 
 function SkeletonCard() {
   return (
@@ -94,9 +94,6 @@ export default function ComponentsLoading() {
           </div>
 
           <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-            <span className="text-[#d66a04]">
-              <Layers size={20} strokeWidth={2.25} />
-            </span>
             <span className="font-bold text-white text-[15px]">Components</span>
           </div>
 
