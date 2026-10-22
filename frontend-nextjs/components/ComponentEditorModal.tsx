@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import type { FormEvent } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   CheckCircle2,
   Clipboard,
@@ -412,23 +413,35 @@ export function ComponentEditorModal({
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {/* Design Type */}
+                    {/* Design Type */}
                     <div className="space-y-1">
                       <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Design
                       </span>
-                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
+                      <div className="relative grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["UI Design", "Wireframe"] as DesignType[]).map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => setDesignType(option)}
-                            className={`rounded-md py-1 text-[11px] font-bold transition cursor-pointer ${
-                              designType === option
-                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
-                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
-                            }`}
+                            className="relative rounded-md py-1 text-[11px] font-bold transition-colors cursor-pointer select-none"
                           >
-                            {option === "UI Design" ? "UI" : "Wire"}
+                            {designType === option && (
+                              <motion.div
+                                layoutId="modal-pill-design"
+                                className="absolute inset-0 rounded-md bg-white dark:bg-neutral-700 shadow-xs"
+                                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                              />
+                            )}
+                            <span
+                              className={`relative z-10 flex items-center justify-center transition-colors duration-150 ${
+                                designType === option
+                                  ? "text-gray-900 dark:text-white"
+                                  : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
+                              }`}
+                            >
+                              {option === "UI Design" ? "UI" : "Wire"}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -439,22 +452,33 @@ export function ComponentEditorModal({
                       <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Access
                       </span>
-                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
+                      <div className="relative grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["Free", "Pro"] as PricingType[]).map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => (allowPro || option === "Free" ? setPricingType(option) : undefined)}
                             disabled={!allowPro && option === "Pro"}
-                            title={!allowPro && option === "Pro" ? "Only admins can mark as Pro" : undefined}
-                            className={`rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
-                              pricingType === option
-                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
-                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
-                            }`}
+                            title={!allowPro && option === "Pro" ? "Only admins or authorized creators can mark as Pro" : undefined}
+                            className="relative rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 select-none"
                           >
-                            {option === "Pro" && <Crown size={10} className="text-[#F97316]" />}
-                            {option}
+                            {pricingType === option && (
+                              <motion.div
+                                layoutId="modal-pill-pricing"
+                                className="absolute inset-0 rounded-md bg-white dark:bg-neutral-700 shadow-xs"
+                                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                              />
+                            )}
+                            <span
+                              className={`relative z-10 flex items-center justify-center gap-1 transition-colors duration-150 ${
+                                pricingType === option
+                                  ? "text-gray-900 dark:text-white"
+                                  : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
+                              }`}
+                            >
+                              {option === "Pro" && <Crown size={10} className="text-[#F97316]" />}
+                              {option}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -465,19 +489,30 @@ export function ComponentEditorModal({
                       <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gray-500 dark:text-neutral-400 block">
                         Platform
                       </span>
-                      <div className="grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
+                      <div className="relative grid grid-cols-2 rounded-lg bg-gray-200/70 dark:bg-neutral-800 p-0.5">
                         {(["web", "app"] as PlatformTag[]).map((option) => (
                           <button
                             key={option}
                             type="button"
                             onClick={() => setPlatformTag(option)}
-                            className={`rounded-md py-1 text-[11px] font-bold capitalize transition cursor-pointer ${
-                              platformTag === option
-                                ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
-                                : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
-                            }`}
+                            className="relative rounded-md py-1 text-[11px] font-bold capitalize transition-colors cursor-pointer select-none"
                           >
-                            {option}
+                            {platformTag === option && (
+                              <motion.div
+                                layoutId="modal-pill-platform"
+                                className="absolute inset-0 rounded-md bg-white dark:bg-neutral-700 shadow-xs"
+                                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                              />
+                            )}
+                            <span
+                              className={`relative z-10 flex items-center justify-center transition-colors duration-150 ${
+                                platformTag === option
+                                  ? "text-gray-900 dark:text-white"
+                                  : "text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-200"
+                              }`}
+                            >
+                              {option}
+                            </span>
                           </button>
                         ))}
                       </div>

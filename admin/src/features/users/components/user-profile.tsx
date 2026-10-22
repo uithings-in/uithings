@@ -28,6 +28,7 @@ import {
   Zap,
   RefreshCw,
   Gift,
+  UploadCloud,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -757,6 +758,16 @@ export function UserProfile() {
                     >
                       {user.role.toUpperCase()}
                     </Badge>
+
+                    {/* Pro Uploader Badge */}
+                    {user.canUploadPro && (
+                      <Badge
+                        variant='secondary'
+                        className='bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-medium text-xs px-2.5 py-0.5 gap-1'
+                      >
+                        <UploadCloud className='h-3 w-3' /> PRO UPLOADER
+                      </Badge>
+                    )}
                   </div>
                   <p className='text-sm text-muted-foreground'>
                     {user.email}
@@ -948,6 +959,26 @@ export function UserProfile() {
                     </div>
                     <Badge variant='outline' className={cn('capitalize font-medium', statusBadgeColor)}>
                       {user.status || 'active'}
+                    </Badge>
+                  </div>
+
+                  <div className='flex items-center justify-between rounded-lg border p-3'>
+                    <div className='space-y-0.5'>
+                      <span className='text-xs text-muted-foreground'>Pro Upload Permission</span>
+                      <p className='text-sm font-semibold'>
+                        {user.canUploadPro ? 'Enabled' : 'Disabled'}
+                      </p>
+                    </div>
+                    <Badge
+                      variant='outline'
+                      className={cn(
+                        'font-medium text-xs',
+                        user.canUploadPro
+                          ? 'border-emerald-500/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      {user.canUploadPro ? 'Authorized' : 'Restricted'}
                     </Badge>
                   </div>
                 </CardContent>
@@ -1768,7 +1799,7 @@ export function UserProfile() {
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2.5 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -2042,7 +2073,7 @@ export function UserProfile() {
               <span className='font-semibold text-foreground'>{user.name}</span>? The user will be immediately downgraded to the Free Tier.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className='gap-2 sm:gap-0'>
+          <DialogFooter className='gap-2 sm:gap-2.5 pt-2'>
             <Button
               type='button'
               variant='outline'

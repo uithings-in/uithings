@@ -29,6 +29,7 @@ export const userSchema = z.object({
   profilePicture: z.string().optional().default(''),
   role: userRoleSchema.default('user'),
   isProUser: z.boolean().default(false),
+  canUploadPro: z.boolean().default(false),
   activeSubscription: z.any().optional().nullable(),
   uploadedComponentsCount: z.number().optional().default(0),
   createdAt: z.coerce.date(),

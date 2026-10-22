@@ -25,9 +25,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { SelectDropdown } from '@/components/select-dropdown'
 import { Switch } from '@/components/ui/switch'
-import { roles } from '../data/data'
 import { type User } from '../data/schema'
 import { useAuthStore } from '@/stores/auth-store'
 import { API_URL } from '@/lib/api-url'
@@ -35,8 +33,7 @@ import { API_URL } from '@/lib/api-url'
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email.').optional(),
-  role: z.enum(['admin', 'user']),
-  isProUser: z.boolean(),
+  canUploadPro: z.boolean(),
 })
 
 type UserForm = z.infer<typeof formSchema>
@@ -63,8 +60,7 @@ export function UsersActionDialog({
     values: {
       name: currentRow?.name || '',
       email: currentRow?.email || '',
-      role: (currentRow?.role as 'admin' | 'user') || 'user',
-      isProUser: !!currentRow?.isProUser,
+      canUploadPro: !!currentRow?.canUploadPro,
     },
   })
 
@@ -76,8 +72,7 @@ export function UsersActionDialog({
           `${API_URL}/users/${currentRow.id}`,
           {
             name: values.name,
-            role: values.role,
-            isProUser: values.isProUser,
+            canUploadPro: values.canUploadPro,
           },
           { headers: { Authorization: `Bearer ${auth.accessToken}` } }
         )
@@ -153,33 +148,15 @@ export function UsersActionDialog({
 
             <FormField
               control={form.control}
-              name='role'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>System Role</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Select a role'
-                    items={roles.map(({ label, value }) => ({
-                      label,
-                      value,
-                    }))}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='isProUser'
+              name='canUploadPro'
               render={({ field }) => (
                 <FormItem className='flex items-center justify-between rounded-lg border p-3.5 shadow-xs'>
                   <div className='space-y-0.5'>
-                    <FormLabel className='text-sm font-medium'>Pro Membership</FormLabel>
+                    <FormLabel className='text-sm font-medium'>
+                      User can upload pro components
+                    </FormLabel>
                     <p className='text-xs text-muted-foreground'>
-                      Grant unlimited access to pro components & templates
+                      Allow this user to upload and publish Pro components
                     </p>
                   </div>
                   <FormControl>
@@ -194,7 +171,7 @@ export function UsersActionDialog({
           </form>
         </Form>
 
-        <DialogFooter className='gap-2 sm:gap-0'>
+        <DialogFooter className='gap-2 sm:gap-2.5 pt-2'>
           <Button
             type='button'
             variant='outline'

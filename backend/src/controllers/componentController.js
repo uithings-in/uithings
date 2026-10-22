@@ -392,10 +392,13 @@ const createComponent = asyncHandler(async (req, res) => {
     throw new Error("name, previewImageUrl, and figmaDataBase64 are required");
   }
 
-  // Logic: normal people can post free components only no pro.
-  if (pricingType === "Pro" && userRole !== "admin") {
+  // Check Pro upload permissions: admin or users granted canUploadPro
+  const currentUser = await User.findById(req.user.userId).select("role canUploadPro");
+  const canPostPro = currentUser?.role === "admin" || !!currentUser?.canUploadPro;
+
+  if (pricingType === "Pro" && !canPostPro) {
     res.status(403);
-    throw new Error("Only admins can post Pro components");
+    throw new Error("Only admins or authorized users can post Pro components");
   }
 
   // Logic: normal people can post atmost 20 components.
@@ -426,7 +429,7 @@ const createComponent = asyncHandler(async (req, res) => {
     darkPreviewImageUrl: darkPreviewImageUrl || resolvedPreviewUrl,
     figmaDataBase64,
     designType,
-    pricingType: userRole === "admin" ? pricingType : "Free",
+    pricingType: canPostPro ? (pricingType || "Free") : "Free",
     createdBy: req.user.userId,
     status: userRole === "admin" ? "approved" : "pending",
   });
@@ -662,6 +665,15 @@ const updateComponent = asyncHandler(async (req, res) => {
   if (component.createdBy.toString() !== req.user.userId) {
     res.status(403);
     throw new Error("You can only edit your own components");
+  }
+
+  if (req.body.pricingType === "Pro" && component.pricingType !== "Pro") {
+    const currentUser = await User.findById(req.user.userId).select("role canUploadPro");
+    const canPostPro = currentUser?.role === "admin" || !!currentUser?.canUploadPro;
+    if (!canPostPro) {
+      res.status(403);
+      throw new Error("You do not have permission to mark components as Pro");
+    }
   }
 
   const updates = {

@@ -46,8 +46,13 @@ export function EditComponentView({
 }: EditComponentPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const allowPro = user?.role === "admin";
+  const { user, refetchUser } = useAuth();
+  const allowPro = user?.role === "admin" || !!user?.canUploadPro;
+
+  // Refresh user permissions from backend on mount
+  useEffect(() => {
+    refetchUser?.();
+  }, [refetchUser]);
 
   // Fetch component data
   const {

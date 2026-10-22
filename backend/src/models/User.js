@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    canUploadPro: {
+      type: Boolean,
+      default: false,
+    },
     favoriteComponents: {
       type: [
         {
