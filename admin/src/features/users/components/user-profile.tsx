@@ -1799,7 +1799,7 @@ export function UserProfile() {
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2.5 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -2073,7 +2073,7 @@ export function UserProfile() {
               <span className='font-semibold text-foreground'>{user.name}</span>? The user will be immediately downgraded to the Free Tier.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className='gap-2 sm:gap-0'>
+          <DialogFooter className='gap-2 sm:gap-2.5 pt-2'>
             <Button
               type='button'
               variant='outline'

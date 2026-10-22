@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import {
   SlidersHorizontal,
   Layout,
@@ -55,28 +56,53 @@ export function ClassificationCard({
           <label className="text-xs font-medium text-gray-700 dark:text-[#A1A1AA] block">
             Design Type
           </label>
-          <div className="grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
+          <div className="relative grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
             <button
               type="button"
               onClick={() => onDesignTypeChange("UI Design")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${designType === "UI Design"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
+              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
             >
-              <Layout size={12} />
-              <span>UI Design</span>
+              {designType === "UI Design" && (
+                <motion.div
+                  layoutId="classification-design-type-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  designType === "UI Design"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <Layout size={12} />
+                <span>UI Design</span>
+              </span>
             </button>
+
             <button
               type="button"
               onClick={() => onDesignTypeChange("Wireframe")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${designType === "Wireframe"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
+              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
             >
-              <PenTool size={12} />
-              <span>Wireframe</span>
+              {designType === "Wireframe" && (
+                <motion.div
+                  layoutId="classification-design-type-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  designType === "Wireframe"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <PenTool size={12} />
+                <span>Wireframe</span>
+              </span>
             </button>
           </div>
         </div>
@@ -86,28 +112,53 @@ export function ClassificationCard({
           <label className="text-xs font-medium text-gray-700 dark:text-[#A1A1AA] block">
             Platform Target
           </label>
-          <div className="grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
+          <div className="relative grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
             <button
               type="button"
               onClick={() => onPlatformTagChange("web")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${platformTag === "web"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
+              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
             >
-              <Monitor size={12} />
-              <span>Web</span>
+              {platformTag === "web" && (
+                <motion.div
+                  layoutId="classification-platform-target-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  platformTag === "web"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <Monitor size={12} />
+                <span>Web</span>
+              </span>
             </button>
+
             <button
               type="button"
               onClick={() => onPlatformTagChange("app")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${platformTag === "app"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
+              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
             >
-              <Smartphone size={12} />
-              <span>App</span>
+              {platformTag === "app" && (
+                <motion.div
+                  layoutId="classification-platform-target-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  platformTag === "app"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <Smartphone size={12} />
+                <span>App</span>
+              </span>
             </button>
           </div>
         </div>
@@ -125,17 +176,29 @@ export function ClassificationCard({
             )}
           </div>
 
-          <div className="grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
+          <div className="relative grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
             <button
               type="button"
               onClick={() => onPricingTypeChange("Free")}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${pricingType === "Free"
-                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold"
-                  : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
+              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
             >
-              <Sparkles size={12} />
-              <span>Free</span>
+              {pricingType === "Free" && (
+                <motion.div
+                  layoutId="classification-pricing-type-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  pricingType === "Free"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <Sparkles size={12} />
+                <span>Free</span>
+              </span>
             </button>
 
             {/* Pro Option (disabled if user is not authorized to upload Pro) */}
@@ -144,15 +207,31 @@ export function ClassificationCard({
               disabled={!allowPro}
               onClick={() => allowPro && onPricingTypeChange("Pro")}
               title={!allowPro ? "Only admin can activate Pro component uploads for your account" : undefined}
-              className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${!allowPro
+              className={`relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors select-none ${
+                !allowPro
                   ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-[#71717A]"
-                  : pricingType === "Pro"
-                    ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] shadow-2xs border border-orange-500/20 font-semibold cursor-pointer"
-                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white cursor-pointer"
-                }`}
+                  : "cursor-pointer"
+              }`}
             >
-              {!allowPro ? <Lock size={11} /> : <Crown size={12} />}
-              <span>Pro</span>
+              {pricingType === "Pro" && (
+                <motion.div
+                  layoutId="classification-pricing-type-pill"
+                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
+                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                />
+              )}
+              <span
+                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
+                  pricingType === "Pro"
+                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
+                    : !allowPro
+                      ? "text-gray-400 dark:text-[#71717A]"
+                      : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                {!allowPro ? <Lock size={11} /> : <Crown size={12} />}
+                <span>Pro</span>
+              </span>
             </button>
           </div>
         </div>

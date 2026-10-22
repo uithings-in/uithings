@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { componentsApi } from "../../api/components";
 import { paymentsApi, type CurrentSubscriptionData, type SubscriptionData } from "../../api/payments";
@@ -1114,84 +1114,170 @@ export default function ComponentsClient({
                 </div>
 
                 {/* 2. View Mode Toggle (Wireframe / UI Design) */}
-                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                <div className="relative flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => setViewMode("wireframe")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${viewMode === "wireframe"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    <IconWireframe />
-                    Wireframe
+                    {viewMode === "wireframe" && (
+                      <motion.div
+                        layoutId="browse-view-mode-pill"
+                        className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${
+                        viewMode === "wireframe"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      <IconWireframe />
+                      <span>Wireframe</span>
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode("ui-design")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${viewMode === "ui-design"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    <SquarePen size={14} strokeWidth={1.8} />
-                    UI Design
+                    {viewMode === "ui-design" && (
+                      <motion.div
+                        layoutId="browse-view-mode-pill"
+                        className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 flex items-center gap-1.5 transition-colors duration-150 ${
+                        viewMode === "ui-design"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      <SquarePen size={14} strokeWidth={1.8} />
+                      <span>UI Design</span>
+                    </span>
                   </button>
                 </div>
 
                 {/* 3. Platform Mode Toggle (All / Web / App) */}
-                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                <div className="relative flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => setPlatformMode("all")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "all"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative flex items-center justify-center px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    All
+                    {platformMode === "all" && (
+                      <motion.div
+                        layoutId="browse-platform-mode-pill"
+                        className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 transition-colors duration-150 ${
+                        platformMode === "all"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      All
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setPlatformMode("web")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "web"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative flex items-center justify-center px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    Web
+                    {platformMode === "web" && (
+                      <motion.div
+                        layoutId="browse-platform-mode-pill"
+                        className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 transition-colors duration-150 ${
+                        platformMode === "web"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      Web
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setPlatformMode("app")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${platformMode === "app"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative flex items-center justify-center px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    App
+                    {platformMode === "app" && (
+                      <motion.div
+                        layoutId="browse-platform-mode-pill"
+                        className="absolute inset-0 rounded-md bg-[#5c6679] border border-white/20 shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 transition-colors duration-150 ${
+                        platformMode === "app"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      App
+                    </span>
                   </button>
                 </div>
 
                 {/* 4. Pricing Mode Toggle (Free / Pro) */}
-                <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                <div className="relative flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">
+                  <AnimatePresence initial={false}>
+                    {priceMode === "free" && (
+                      <motion.div
+                        key="pill-free"
+                        layoutId="browse-price-mode-pill"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-[#5c6679] border border-white/20 shadow-sm pointer-events-none"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    {priceMode === "pro" && (
+                      <motion.div
+                        key="pill-pro"
+                        layoutId="browse-price-mode-pill"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute right-1 top-1 bottom-1 w-[calc(50%-4px)] rounded-md bg-[#5c6679] border border-white/20 shadow-sm pointer-events-none"
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                  </AnimatePresence>
                   <button
                     type="button"
                     onClick={() => togglePriceMode("free")}
-                    className={`px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${priceMode === "free"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative z-10 flex-1 flex items-center justify-center px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
-                    Free
+                    <span
+                      className={`transition-colors duration-150 ${
+                        priceMode === "free"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      Free
+                    </span>
                   </button>
                   <button
                     type="button"
                     onClick={() => togglePriceMode("pro")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-all cursor-pointer ${priceMode === "pro"
-                      ? "bg-[#5c6679] text-white shadow-sm font-semibold"
-                      : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                    className="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer select-none"
                   >
                     <Crown
                       size={14}
@@ -1199,7 +1285,15 @@ export default function ComponentsClient({
                       strokeWidth={2}
                       className="transition-transform active:scale-95"
                     />
-                    Pro
+                    <span
+                      className={`transition-colors duration-150 ${
+                        priceMode === "pro"
+                          ? "text-white font-semibold"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      Pro
+                    </span>
                   </button>
                 </div>
               </div>
