@@ -25,13 +25,17 @@ export interface Article {
 export const blogArticles: Article[] = [
   {
     id: "where-creative-design-meets-smart-development",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1200&q=80",
-    heroImage: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1600&q=80",
     date: "April 08, 2024",
     readTime: "9 min read",
     title: "Where Creative Design Meets Smart Development Solutions",
-    subtitle: "From the captivating realm of creativity to complex realm of AI, our collection encompasses a vibrant spectrum of insights and inspiration to fuel your creative fire and deepen your technical know-how.",
-    excerpt: "This blog bridges the gap between creativity and technology. Learn how design thinking and modern frontend systems combine to deliver world-class digital experiences.",
+    subtitle:
+      "From the captivating realm of creativity to complex realm of AI, our collection encompasses a vibrant spectrum of insights and inspiration to fuel your creative fire and deepen your technical know-how.",
+    excerpt:
+      "This blog bridges the gap between creativity and technology. Learn how design thinking and modern frontend systems combine to deliver world-class digital experiences.",
     content: [
       "In modern digital product design, the divide between visual aesthetics and technical architecture is collapsing.",
       "By approaching UI components as reusable, testable systems, cross-functional teams move 4x faster while maintaining pristine visual quality across every breakpoint.",
@@ -60,7 +64,8 @@ export const blogArticles: Article[] = [
         paragraphs: [
           "There is a moment in design where every component, interaction, and typographic nuance converges into something harmonious. Great teams cherish this alignment because it reflects hundreds of hours of refinement, user research, and thoughtful debate. Every pixel serves a purpose, and when that purpose resonates with users, it creates an unforgettable experience that sets your brand apart in a crowded marketplace.",
         ],
-        quote: "To have all this dignity, feel so free on a sunny night in our corner of infinity, yet to be confronted by a sad hanger that must never may feel this in an original user that as he 'adjusted the fit' would die of humiliation on account of it — or feel the entire creation as a hoax, were it not for time furnished with the choices of a world not the own.",
+        quote:
+          "To have all this dignity, feel so free on a sunny night in our corner of infinity, yet to be confronted by a sad hanger that must never may feel this in an original user that as he 'adjusted the fit' would die of humiliation on account of it — or feel the entire creation as a hoax, were it not for time furnished with the choices of a world not the own.",
       },
       {
         heading: "And Embarrassed been Create",
@@ -82,13 +87,17 @@ export const blogArticles: Article[] = [
   },
   {
     id: "exploring-innovation-through-design-and-web-development",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80",
-    heroImage: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1600&q=80",
     date: "April 08, 2024",
     readTime: "10 min read",
     title: "Exploring Innovation Through Design and Web Development",
-    subtitle: "Discover how cutting-edge component architectures, WebGL interactions, and unified design token systems empower teams to build frictionless web applications.",
-    excerpt: "Dive into the latest trends, tools, and techniques shaping the future of design and development.",
+    subtitle:
+      "Discover how cutting-edge component architectures, WebGL interactions, and unified design token systems empower teams to build frictionless web applications.",
+    excerpt:
+      "Dive into the latest trends, tools, and techniques shaping the future of design and development.",
     content: [
       "Innovation in frontend development is no longer just about faster compilers. It is about fluid visual storytelling, micro-interactions, and 3D web experiences that engage users on a visceral level.",
       "From WebGL and Three.js canvas shaders to frictionless layout primitives in CSS and React, the digital landscape offers unprecedented creative power.",
@@ -117,7 +126,8 @@ export const blogArticles: Article[] = [
         paragraphs: [
           "Subtle feedback loops—like elastic button clicks, smooth modal springs, and tactile hover glows—turn ordinary software into an engaging experience that users remember.",
         ],
-        quote: "Great software feels alive because designers took the time to calibrate the invisible details that make every interaction delightful.",
+        quote:
+          "Great software feels alive because designers took the time to calibrate the invisible details that make every interaction delightful.",
       },
       {
         heading: "Balancing Innovation with Accessibility",
@@ -129,13 +139,17 @@ export const blogArticles: Article[] = [
   },
   {
     id: "design-ideas-development-tips-card-3",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
-    heroImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
+    image:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80",
+    heroImage:
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80",
     date: "April 08, 2024",
     readTime: "14 min read",
     title: "Design Ideas, Development Tips, and Creative Solutions",
-    subtitle: "Practical advice on building dark mode themes that feel natural, optimizing vector assets, and structuring component states cleanly.",
-    excerpt: "Your go-to space for actionable insights on design trends, development practices, and creative execution.",
+    subtitle:
+      "Practical advice on building dark mode themes that feel natural, optimizing vector assets, and structuring component states cleanly.",
+    excerpt:
+      "Your go-to space for actionable insights on design trends, development practices, and creative execution.",
     content: [
       "Creating seamless interfaces requires both aesthetic discipline and rigorous technical execution. We examine how top agencies balance negative space, typography hierarchy, and snappy performance.",
       "Practical advice on building dark mode themes that feel natural, optimizing vector assets, and structuring component states cleanly.",
@@ -167,12 +181,15 @@ export const blogArticles: Article[] = [
   },
   {
     id: "design-ideas-development-tips-card-4",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2025",
     readTime: "14 min read",
     title: "Architectural Principles in Modern Web Layouts",
-    subtitle: "Analyzing spatial design principles to unlock bold architectural approaches to web layout and visual hierarchy.",
-    excerpt: "Environmental branding and digital typography share deep roots. Analyzing spatial design principles unlocks bold architectural approaches.",
+    subtitle:
+      "Analyzing spatial design principles to unlock bold architectural approaches to web layout and visual hierarchy.",
+    excerpt:
+      "Environmental branding and digital typography share deep roots. Analyzing spatial design principles unlocks bold architectural approaches.",
     content: [
       "Environmental branding and digital typography share deep roots. Analyzing spatial design principles unlocks bold architectural approaches to web layout.",
       "Understand grid structures, bold brutalist framing, and high-contrast typography in contemporary web apps.",
@@ -180,60 +197,75 @@ export const blogArticles: Article[] = [
   },
   {
     id: "design-ideas-development-tips-card-5",
-    image: "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2025",
     readTime: "14 min read",
     title: "Tactile Brand Identity in an Increasingly Digital World",
-    subtitle: "How physical textures, vivid color choices, and tangible mockups influence brand perception across omni-channel experiences.",
-    excerpt: "Tactile brand identity in an increasingly digital world. How physical textures and vivid color choices influence brand perception.",
+    subtitle:
+      "How physical textures, vivid color choices, and tangible mockups influence brand perception across omni-channel experiences.",
+    excerpt:
+      "Tactile brand identity in an increasingly digital world. How physical textures and vivid color choices influence brand perception.",
     content: [
       "Tactile brand identity in an increasingly digital world. How physical textures, vivid color choices, and tangible mockups influence brand perception across omni-channel experiences.",
     ],
   },
   {
     id: "design-ideas-development-tips-card-6",
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2025",
     readTime: "14 min read",
     title: "Multi-Format Marketing Campaigns and Responsive Assets",
-    subtitle: "Translating brand identities into responsive web banners and social assets with total brand consistency.",
-    excerpt: "Out-of-home advertising and responsive banners: translating multi-format marketing campaigns into responsive web assets.",
+    subtitle:
+      "Translating brand identities into responsive web banners and social assets with total brand consistency.",
+    excerpt:
+      "Out-of-home advertising and responsive banners: translating multi-format marketing campaigns into responsive web assets.",
     content: [
       "Out-of-home advertising and responsive banners: translating multi-format marketing campaigns into responsive web banners and social assets with total brand consistency.",
     ],
   },
   {
     id: "design-ideas-development-tips-card-7",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2026",
     readTime: "14 min read",
     title: "High-Voltage Neon Accents and Brutalist Shadow Geometry",
-    subtitle: "Why high-contrast styling is taking over modern digital products and how to apply it thoughtfully without overwhelming user attention.",
-    excerpt: "High-voltage neon accents and brutalist shadow geometry. Why high-contrast styling is taking over modern digital products.",
+    subtitle:
+      "Why high-contrast styling is taking over modern digital products and how to apply it thoughtfully without overwhelming user attention.",
+    excerpt:
+      "High-voltage neon accents and brutalist shadow geometry. Why high-contrast styling is taking over modern digital products.",
     content: [
       "High-voltage neon accents and brutalist shadow geometry. Why high-contrast styling is taking over modern digital products and how to apply it thoughtfully without overwhelming user attention.",
     ],
   },
   {
     id: "design-ideas-development-tips-card-8",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2026",
     readTime: "14 min read",
     title: "Levitating 3D Presentations and Futuristic Product Marketing",
-    subtitle: "Elevate your portfolio and client presentations using modern 3D lighting, glass shaders, and dynamic mockups.",
-    excerpt: "Levitating 3D presentations and futuristic product marketing. Elevate your portfolio and client presentations using modern 3D lighting.",
+    subtitle:
+      "Elevate your portfolio and client presentations using modern 3D lighting, glass shaders, and dynamic mockups.",
+    excerpt:
+      "Levitating 3D presentations and futuristic product marketing. Elevate your portfolio and client presentations using modern 3D lighting.",
     content: [
       "Levitating 3D presentations and futuristic product marketing. Elevate your portfolio and client presentations using modern 3D lighting, glass shaders, and dynamic mockups.",
     ],
   },
   {
     id: "design-ideas-development-tips-card-9",
-    image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1200&q=80",
     date: "March 24, 2026",
     readTime: "14 min read",
     title: "The New Minimalism: Editorial Layouts and Modern Touch",
-    subtitle: "Editorial layouts, stone textures, and classical proportions reimagined for modern touch devices and high-DPI displays.",
-    excerpt: "The new minimalism: editorial layouts, stone textures, and classical proportions reimagined for modern touch devices and high-DPI displays.",
+    subtitle:
+      "Editorial layouts, stone textures, and classical proportions reimagined for modern touch devices and high-DPI displays.",
+    excerpt:
+      "The new minimalism: editorial layouts, stone textures, and classical proportions reimagined for modern touch devices and high-DPI displays.",
     content: [
       "The new minimalism: editorial layouts, stone textures, and classical proportions reimagined for modern touch devices and high-DPI displays.",
     ],
@@ -244,6 +276,11 @@ export function getArticleById(id: string): Article | undefined {
   return blogArticles.find((article) => article.id === id);
 }
 
-export function getSimilarArticles(currentId: string, count: number = 3): Article[] {
-  return blogArticles.filter((article) => article.id !== currentId).slice(0, count);
+export function getSimilarArticles(
+  currentId: string,
+  count: number = 3,
+): Article[] {
+  return blogArticles
+    .filter((article) => article.id !== currentId)
+    .slice(0, count);
 }

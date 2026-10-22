@@ -13,7 +13,12 @@ export const users: User[] = Array.from({ length: 20 }, () => {
     id: faker.string.uuid(),
     name: `${firstName} ${lastName}`,
     email: faker.internet.email({ firstName }).toLocaleLowerCase(),
-    status: faker.helpers.arrayElement(['active', 'inactive', 'invited', 'suspended'] as const),
+    status: faker.helpers.arrayElement([
+      'active',
+      'inactive',
+      'invited',
+      'suspended',
+    ] as const),
     authProvider,
     profilePicture: authProvider === 'google' ? faker.image.avatar() : '',
     role: faker.helpers.arrayElement(['admin', 'user'] as const),

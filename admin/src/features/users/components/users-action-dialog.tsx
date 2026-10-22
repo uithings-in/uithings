@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { z } from 'zod'
+import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
-import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/stores/auth-store'
+import { API_URL } from '@/lib/api-url'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,8 +29,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { type User } from '../data/schema'
-import { useAuthStore } from '@/stores/auth-store'
-import { API_URL } from '@/lib/api-url'
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -99,7 +99,9 @@ export function UsersActionDialog({
     >
       <DialogContent className='sm:max-w-md'>
         <DialogHeader className='text-start'>
-          <DialogTitle>{isEdit ? 'Edit User Profile' : 'User Details'}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? 'Edit User Profile' : 'User Details'}
+          </DialogTitle>
           <DialogDescription>
             {isEdit
               ? `Manage permissions and status for ${currentRow.name}.`
@@ -136,7 +138,7 @@ export function UsersActionDialog({
                   <FormControl>
                     <Input
                       disabled
-                      className='bg-muted/50 cursor-not-allowed'
+                      className='cursor-not-allowed bg-muted/50'
                       placeholder='user@example.com'
                       {...field}
                     />
@@ -171,7 +173,7 @@ export function UsersActionDialog({
           </form>
         </Form>
 
-        <DialogFooter className='gap-2 sm:gap-2.5 pt-2'>
+        <DialogFooter className='gap-2 pt-2 sm:gap-2.5'>
           <Button
             type='button'
             variant='outline'

@@ -99,7 +99,10 @@ export default function ComponentsLoading() {
 
           <div className="flex-1 overflow-hidden px-3 space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-9 w-full rounded-lg bg-white/5 animate-pulse" />
+              <div
+                key={i}
+                className="h-9 w-full rounded-lg bg-white/5 animate-pulse"
+              />
             ))}
           </div>
         </aside>
@@ -122,7 +125,9 @@ export default function ComponentsLoading() {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="relative flex items-center w-full sm:w-[260px] md:w-[280px] lg:w-[310px] h-[38px] rounded-lg border border-white/20 bg-transparent px-3 text-white">
                   <Search size={15} className="text-white/50 shrink-0 mr-2.5" />
-                  <span className="text-[13px] text-white/40">Search components...</span>
+                  <span className="text-[13px] text-white/40">
+                    Search components...
+                  </span>
                 </div>
 
                 <div className="flex items-center h-[38px] rounded-lg border border-white/20 bg-transparent p-1 gap-1 shrink-0">

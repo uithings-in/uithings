@@ -24,7 +24,10 @@ interface SavedDraft {
 
 export function useAddComponentForm(allowPro: boolean = false) {
   // Load saved preferences for classification defaults
-  const getInitialClassification = (): { designType: DesignType; platformTag: PlatformTag } => {
+  const getInitialClassification = (): {
+    designType: DesignType;
+    platformTag: PlatformTag;
+  } => {
     if (typeof window === "undefined") {
       return { designType: "UI Design", platformTag: "web" };
     }
@@ -49,13 +52,21 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const [figmaDataBase64, setFigmaPayloadState] = useState("");
   const [previewFile, setPreviewFileState] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [darkPreviewFile, setDarkPreviewFileState] = useState<File | null>(null);
+  const [darkPreviewFile, setDarkPreviewFileState] = useState<File | null>(
+    null,
+  );
   const [darkPreviewUrl, setDarkPreviewUrl] = useState<string>("");
-  const [lightPreviewFile, setLightPreviewFileState] = useState<File | null>(null);
+  const [lightPreviewFile, setLightPreviewFileState] = useState<File | null>(
+    null,
+  );
   const [lightPreviewUrl, setLightPreviewUrl] = useState<string>("");
-  const [designType, setDesignTypeState] = useState<DesignType>(initialClassification.designType);
+  const [designType, setDesignTypeState] = useState<DesignType>(
+    initialClassification.designType,
+  );
   const [pricingType, setPricingTypeState] = useState<PricingType>("Free");
-  const [platformTag, setPlatformTagState] = useState<PlatformTag>(initialClassification.platformTag);
+  const [platformTag, setPlatformTagState] = useState<PlatformTag>(
+    initialClassification.platformTag,
+  );
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
@@ -69,8 +80,10 @@ export function useAddComponentForm(allowPro: boolean = false) {
         const parsed: SavedDraft = JSON.parse(saved);
         if (parsed.name) setNameState(parsed.name);
         if (parsed.description) setDescriptionState(parsed.description);
-        if (parsed.tags && Array.isArray(parsed.tags)) setTagsState(parsed.tags);
-        if (parsed.figmaDataBase64) setFigmaPayloadState(parsed.figmaDataBase64);
+        if (parsed.tags && Array.isArray(parsed.tags))
+          setTagsState(parsed.tags);
+        if (parsed.figmaDataBase64)
+          setFigmaPayloadState(parsed.figmaDataBase64);
         if (parsed.designType) setDesignTypeState(parsed.designType);
         if (parsed.platformTag) setPlatformTagState(parsed.platformTag);
         if (parsed.pricingType && (allowPro || parsed.pricingType === "Free")) {
@@ -118,7 +131,12 @@ export function useAddComponentForm(allowPro: boolean = false) {
   // Autosave draft to localStorage (debounce)
   useEffect(() => {
     if (!isDraftLoaded) return;
-    const hasAnyContent = !!(name.trim() || description.trim() || tags.length || figmaDataBase64);
+    const hasAnyContent = !!(
+      name.trim() ||
+      description.trim() ||
+      tags.length ||
+      figmaDataBase64
+    );
 
     if (!hasAnyContent) {
       try {
@@ -147,14 +165,23 @@ export function useAddComponentForm(allowPro: boolean = false) {
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [name, description, tags, figmaDataBase64, designType, pricingType, platformTag, isDraftLoaded]);
+  }, [
+    name,
+    description,
+    tags,
+    figmaDataBase64,
+    designType,
+    pricingType,
+    platformTag,
+    isDraftLoaded,
+  ]);
 
   // Save last used preferences
   useEffect(() => {
     try {
       localStorage.setItem(
         PREFS_STORAGE_KEY,
-        JSON.stringify({ designType, platformTag })
+        JSON.stringify({ designType, platformTag }),
       );
     } catch {}
   }, [designType, platformTag]);
@@ -163,14 +190,22 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const isDirty = useMemo(() => {
     return Boolean(
       name.trim() ||
-        description.trim() ||
-        tags.length ||
-        figmaDataBase64 ||
-        darkPreviewFile ||
-        lightPreviewFile ||
-        previewFile
+      description.trim() ||
+      tags.length ||
+      figmaDataBase64 ||
+      darkPreviewFile ||
+      lightPreviewFile ||
+      previewFile,
     );
-  }, [name, description, tags, figmaDataBase64, darkPreviewFile, lightPreviewFile, previewFile]);
+  }, [
+    name,
+    description,
+    tags,
+    figmaDataBase64,
+    darkPreviewFile,
+    lightPreviewFile,
+    previewFile,
+  ]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -204,10 +239,13 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setDesignTypeState(val);
   }, []);
 
-  const setPricingType = useCallback((val: PricingType) => {
-    if (val === "Pro" && !allowPro) return;
-    setPricingTypeState(val);
-  }, [allowPro]);
+  const setPricingType = useCallback(
+    (val: PricingType) => {
+      if (val === "Pro" && !allowPro) return;
+      setPricingTypeState(val);
+    },
+    [allowPro],
+  );
 
   const setPlatformTag = useCallback((val: PlatformTag) => {
     setPlatformTagState(val);
@@ -226,7 +264,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
         }
       }
     },
-    [name]
+    [name],
   );
 
   const setDarkPreviewFile = useCallback(
@@ -238,7 +276,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
         suggestNameFromFile(file);
       }
     },
-    [suggestNameFromFile]
+    [suggestNameFromFile],
   );
 
   const setLightPreviewFile = useCallback(
@@ -250,7 +288,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
         suggestNameFromFile(file);
       }
     },
-    [suggestNameFromFile]
+    [suggestNameFromFile],
   );
 
   // Set preview file + auto-suggest component name from filename if name is empty (legacy/generic)
@@ -262,14 +300,16 @@ export function useAddComponentForm(allowPro: boolean = false) {
       }
       suggestNameFromFile(file);
     },
-    [darkPreviewFile, suggestNameFromFile]
+    [darkPreviewFile, suggestNameFromFile],
   );
 
   const markTouched = useCallback((field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
-  const hasAnyPreview = Boolean(darkPreviewFile || lightPreviewFile || previewFile);
+  const hasAnyPreview = Boolean(
+    darkPreviewFile || lightPreviewFile || previewFile,
+  );
 
   // Validation
   const errors = useMemo<ValidationErrors>(() => {
@@ -281,7 +321,8 @@ export function useAddComponentForm(allowPro: boolean = false) {
       errs.figmaPayload = "Figma asset payload is required.";
     }
     if (touched.previewFile && !hasAnyPreview) {
-      errs.previewFile = "At least one preview screenshot (Dark or Light) is required.";
+      errs.previewFile =
+        "At least one preview screenshot (Dark or Light) is required.";
     }
     return errs;
   }, [name, figmaDataBase64, hasAnyPreview, touched]);
@@ -347,7 +388,8 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setLastSavedTime(null);
   }, []);
 
-  const effectivePreviewFile = darkPreviewFile || lightPreviewFile || previewFile;
+  const effectivePreviewFile =
+    darkPreviewFile || lightPreviewFile || previewFile;
   const effectivePreviewUrl = darkPreviewUrl || lightPreviewUrl || previewUrl;
 
   const values: ComponentFormValues = {

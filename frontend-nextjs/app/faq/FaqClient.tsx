@@ -8,7 +8,12 @@ import CtaAndFooterSection from "@/components/landing/CtaAndFooterSection";
 import StarField from "@/components/landing/StarField";
 
 interface FaqItem {
-  category: "General" | "Licensing" | "Billing & Plans" | "Figma & Features" | "Support & Account";
+  category:
+    | "General"
+    | "Licensing"
+    | "Billing & Plans"
+    | "Figma & Features"
+    | "Support & Account";
   question: string;
   answer: string[];
 }
@@ -293,7 +298,8 @@ export default function FaqClient() {
 
             {/* Subtitle */}
             <p className="mt-4 max-w-[620px] text-sm sm:text-base font-normal leading-relaxed text-[#A6A6C1]">
-              Find clear answers about our Figma components, lifetime updates, licenses, and features.
+              Find clear answers about our Figma components, lifetime updates,
+              licenses, and features.
             </p>
 
             {/* Search Bar */}
@@ -423,7 +429,8 @@ export default function FaqClient() {
               Still have questions?
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-[#A6A6C1] max-w-md mx-auto leading-relaxed">
-              Can’t find what you’re looking for? Reach out to our friendly support team and we’ll get back to you promptly.
+              Can’t find what you’re looking for? Reach out to our friendly
+              support team and we’ll get back to you promptly.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
               <Link

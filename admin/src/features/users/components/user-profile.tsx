@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Link, useParams, useNavigate } from '@tanstack/react-router'
 import axios from 'axios'
+import { format } from 'date-fns'
+import { Link, useParams, useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
   User as UserIcon,
@@ -31,7 +32,48 @@ import {
   UploadCloud,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
+import { useAuthStore } from '@/stores/auth-store'
+import { API_URL } from '@/lib/api-url'
+import { copyToFigma } from '@/lib/clipboard'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { callTypes } from '../data/data'
+import { type User } from '../data/schema'
+import { UsersActionDialog } from './users-action-dialog'
 
 export interface PlanItem {
   _id: string
@@ -59,48 +101,6 @@ export interface SubscriptionRecord {
   transactions?: any[]
   createdAt?: string
 }
-import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { useAuthStore } from '@/stores/auth-store'
-import { API_URL } from '@/lib/api-url'
-import { copyToFigma } from '@/lib/clipboard'
-import { callTypes } from '../data/data'
-import { type User } from '../data/schema'
-import { UsersActionDialog } from './users-action-dialog'
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -145,7 +145,9 @@ export function UserProfile() {
   // User uploaded components state
   const [userComponents, setUserComponents] = useState<any[]>([])
   const [componentsLoading, setComponentsLoading] = useState(false)
-  const [componentsFilter, setComponentsFilter] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all')
+  const [componentsFilter, setComponentsFilter] = useState<
+    'all' | 'approved' | 'pending' | 'rejected'
+  >('all')
   const [componentSearchQuery, setComponentSearchQuery] = useState('')
   const [copyingCompId, setCopyingCompId] = useState<string | null>(null)
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
@@ -167,7 +169,9 @@ export function UserProfile() {
   // Subscription plans & history state
   const [plans, setPlans] = useState<PlanItem[]>([])
   const [plansLoading, setPlansLoading] = useState(false)
-  const [subscriptionHistory, setSubscriptionHistory] = useState<SubscriptionRecord[]>([])
+  const [subscriptionHistory, setSubscriptionHistory] = useState<
+    SubscriptionRecord[]
+  >([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [activatingPlan, setActivatingPlan] = useState<PlanItem | null>(null)
   const [customDurationDays, setCustomDurationDays] = useState<number>(0)
@@ -215,9 +219,12 @@ export function UserProfile() {
     if (!userId) return
     try {
       setComponentsLoading(true)
-      const res = await axios.get(`${API_URL}/components/admin?userId=${userId}&limit=100`, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` },
-      })
+      const res = await axios.get(
+        `${API_URL}/components/admin?userId=${userId}&limit=100`,
+        {
+          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        }
+      )
       if (res.data && res.data.data && Array.isArray(res.data.data.items)) {
         setUserComponents(res.data.data.items)
       }
@@ -264,7 +271,12 @@ export function UserProfile() {
     fetchUserComponents()
     fetchPlans()
     fetchSubscriptionHistory()
-  }, [fetchUserDetails, fetchUserComponents, fetchPlans, fetchSubscriptionHistory])
+  }, [
+    fetchUserDetails,
+    fetchUserComponents,
+    fetchPlans,
+    fetchSubscriptionHistory,
+  ])
 
   const handleActivatePlan = async (overridePromo?: boolean) => {
     if (!activatingPlan || !userId) return
@@ -301,7 +313,8 @@ export function UserProfile() {
         {
           planId: activatingPlan._id,
           customDurationDays: customDurationDays || activatingPlan.durationDays,
-          customComponentLimit: customComponentLimit || activatingPlan.componentLimit,
+          customComponentLimit:
+            customComponentLimit || activatingPlan.componentLimit,
           isPromotion: promo,
           transactionId: promo ? undefined : transactionId.trim(),
           bankName: promo ? undefined : bankName.trim(),
@@ -310,7 +323,10 @@ export function UserProfile() {
         },
         { headers: { Authorization: `Bearer ${auth.accessToken}` } }
       )
-      toast.success(res.data?.message || `Plan "${activatingPlan.displayName}" activated successfully!`)
+      toast.success(
+        res.data?.message ||
+          `Plan "${activatingPlan.displayName}" activated successfully!`
+      )
       setActivatingPlan(null)
       setShowSwitchPlans(false)
       await fetchUserDetails()
@@ -337,7 +353,9 @@ export function UserProfile() {
       await fetchUserDetails()
       await fetchSubscriptionHistory()
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to revoke subscription')
+      toast.error(
+        err.response?.data?.message || 'Failed to revoke subscription'
+      )
     } finally {
       setRevokingSubmit(false)
     }
@@ -375,7 +393,9 @@ export function UserProfile() {
       )
       toast.success(`Component marked as ${newStatus}`)
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update component status')
+      toast.error(
+        err.response?.data?.message || 'Failed to update component status'
+      )
     } finally {
       setStatusUpdatingId(null)
     }
@@ -396,7 +416,11 @@ export function UserProfile() {
       setUserComponents((prev) =>
         prev.map((c) =>
           c._id === rejectDialog.compId
-            ? { ...c, status: 'rejected', rejectionReason: rejectDialog.reason.trim() }
+            ? {
+                ...c,
+                status: 'rejected',
+                rejectionReason: rejectDialog.reason.trim(),
+              }
             : c
         )
       )
@@ -415,7 +439,8 @@ export function UserProfile() {
   }
 
   const handleDeleteComponent = async (compId: string, compName: string) => {
-    if (!confirm(`Are you sure you want to permanently delete "${compName}"?`)) return
+    if (!confirm(`Are you sure you want to permanently delete "${compName}"?`))
+      return
     try {
       setStatusUpdatingId(compId)
       await axios.delete(`${API_URL}/components/${compId}`, {
@@ -426,7 +451,10 @@ export function UserProfile() {
         prev
           ? {
               ...prev,
-              uploadedComponentsCount: Math.max(0, (prev.uploadedComponentsCount || 1) - 1),
+              uploadedComponentsCount: Math.max(
+                0,
+                (prev.uploadedComponentsCount || 1) - 1
+              ),
             }
           : prev
       )
@@ -440,16 +468,26 @@ export function UserProfile() {
 
   const componentStats = useMemo(() => {
     const total = userComponents.length
-    const approved = userComponents.filter((c) => c.status === 'approved').length
-    const pending = userComponents.filter((c) => c.status === 'pending' || !c.status).length
-    const rejected = userComponents.filter((c) => c.status === 'rejected').length
-    const totalDownloads = userComponents.reduce((acc, c) => acc + (c.downloadCount || 0), 0)
+    const approved = userComponents.filter(
+      (c) => c.status === 'approved'
+    ).length
+    const pending = userComponents.filter(
+      (c) => c.status === 'pending' || !c.status
+    ).length
+    const rejected = userComponents.filter(
+      (c) => c.status === 'rejected'
+    ).length
+    const totalDownloads = userComponents.reduce(
+      (acc, c) => acc + (c.downloadCount || 0),
+      0
+    )
     return { total, approved, pending, rejected, totalDownloads }
   }, [userComponents])
 
   const filteredComponents = useMemo(() => {
     return userComponents.filter((c) => {
-      if (componentsFilter === 'approved' && c.status !== 'approved') return false
+      if (componentsFilter === 'approved' && c.status !== 'approved')
+        return false
       if (
         componentsFilter === 'pending' &&
         c.status !== 'pending' &&
@@ -457,14 +495,16 @@ export function UserProfile() {
         c.status !== null
       )
         return false
-      if (componentsFilter === 'rejected' && c.status !== 'rejected') return false
+      if (componentsFilter === 'rejected' && c.status !== 'rejected')
+        return false
 
       if (componentSearchQuery.trim()) {
         const q = componentSearchQuery.toLowerCase()
         const matchName = c.name?.toLowerCase().includes(q)
         const matchDesc = c.description?.toLowerCase().includes(q)
         const matchTags =
-          Array.isArray(c.tags) && c.tags.some((t: string) => t.toLowerCase().includes(q))
+          Array.isArray(c.tags) &&
+          c.tags.some((t: string) => t.toLowerCase().includes(q))
         return matchName || matchDesc || matchTags
       }
 
@@ -497,7 +537,9 @@ export function UserProfile() {
   if (error || !user) {
     return (
       <div className='flex h-[60vh] flex-col items-center justify-center p-8 text-center'>
-        <p className='text-lg font-semibold text-destructive mb-2'>{error || 'User not found'}</p>
+        <p className='mb-2 text-lg font-semibold text-destructive'>
+          {error || 'User not found'}
+        </p>
         <Button onClick={() => navigate({ to: '/users' })}>
           <ArrowLeft className='mr-2 h-4 w-4' /> Back to User List
         </Button>
@@ -525,20 +567,22 @@ export function UserProfile() {
 
   const usedCount = sub?.componentCountUsed || 0
   const maxCount = sub?.maxComponents || 0
-  const usagePercentage = maxCount > 0 ? Math.min(100, Math.round((usedCount / maxCount) * 100)) : 0
+  const usagePercentage =
+    maxCount > 0 ? Math.min(100, Math.round((usedCount / maxCount) * 100)) : 0
 
   const renderPlansList = () => {
     if (plansLoading) {
       return (
-        <div className='flex items-center justify-center p-8 text-muted-foreground text-xs gap-2'>
-          <Loader2 className='h-4 w-4 animate-spin text-primary' /> Loading available plans...
+        <div className='flex items-center justify-center gap-2 p-8 text-xs text-muted-foreground'>
+          <Loader2 className='h-4 w-4 animate-spin text-primary' /> Loading
+          available plans...
         </div>
       )
     }
 
     if (!plans || plans.length === 0) {
       return (
-        <div className='rounded-lg border border-dashed p-6 text-center text-muted-foreground text-xs'>
+        <div className='rounded-lg border border-dashed p-6 text-center text-xs text-muted-foreground'>
           No active plans configured in database.
         </div>
       )
@@ -548,7 +592,8 @@ export function UserProfile() {
       <div className='space-y-3'>
         {plans.map((plan) => {
           const isUnlimited = plan.componentLimit >= 999999
-          const isFeatured = plan.isPremiumPlus || plan.name?.includes('ultimate')
+          const isFeatured =
+            plan.isPremiumPlus || plan.name?.includes('ultimate')
           const formattedPrice = `₹${Math.floor(plan.price / 100)}`
           const durationText =
             plan.durationDays >= 365
@@ -559,40 +604,51 @@ export function UserProfile() {
             <div
               key={plan._id}
               className={cn(
-                'rounded-xl border p-4 transition-all duration-200 relative overflow-hidden',
+                'relative overflow-hidden rounded-xl border p-4 transition-all duration-200',
                 isFeatured
                   ? 'border-amber-500/40 bg-gradient-to-br from-amber-500/5 via-card to-amber-500/10 shadow-sm'
                   : 'border-border/70 bg-card hover:border-border'
               )}
             >
-
-              <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
+              <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
                 <div className='space-y-1'>
                   <div className='flex items-center gap-2'>
-                    <h5 className='font-bold text-base text-foreground'>{plan.displayName}</h5>
-                    <Badge variant='secondary' className='text-[10px] font-medium px-2 py-0'>
+                    <h5 className='text-base font-bold text-foreground'>
+                      {plan.displayName}
+                    </h5>
+                    <Badge
+                      variant='secondary'
+                      className='px-2 py-0 text-[10px] font-medium'
+                    >
                       {durationText}
                     </Badge>
                   </div>
-                  <p className='text-xs text-muted-foreground leading-relaxed max-w-sm'>
+                  <p className='max-w-sm text-xs leading-relaxed text-muted-foreground'>
                     {plan.description}
                   </p>
                 </div>
 
-                <div className='text-left sm:text-right shrink-0'>
-                  <div className='text-lg font-extrabold text-foreground'>{formattedPrice}</div>
-                  <span className='text-[11px] text-muted-foreground block'>
-                    {isUnlimited ? 'Unlimited components' : `${plan.componentLimit} components`}
+                <div className='shrink-0 text-left sm:text-right'>
+                  <div className='text-lg font-extrabold text-foreground'>
+                    {formattedPrice}
+                  </div>
+                  <span className='block text-[11px] text-muted-foreground'>
+                    {isUnlimited
+                      ? 'Unlimited components'
+                      : `${plan.componentLimit} components`}
                   </span>
                 </div>
               </div>
 
               {/* Top features list */}
               {plan.features && plan.features.length > 0 && (
-                <div className='mt-3 pt-2.5 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-1.5'>
+                <div className='mt-3 grid grid-cols-1 gap-1.5 border-t border-border/40 pt-2.5 sm:grid-cols-2'>
                   {plan.features.slice(0, 4).map((feat, fIdx) => (
-                    <div key={fIdx} className='flex items-center gap-1.5 text-xs text-muted-foreground'>
-                      <CheckCircle2 className='h-3.5 w-3.5 text-emerald-500 shrink-0' />
+                    <div
+                      key={fIdx}
+                      className='flex items-center gap-1.5 text-xs text-muted-foreground'
+                    >
+                      <CheckCircle2 className='h-3.5 w-3.5 shrink-0 text-emerald-500' />
                       <span className='truncate'>{feat}</span>
                     </div>
                   ))}
@@ -600,15 +656,16 @@ export function UserProfile() {
               )}
 
               {/* Action row */}
-              <div className='mt-3 pt-2.5 flex items-center justify-between border-t border-border/40'>
-                <span className='text-[11px] text-muted-foreground flex items-center gap-1'>
-                  <Clock className='h-3 w-3' /> Valid for {plan.durationDays} days
+              <div className='mt-3 flex items-center justify-between border-t border-border/40 pt-2.5'>
+                <span className='flex items-center gap-1 text-[11px] text-muted-foreground'>
+                  <Clock className='h-3 w-3' /> Valid for {plan.durationDays}{' '}
+                  days
                 </span>
                 <div className='flex items-center gap-2'>
                   <Button
                     size='sm'
                     variant='outline'
-                    className='h-8 text-xs font-semibold gap-1.5 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300'
+                    className='h-8 gap-1.5 border-purple-500/40 text-xs font-semibold text-purple-400 hover:bg-purple-500/10 hover:text-purple-300'
                     onClick={() => openActivateModal(plan, true)}
                     title='Activate as promotional grant (no payment details required)'
                   >
@@ -617,7 +674,7 @@ export function UserProfile() {
                   <Button
                     size='sm'
                     className={cn(
-                      'h-8 text-xs font-semibold gap-1.5 transition-all',
+                      'h-8 gap-1.5 text-xs font-semibold transition-all',
                       isFeatured
                         ? 'bg-amber-500 text-black hover:bg-amber-400'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -659,17 +716,10 @@ export function UserProfile() {
           </Button>
 
           <div className='flex items-center gap-2'>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={handleSendEmail}
-            >
+            <Button variant='outline' size='sm' onClick={handleSendEmail}>
               <Send className='me-1.5 h-4 w-4' /> Email User
             </Button>
-            <Button
-              size='sm'
-              onClick={() => setOpenEditDialog(true)}
-            >
+            <Button size='sm' onClick={() => setOpenEditDialog(true)}>
               <Edit className='me-1.5 h-4 w-4' /> Edit Profile
             </Button>
           </div>
@@ -678,7 +728,7 @@ export function UserProfile() {
         {/* User Hero Banner */}
         <Card className='overflow-hidden border-border/60 shadow-sm'>
           <div className='h-24 bg-gradient-to-r from-primary/25 via-primary/10 to-transparent sm:h-32' />
-          <CardContent className='relative px-6 pb-6 pt-0'>
+          <CardContent className='relative px-6 pt-0 pb-6'>
             <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
                 <Avatar className='-mt-12 h-24 w-24 border-4 border-background shadow-md sm:-mt-16 sm:h-28 sm:w-28'>
@@ -700,7 +750,7 @@ export function UserProfile() {
                     {isGoogle ? (
                       <Badge
                         variant='outline'
-                        className='flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900/80 border-neutral-700 text-neutral-100 font-medium text-xs'
+                        className='flex items-center gap-1.5 border-neutral-700 bg-neutral-900/80 px-2.5 py-1 text-xs font-medium text-neutral-100'
                       >
                         <GoogleIcon />
                         <span>Google Sign-In</span>
@@ -708,7 +758,7 @@ export function UserProfile() {
                     ) : (
                       <Badge
                         variant='outline'
-                        className='flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/10 border-blue-500/20 text-blue-400 font-medium text-xs'
+                        className='flex items-center gap-1.5 border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-400'
                       >
                         <Mail className='h-3 w-3 text-blue-400' />
                         <span>Email & Password</span>
@@ -719,14 +769,15 @@ export function UserProfile() {
                     {hasActivePlan ? (
                       <Badge
                         variant='secondary'
-                        className='bg-amber-500/15 text-amber-500 border border-amber-500/25 font-semibold gap-1 px-2.5 py-1'
+                        className='gap-1 border border-amber-500/25 bg-amber-500/15 px-2.5 py-1 font-semibold text-amber-500'
                       >
-                        <Sparkles className='h-3 w-3' /> {(sub?.planId?.displayName || 'PRO').toUpperCase()} PLAN
+                        <Sparkles className='h-3 w-3' />{' '}
+                        {(sub?.planId?.displayName || 'PRO').toUpperCase()} PLAN
                       </Badge>
                     ) : (
                       <Badge
                         variant='outline'
-                        className='bg-neutral-500/10 text-neutral-400 border-neutral-500/20 font-medium text-xs px-2.5 py-1'
+                        className='border-neutral-500/20 bg-neutral-500/10 px-2.5 py-1 text-xs font-medium text-neutral-400'
                       >
                         FREE TIER
                       </Badge>
@@ -735,7 +786,10 @@ export function UserProfile() {
                     {/* Status Badge */}
                     <Badge
                       variant='outline'
-                      className={cn('capitalize font-medium text-xs px-2.5 py-0.5', statusBadgeColor)}
+                      className={cn(
+                        'px-2.5 py-0.5 text-xs font-medium capitalize',
+                        statusBadgeColor
+                      )}
                     >
                       {user.status || 'active'}
                     </Badge>
@@ -745,8 +799,8 @@ export function UserProfile() {
                       variant='outline'
                       className={
                         user.role === 'admin'
-                          ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs px-2.5 py-0.5'
-                          : 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20 text-xs px-2.5 py-0.5'
+                          ? 'border-purple-500/20 bg-purple-500/10 px-2.5 py-0.5 text-xs text-purple-400'
+                          : 'border-neutral-500/20 bg-neutral-500/10 px-2.5 py-0.5 text-xs text-neutral-400'
                       }
                     >
                       {user.role.toUpperCase()}
@@ -756,15 +810,13 @@ export function UserProfile() {
                     {user.canUploadPro && (
                       <Badge
                         variant='secondary'
-                        className='bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-medium text-xs px-2.5 py-0.5 gap-1'
+                        className='gap-1 border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400'
                       >
                         <UploadCloud className='h-3 w-3' /> PRO UPLOADER
                       </Badge>
                     )}
                   </div>
-                  <p className='text-sm text-muted-foreground'>
-                    {user.email}
-                  </p>
+                  <p className='text-sm text-muted-foreground'>{user.email}</p>
                 </div>
               </div>
 
@@ -790,19 +842,28 @@ export function UserProfile() {
 
         {/* Tabbed Detail Sections */}
         <Tabs defaultValue='overview' className='space-y-4'>
-          <TabsList className='grid w-full grid-cols-4 max-w-xl'>
+          <TabsList className='grid w-full max-w-xl grid-cols-4'>
             <TabsTrigger value='overview'>Overview</TabsTrigger>
             <TabsTrigger value='subscription'>Subscription</TabsTrigger>
             <TabsTrigger value='authentication'>Authentication</TabsTrigger>
-            <TabsTrigger value='components' className='flex items-center gap-1.5'>
+            <TabsTrigger
+              value='components'
+              className='flex items-center gap-1.5'
+            >
               <Layers className='h-3.5 w-3.5' />
               <span>Components</span>
               {userComponents.length > 0 ? (
-                <Badge variant='secondary' className='h-4 px-1.5 text-[10px] font-semibold'>
+                <Badge
+                  variant='secondary'
+                  className='h-4 px-1.5 text-[10px] font-semibold'
+                >
                   {userComponents.length}
                 </Badge>
               ) : user.uploadedComponentsCount ? (
-                <Badge variant='secondary' className='h-4 px-1.5 text-[10px] font-semibold'>
+                <Badge
+                  variant='secondary'
+                  className='h-4 px-1.5 text-[10px] font-semibold'
+                >
                   {user.uploadedComponentsCount}
                 </Badge>
               ) : null}
@@ -815,8 +876,12 @@ export function UserProfile() {
               {/* Login Method Card */}
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
                 <CardHeader className='pb-3'>
-                  <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                    {isGoogle ? <GoogleIcon /> : <Mail className='h-4 w-4 text-blue-400' />}
+                  <CardTitle className='flex items-center gap-2 text-base font-semibold'>
+                    {isGoogle ? (
+                      <GoogleIcon />
+                    ) : (
+                      <Mail className='h-4 w-4 text-blue-400' />
+                    )}
                     Login Method
                   </CardTitle>
                   <CardDescription>
@@ -830,12 +895,13 @@ export function UserProfile() {
                     </span>
                     <div className='flex items-center gap-2 pt-0.5'>
                       {isGoogle ? (
-                        <span className='font-semibold text-sm text-foreground flex items-center gap-1.5'>
+                        <span className='flex items-center gap-1.5 text-sm font-semibold text-foreground'>
                           <GoogleIcon /> Google OAuth 2.0
                         </span>
                       ) : (
-                        <span className='font-semibold text-sm text-foreground flex items-center gap-1.5'>
-                          <Mail className='h-4 w-4 text-blue-400' /> Direct Email & Password
+                        <span className='flex items-center gap-1.5 text-sm font-semibold text-foreground'>
+                          <Mail className='h-4 w-4 text-blue-400' /> Direct
+                          Email & Password
                         </span>
                       )}
                     </div>
@@ -844,12 +910,16 @@ export function UserProfile() {
                     <span className='text-xs font-medium text-muted-foreground'>
                       Account Email
                     </span>
-                    <p className='text-sm font-semibold truncate'>{user.email}</p>
+                    <p className='truncate text-sm font-semibold'>
+                      {user.email}
+                    </p>
                   </div>
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Verification</span>
-                      <p className='text-sm font-medium text-emerald-400 flex items-center gap-1'>
+                      <span className='text-xs text-muted-foreground'>
+                        Verification
+                      </span>
+                      <p className='flex items-center gap-1 text-sm font-medium text-emerald-400'>
                         <CheckCircle2 className='h-3.5 w-3.5' /> Verified
                       </p>
                     </div>
@@ -863,7 +933,7 @@ export function UserProfile() {
               {/* Subscription Card */}
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
                 <CardHeader className='pb-3'>
-                  <CardTitle className='text-base font-semibold flex items-center gap-2'>
+                  <CardTitle className='flex items-center gap-2 text-base font-semibold'>
                     <Sparkles className='h-4 w-4 text-amber-500' /> Subscription
                   </CardTitle>
                   <CardDescription>
@@ -873,7 +943,9 @@ export function UserProfile() {
                 <CardContent className='space-y-3'>
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Current Plan</span>
+                      <span className='text-xs text-muted-foreground'>
+                        Current Plan
+                      </span>
                       <p className='text-sm font-semibold text-foreground'>
                         {user.isProUser
                           ? sub?.planId?.displayName || 'Pro Membership'
@@ -883,12 +955,15 @@ export function UserProfile() {
                     {user.isProUser ? (
                       <Badge
                         variant='secondary'
-                        className='bg-amber-500/15 text-amber-500 border border-amber-500/30 gap-1 font-semibold'
+                        className='gap-1 border border-amber-500/30 bg-amber-500/15 font-semibold text-amber-500'
                       >
                         <Sparkles className='h-3 w-3' /> PRO
                       </Badge>
                     ) : (
-                      <Badge variant='outline' className='text-muted-foreground'>
+                      <Badge
+                        variant='outline'
+                        className='text-muted-foreground'
+                      >
                         FREE
                       </Badge>
                     )}
@@ -898,8 +973,10 @@ export function UserProfile() {
                     <span className='text-xs font-medium text-muted-foreground'>
                       Subscription Status
                     </span>
-                    <p className='text-sm font-semibold capitalize text-foreground'>
-                      {user.isProUser ? sub?.status || 'Active' : 'No Active Subscription'}
+                    <p className='text-sm font-semibold text-foreground capitalize'>
+                      {user.isProUser
+                        ? sub?.status || 'Active'
+                        : 'No Active Subscription'}
                     </p>
                   </div>
 
@@ -919,8 +996,9 @@ export function UserProfile() {
               {/* User Account Details */}
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm md:col-span-2 lg:col-span-1'>
                 <CardHeader className='pb-3'>
-                  <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                    <UserIcon className='h-4 w-4 text-primary' /> Account Overview
+                  <CardTitle className='flex items-center gap-2 text-base font-semibold'>
+                    <UserIcon className='h-4 w-4 text-primary' /> Account
+                    Overview
                   </CardTitle>
                   <CardDescription>
                     Registration date and usage statistics
@@ -929,9 +1007,13 @@ export function UserProfile() {
                 <CardContent className='space-y-3'>
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Joined Date</span>
+                      <span className='text-xs text-muted-foreground'>
+                        Joined Date
+                      </span>
                       <p className='text-xs font-semibold'>
-                        {user.createdAt ? format(new Date(user.createdAt), 'PPP') : 'N/A'}
+                        {user.createdAt
+                          ? format(new Date(user.createdAt), 'PPP')
+                          : 'N/A'}
                       </p>
                     </div>
                     <Calendar className='h-4 w-4 text-muted-foreground' />
@@ -939,25 +1021,38 @@ export function UserProfile() {
 
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Components Uploaded</span>
-                      <p className='text-sm font-semibold'>{user.uploadedComponentsCount || 0}</p>
+                      <span className='text-xs text-muted-foreground'>
+                        Components Uploaded
+                      </span>
+                      <p className='text-sm font-semibold'>
+                        {user.uploadedComponentsCount || 0}
+                      </p>
                     </div>
                     <Layers className='h-4 w-4 text-primary' />
                   </div>
 
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Account Status</span>
-                      <p className='text-sm font-semibold capitalize'>{user.status || 'active'}</p>
+                      <span className='text-xs text-muted-foreground'>
+                        Account Status
+                      </span>
+                      <p className='text-sm font-semibold capitalize'>
+                        {user.status || 'active'}
+                      </p>
                     </div>
-                    <Badge variant='outline' className={cn('capitalize font-medium', statusBadgeColor)}>
+                    <Badge
+                      variant='outline'
+                      className={cn('font-medium capitalize', statusBadgeColor)}
+                    >
                       {user.status || 'active'}
                     </Badge>
                   </div>
 
                   <div className='flex items-center justify-between rounded-lg border p-3'>
                     <div className='space-y-0.5'>
-                      <span className='text-xs text-muted-foreground'>Pro Upload Permission</span>
+                      <span className='text-xs text-muted-foreground'>
+                        Pro Upload Permission
+                      </span>
                       <p className='text-sm font-semibold'>
                         {user.canUploadPro ? 'Enabled' : 'Disabled'}
                       </p>
@@ -965,9 +1060,9 @@ export function UserProfile() {
                     <Badge
                       variant='outline'
                       className={cn(
-                        'font-medium text-xs',
+                        'text-xs font-medium',
                         user.canUploadPro
-                          ? 'border-emerald-500/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                           : 'text-muted-foreground'
                       )}
                     >
@@ -986,8 +1081,9 @@ export function UserProfile() {
                 <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div className='space-y-0.5'>
-                      <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                        <CreditCard className='h-4 w-4 text-amber-500' /> Plan & Quota Details
+                      <CardTitle className='flex items-center gap-2 text-base font-semibold'>
+                        <CreditCard className='h-4 w-4 text-amber-500' /> Plan &
+                        Quota Details
                       </CardTitle>
                       <CardDescription>
                         {hasActivePlan
@@ -999,7 +1095,7 @@ export function UserProfile() {
                       <Button
                         size='sm'
                         variant='outline'
-                        className='h-7 text-xs gap-1 border-border'
+                        className='h-7 gap-1 border-border text-xs'
                         onClick={() => setShowSwitchPlans(!showSwitchPlans)}
                       >
                         <Zap className='h-3 w-3 text-amber-500' />
@@ -1009,21 +1105,26 @@ export function UserProfile() {
                   </div>
                 </CardHeader>
                 <CardContent className='space-y-4'>
-                  <div className='flex items-center justify-between rounded-lg border p-4 bg-muted/20'>
+                  <div className='flex items-center justify-between rounded-lg border bg-muted/20 p-4'>
                     <div>
-                      <p className='text-sm font-medium text-muted-foreground'>Membership Level</p>
-                      <h3 className='text-xl font-bold text-foreground mt-0.5'>
+                      <p className='text-sm font-medium text-muted-foreground'>
+                        Membership Level
+                      </p>
+                      <h3 className='mt-0.5 text-xl font-bold text-foreground'>
                         {hasActivePlan
                           ? sub?.planId?.displayName || 'Pro Plan'
                           : 'Free Tier (No Active Plan)'}
                       </h3>
                     </div>
                     {hasActivePlan ? (
-                      <Badge className='bg-amber-500 text-black font-bold px-3 py-1 gap-1'>
+                      <Badge className='gap-1 bg-amber-500 px-3 py-1 font-bold text-black'>
                         <Sparkles className='h-3.5 w-3.5' /> PRO
                       </Badge>
                     ) : (
-                      <Badge variant='outline' className='text-muted-foreground font-semibold'>
+                      <Badge
+                        variant='outline'
+                        className='font-semibold text-muted-foreground'
+                      >
                         FREE
                       </Badge>
                     )}
@@ -1033,16 +1134,21 @@ export function UserProfile() {
                     <>
                       <div className='space-y-2 rounded-lg border p-4'>
                         <div className='flex items-center justify-between text-sm'>
-                          <span className='font-medium text-muted-foreground'>Component Quota Usage</span>
-                          <span className='font-bold'>{usedCount} / {maxCount >= 999999 ? '∞ (Unlimited)' : maxCount}</span>
+                          <span className='font-medium text-muted-foreground'>
+                            Component Quota Usage
+                          </span>
+                          <span className='font-bold'>
+                            {usedCount} /{' '}
+                            {maxCount >= 999999 ? '∞ (Unlimited)' : maxCount}
+                          </span>
                         </div>
                         <div className='h-2 w-full overflow-hidden rounded-full bg-muted'>
                           <div
-                            className='h-full bg-amber-500 rounded-full transition-all duration-300'
+                            className='h-full rounded-full bg-amber-500 transition-all duration-300'
                             style={{ width: `${usagePercentage}%` }}
                           />
                         </div>
-                        <p className='text-xs text-muted-foreground pt-1'>
+                        <p className='pt-1 text-xs text-muted-foreground'>
                           {maxCount >= 999999
                             ? 'Unlimited component downloads in this cycle.'
                             : `${Math.max(0, maxCount - usedCount)} components remaining in this billing cycle.`}
@@ -1051,34 +1157,44 @@ export function UserProfile() {
 
                       <div className='grid grid-cols-2 gap-3'>
                         <div className='rounded-lg border p-3'>
-                          <span className='text-xs text-muted-foreground'>Start Date</span>
+                          <span className='text-xs text-muted-foreground'>
+                            Start Date
+                          </span>
                           <p className='text-sm font-medium'>
-                            {sub.startDate ? format(new Date(sub.startDate), 'PPP') : 'N/A'}
+                            {sub.startDate
+                              ? format(new Date(sub.startDate), 'PPP')
+                              : 'N/A'}
                           </p>
                         </div>
                         <div className='rounded-lg border p-3'>
-                          <span className='text-xs text-muted-foreground'>Expiry / Renewal</span>
+                          <span className='text-xs text-muted-foreground'>
+                            Expiry / Renewal
+                          </span>
                           <p className='text-sm font-medium'>
-                            {sub.endDate ? format(new Date(sub.endDate), 'PPP') : 'N/A'}
+                            {sub.endDate
+                              ? format(new Date(sub.endDate), 'PPP')
+                              : 'N/A'}
                           </p>
                         </div>
                       </div>
 
                       {/* Active subscription admin actions */}
-                      <div className='pt-2 flex items-center justify-between border-t'>
+                      <div className='flex items-center justify-between border-t pt-2'>
                         <Button
                           size='sm'
                           variant='outline'
-                          className='text-xs gap-1.5'
+                          className='gap-1.5 text-xs'
                           onClick={() => setShowSwitchPlans(!showSwitchPlans)}
                         >
                           <Zap className='h-3.5 w-3.5 text-amber-500' />
-                          {showSwitchPlans ? 'Cancel Switching' : 'Switch / Change Plan'}
+                          {showSwitchPlans
+                            ? 'Cancel Switching'
+                            : 'Switch / Change Plan'}
                         </Button>
                         <Button
                           size='sm'
                           variant='ghost'
-                          className='text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5'
+                          className='gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive'
                           onClick={() => setOpenRevokeDialog(true)}
                         >
                           <XCircle className='h-3.5 w-3.5' /> Revoke Plan
@@ -1087,10 +1203,11 @@ export function UserProfile() {
 
                       {/* If admin clicked Switch Plan, show available plans to switch to */}
                       {showSwitchPlans && (
-                        <div className='pt-3 space-y-3 border-t'>
+                        <div className='space-y-3 border-t pt-3'>
                           <div className='flex items-center justify-between'>
-                            <p className='text-xs font-semibold text-foreground flex items-center gap-1.5'>
-                              <Zap className='h-3.5 w-3.5 text-amber-500' /> Select a plan to switch to:
+                            <p className='flex items-center gap-1.5 text-xs font-semibold text-foreground'>
+                              <Zap className='h-3.5 w-3.5 text-amber-500' />{' '}
+                              Select a plan to switch to:
                             </p>
                             <span className='text-[11px] text-muted-foreground'>
                               Will supersede current active plan
@@ -1103,12 +1220,16 @@ export function UserProfile() {
                   ) : (
                     /* User has NO active plan - Show all available plans */
                     <div className='space-y-4 pt-1'>
-                      <div className='rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 p-3.5 flex items-start gap-3'>
-                        <Zap className='h-5 w-5 text-amber-500 shrink-0 mt-0.5' />
+                      <div className='flex items-start gap-3 rounded-lg border border-dashed border-amber-500/30 bg-amber-500/5 p-3.5'>
+                        <Zap className='mt-0.5 h-5 w-5 shrink-0 text-amber-500' />
                         <div className='space-y-0.5'>
-                          <h4 className='text-xs font-bold text-foreground'>Manual Plan Activation Available</h4>
+                          <h4 className='text-xs font-bold text-foreground'>
+                            Manual Plan Activation Available
+                          </h4>
                           <p className='text-xs text-muted-foreground'>
-                            This user does not currently have an active subscription. Choose a plan below to activate it manually.
+                            This user does not currently have an active
+                            subscription. Choose a plan below to activate it
+                            manually.
                           </p>
                         </div>
                       </div>
@@ -1124,8 +1245,9 @@ export function UserProfile() {
                 <CardHeader>
                   <div className='flex items-center justify-between'>
                     <div className='space-y-0.5'>
-                      <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                        <Clock className='h-4 w-4 text-primary' /> Subscription History
+                      <CardTitle className='flex items-center gap-2 text-base font-semibold'>
+                        <Clock className='h-4 w-4 text-primary' /> Subscription
+                        History
                       </CardTitle>
                       <CardDescription>
                         All current and past subscription records
@@ -1138,24 +1260,37 @@ export function UserProfile() {
                       onClick={fetchSubscriptionHistory}
                       title='Refresh history'
                     >
-                      <RefreshCw className={cn('h-3.5 w-3.5', historyLoading && 'animate-spin')} />
+                      <RefreshCw
+                        className={cn(
+                          'h-3.5 w-3.5',
+                          historyLoading && 'animate-spin'
+                        )}
+                      />
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className='space-y-3'>
                   {historyLoading ? (
-                    <div className='flex items-center justify-center p-8 text-muted-foreground text-xs gap-2'>
-                      <Loader2 className='h-4 w-4 animate-spin text-primary' /> Loading history...
+                    <div className='flex items-center justify-center gap-2 p-8 text-xs text-muted-foreground'>
+                      <Loader2 className='h-4 w-4 animate-spin text-primary' />{' '}
+                      Loading history...
                     </div>
                   ) : subscriptionHistory.length > 0 ? (
-                    <div className='space-y-2.5 max-h-[500px] overflow-y-auto pr-1'>
+                    <div className='max-h-[500px] space-y-2.5 overflow-y-auto pr-1'>
                       {subscriptionHistory.map((item, idx) => {
-                        const planName = typeof item.planId === 'object' && item.planId ? item.planId.displayName : 'Custom Plan'
+                        const planName =
+                          typeof item.planId === 'object' && item.planId
+                            ? item.planId.displayName
+                            : 'Custom Plan'
                         const statusColors: Record<string, string> = {
-                          active: 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10',
-                          cancelled: 'text-amber-500 border-amber-500/30 bg-amber-500/10',
-                          expired: 'text-neutral-400 border-neutral-700 bg-neutral-800/30',
-                          queued: 'text-blue-500 border-blue-500/30 bg-blue-500/10',
+                          active:
+                            'text-emerald-500 border-emerald-500/30 bg-emerald-500/10',
+                          cancelled:
+                            'text-amber-500 border-amber-500/30 bg-amber-500/10',
+                          expired:
+                            'text-neutral-400 border-neutral-700 bg-neutral-800/30',
+                          queued:
+                            'text-blue-500 border-blue-500/30 bg-blue-500/10',
                         }
                         const isCurrent = sub && sub._id === item._id
 
@@ -1164,21 +1299,28 @@ export function UserProfile() {
                             key={item._id || idx}
                             className={cn(
                               'rounded-lg border p-3 transition-colors',
-                              isCurrent ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/60 bg-muted/10'
+                              isCurrent
+                                ? 'border-amber-500/40 bg-amber-500/5'
+                                : 'border-border/60 bg-muted/10'
                             )}
                           >
                             <div className='flex items-center justify-between gap-2'>
                               <div className='flex items-center gap-1.5'>
-                                <span className='font-semibold text-sm text-foreground'>{planName}</span>
+                                <span className='text-sm font-semibold text-foreground'>
+                                  {planName}
+                                </span>
                                 {isCurrent && (
-                                  <Badge className='bg-amber-500 text-black text-[10px] font-bold px-1.5 py-0'>
+                                  <Badge className='bg-amber-500 px-1.5 py-0 text-[10px] font-bold text-black'>
                                     CURRENT
                                   </Badge>
                                 )}
                               </div>
                               <Badge
                                 variant='outline'
-                                className={cn('capitalize text-xs font-medium', statusColors[item.status] || '')}
+                                className={cn(
+                                  'text-xs font-medium capitalize',
+                                  statusColors[item.status] || ''
+                                )}
                               >
                                 {item.status}
                               </Badge>
@@ -1186,69 +1328,105 @@ export function UserProfile() {
 
                             <div className='mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground'>
                               <div>
-                                <span className='text-[10px] uppercase font-medium text-muted-foreground/80 block'>
+                                <span className='block text-[10px] font-medium text-muted-foreground/80 uppercase'>
                                   Usage
                                 </span>
                                 <span className='font-medium text-foreground'>
-                                  {item.componentCountUsed || 0} / {item.maxComponents >= 999999 ? '∞' : item.maxComponents} comps
+                                  {item.componentCountUsed || 0} /{' '}
+                                  {item.maxComponents >= 999999
+                                    ? '∞'
+                                    : item.maxComponents}{' '}
+                                  comps
                                 </span>
                               </div>
                               <div className='text-right'>
-                                <span className='text-[10px] uppercase font-medium text-muted-foreground/80 block'>
+                                <span className='block text-[10px] font-medium text-muted-foreground/80 uppercase'>
                                   Billing Period
                                 </span>
                                 <span>
-                                  {item.startDate ? format(new Date(item.startDate), 'MMM d, yy') : 'N/A'}
+                                  {item.startDate
+                                    ? format(
+                                        new Date(item.startDate),
+                                        'MMM d, yy'
+                                      )
+                                    : 'N/A'}
                                   {' - '}
-                                  {item.endDate ? format(new Date(item.endDate), 'MMM d, yy') : 'N/A'}
+                                  {item.endDate
+                                    ? format(
+                                        new Date(item.endDate),
+                                        'MMM d, yy'
+                                      )
+                                    : 'N/A'}
                                 </span>
                               </div>
                             </div>
 
                             {/* Linked Transactions if any */}
-                            {Array.isArray(item.transactions) && item.transactions.length > 0 && (
-                              <div className='mt-2.5 pt-2 border-t border-border/40 space-y-1.5'>
-                                {item.transactions.map((tx: any, tIdx: number) => {
-                                  const txId = tx.razorpayPaymentId || tx.transactionId || tx._id
-                                  const bName = tx.bankName || (tx.paymentMethod ? tx.paymentMethod : '')
-                                  const txAmt = tx.amount !== undefined ? `₹${Math.floor(tx.amount / 100)}` : ''
-                                  const pDate = tx.paymentDate || tx.createdAt
-                                  return (
-                                    <div
-                                      key={tx._id || tIdx}
-                                      className='rounded-md bg-muted/40 p-2 space-y-1 text-xs border border-border/50'
-                                    >
-                                      <div className='flex items-center justify-between'>
-                                        <span
-                                          className='font-mono font-bold text-foreground text-[11px] truncate max-w-[200px]'
-                                          title={txId}
+                            {Array.isArray(item.transactions) &&
+                              item.transactions.length > 0 && (
+                                <div className='mt-2.5 space-y-1.5 border-t border-border/40 pt-2'>
+                                  {item.transactions.map(
+                                    (tx: any, tIdx: number) => {
+                                      const txId =
+                                        tx.razorpayPaymentId ||
+                                        tx.transactionId ||
+                                        tx._id
+                                      const bName =
+                                        tx.bankName ||
+                                        (tx.paymentMethod
+                                          ? tx.paymentMethod
+                                          : '')
+                                      const txAmt =
+                                        tx.amount !== undefined
+                                          ? `₹${Math.floor(tx.amount / 100)}`
+                                          : ''
+                                      const pDate =
+                                        tx.paymentDate || tx.createdAt
+                                      return (
+                                        <div
+                                          key={tx._id || tIdx}
+                                          className='space-y-1 rounded-md border border-border/50 bg-muted/40 p-2 text-xs'
                                         >
-                                          Txn: {txId}
-                                        </span>
-                                        <Badge
-                                          variant='outline'
-                                          className='text-[10px] font-semibold text-emerald-500 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0'
-                                        >
-                                          {txAmt ? `${txAmt} Paid` : 'Paid'}
-                                        </Badge>
-                                      </div>
-                                      <div className='flex items-center justify-between text-[11px] text-muted-foreground'>
-                                        <span>{bName || 'Manual Transfer'}</span>
-                                        <span>{pDate ? format(new Date(pDate), 'PP') : ''}</span>
-                                      </div>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                            )}
+                                          <div className='flex items-center justify-between'>
+                                            <span
+                                              className='max-w-[200px] truncate font-mono text-[11px] font-bold text-foreground'
+                                              title={txId}
+                                            >
+                                              Txn: {txId}
+                                            </span>
+                                            <Badge
+                                              variant='outline'
+                                              className='border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0 text-[10px] font-semibold text-emerald-500'
+                                            >
+                                              {txAmt ? `${txAmt} Paid` : 'Paid'}
+                                            </Badge>
+                                          </div>
+                                          <div className='flex items-center justify-between text-[11px] text-muted-foreground'>
+                                            <span>
+                                              {bName || 'Manual Transfer'}
+                                            </span>
+                                            <span>
+                                              {pDate
+                                                ? format(new Date(pDate), 'PP')
+                                                : ''}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )
+                                    }
+                                  )}
+                                </div>
+                              )}
                           </div>
                         )
                       })}
                     </div>
                   ) : (
                     <div className='rounded-lg border border-dashed p-6 text-center text-muted-foreground'>
-                      <p className='text-sm font-medium'>No previous subscription records found.</p>
-                      <p className='text-xs text-muted-foreground mt-1'>
+                      <p className='text-sm font-medium'>
+                        No previous subscription records found.
+                      </p>
+                      <p className='mt-1 text-xs text-muted-foreground'>
                         Transactions and manual assignments will appear here.
                       </p>
                     </div>
@@ -1262,24 +1440,33 @@ export function UserProfile() {
           <TabsContent value='authentication' className='space-y-4'>
             <Card>
               <CardHeader>
-                <CardTitle className='text-base font-semibold flex items-center gap-2'>
-                  <Key className='h-4 w-4 text-primary' /> Authentication Provider Details
+                <CardTitle className='flex items-center gap-2 text-base font-semibold'>
+                  <Key className='h-4 w-4 text-primary' /> Authentication
+                  Provider Details
                 </CardTitle>
                 <CardDescription>
                   Identity provider configuration and security details
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-4'>
-                <div className='flex items-center justify-between rounded-lg border p-4 bg-muted/20'>
+                <div className='flex items-center justify-between rounded-lg border bg-muted/20 p-4'>
                   <div className='space-y-1'>
-                    <p className='text-sm font-medium text-muted-foreground'>Active Login Method</p>
+                    <p className='text-sm font-medium text-muted-foreground'>
+                      Active Login Method
+                    </p>
                     <div className='flex items-center gap-2'>
                       {isGoogle ? (
-                        <Badge variant='outline' className='flex items-center gap-1.5 px-3 py-1 bg-neutral-900 border-neutral-700 text-neutral-100 font-semibold text-sm'>
+                        <Badge
+                          variant='outline'
+                          className='flex items-center gap-1.5 border-neutral-700 bg-neutral-900 px-3 py-1 text-sm font-semibold text-neutral-100'
+                        >
                           <GoogleIcon /> Google OAuth 2.0 Single Sign-On
                         </Badge>
                       ) : (
-                        <Badge variant='outline' className='flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border-blue-500/20 text-blue-400 font-semibold text-sm'>
+                        <Badge
+                          variant='outline'
+                          className='flex items-center gap-1.5 border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm font-semibold text-blue-400'
+                        >
                           <Mail className='h-4 w-4' /> Email & Hashed Password
                         </Badge>
                       )}
@@ -1290,12 +1477,22 @@ export function UserProfile() {
 
                 <div className='grid gap-3 sm:grid-cols-2'>
                   <div className='space-y-1 rounded-lg border p-3'>
-                    <span className='text-xs font-medium text-muted-foreground'>Primary Login Email</span>
-                    <p className='text-sm font-semibold truncate'>{user.email}</p>
+                    <span className='text-xs font-medium text-muted-foreground'>
+                      Primary Login Email
+                    </span>
+                    <p className='truncate text-sm font-semibold'>
+                      {user.email}
+                    </p>
                   </div>
                   <div className='space-y-1 rounded-lg border p-3'>
-                    <span className='text-xs font-medium text-muted-foreground'>Security Provider Type</span>
-                    <p className='text-sm font-semibold'>{isGoogle ? 'OAuth 2.0 / OpenID Connect' : 'Bcrypt Encrypted Credential'}</p>
+                    <span className='text-xs font-medium text-muted-foreground'>
+                      Security Provider Type
+                    </span>
+                    <p className='text-sm font-semibold'>
+                      {isGoogle
+                        ? 'OAuth 2.0 / OpenID Connect'
+                        : 'Bcrypt Encrypted Credential'}
+                    </p>
                   </div>
                 </div>
 
@@ -1303,12 +1500,19 @@ export function UserProfile() {
                   <div className='flex items-center justify-between rounded-lg border p-4'>
                     <div className='space-y-0.5'>
                       <p className='text-sm font-medium'>Password Reset</p>
-                      <p className='text-xs text-muted-foreground'>Send password recovery instructions to user's registered email</p>
+                      <p className='text-xs text-muted-foreground'>
+                        Send password recovery instructions to user's registered
+                        email
+                      </p>
                     </div>
                     <Button
                       variant='outline'
                       size='sm'
-                      onClick={() => toast.success(`Password reset email triggered for ${user.email}`)}
+                      onClick={() =>
+                        toast.success(
+                          `Password reset email triggered for ${user.email}`
+                        )
+                      }
                     >
                       Send Reset Email
                     </Button>
@@ -1323,48 +1527,62 @@ export function UserProfile() {
             {/* Header / Stats row */}
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
-                <CardContent className='p-4 flex items-center justify-between'>
+                <CardContent className='flex items-center justify-between p-4'>
                   <div className='space-y-1'>
-                    <p className='text-xs font-medium text-muted-foreground'>Total Uploaded</p>
+                    <p className='text-xs font-medium text-muted-foreground'>
+                      Total Uploaded
+                    </p>
                     <p className='text-2xl font-bold'>{componentStats.total}</p>
                   </div>
-                  <div className='h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary'>
                     <Layers className='h-5 w-5' />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
-                <CardContent className='p-4 flex items-center justify-between'>
+                <CardContent className='flex items-center justify-between p-4'>
                   <div className='space-y-1'>
-                    <p className='text-xs font-medium text-muted-foreground'>Approved</p>
-                    <p className='text-2xl font-bold text-emerald-500'>{componentStats.approved}</p>
+                    <p className='text-xs font-medium text-muted-foreground'>
+                      Approved
+                    </p>
+                    <p className='text-2xl font-bold text-emerald-500'>
+                      {componentStats.approved}
+                    </p>
                   </div>
-                  <div className='h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500'>
                     <CheckCircle className='h-5 w-5' />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
-                <CardContent className='p-4 flex items-center justify-between'>
+                <CardContent className='flex items-center justify-between p-4'>
                   <div className='space-y-1'>
-                    <p className='text-xs font-medium text-muted-foreground'>Pending Review</p>
-                    <p className='text-2xl font-bold text-amber-500'>{componentStats.pending}</p>
+                    <p className='text-xs font-medium text-muted-foreground'>
+                      Pending Review
+                    </p>
+                    <p className='text-2xl font-bold text-amber-500'>
+                      {componentStats.pending}
+                    </p>
                   </div>
-                  <div className='h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-500'>
                     <Clock className='h-5 w-5' />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className='border-border/60 bg-card/50 backdrop-blur-sm'>
-                <CardContent className='p-4 flex items-center justify-between'>
+                <CardContent className='flex items-center justify-between p-4'>
                   <div className='space-y-1'>
-                    <p className='text-xs font-medium text-muted-foreground'>Total Downloads</p>
-                    <p className='text-2xl font-bold text-blue-500'>{componentStats.totalDownloads}</p>
+                    <p className='text-xs font-medium text-muted-foreground'>
+                      Total Downloads
+                    </p>
+                    <p className='text-2xl font-bold text-blue-500'>
+                      {componentStats.totalDownloads}
+                    </p>
                   </div>
-                  <div className='h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500'>
                     <Download className='h-5 w-5' />
                   </div>
                 </CardContent>
@@ -1372,8 +1590,8 @@ export function UserProfile() {
             </div>
 
             {/* Filter and Search Bar */}
-            <div className='flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1'>
-              <div className='flex items-center gap-1.5 flex-wrap'>
+            <div className='flex flex-col items-stretch justify-between gap-3 pt-1 sm:flex-row sm:items-center'>
+              <div className='flex flex-wrap items-center gap-1.5'>
                 <Button
                   size='sm'
                   variant={componentsFilter === 'all' ? 'default' : 'outline'}
@@ -1384,18 +1602,22 @@ export function UserProfile() {
                 </Button>
                 <Button
                   size='sm'
-                  variant={componentsFilter === 'approved' ? 'default' : 'outline'}
+                  variant={
+                    componentsFilter === 'approved' ? 'default' : 'outline'
+                  }
                   onClick={() => setComponentsFilter('approved')}
-                  className='h-8 text-xs gap-1.5'
+                  className='h-8 gap-1.5 text-xs'
                 >
                   <span className='h-2 w-2 rounded-full bg-emerald-500' />
                   Approved ({componentStats.approved})
                 </Button>
                 <Button
                   size='sm'
-                  variant={componentsFilter === 'pending' ? 'default' : 'outline'}
+                  variant={
+                    componentsFilter === 'pending' ? 'default' : 'outline'
+                  }
                   onClick={() => setComponentsFilter('pending')}
-                  className='h-8 text-xs gap-1.5'
+                  className='h-8 gap-1.5 text-xs'
                 >
                   <span className='h-2 w-2 rounded-full bg-amber-500' />
                   Pending ({componentStats.pending})
@@ -1403,9 +1625,11 @@ export function UserProfile() {
                 {componentStats.rejected > 0 && (
                   <Button
                     size='sm'
-                    variant={componentsFilter === 'rejected' ? 'default' : 'outline'}
+                    variant={
+                      componentsFilter === 'rejected' ? 'default' : 'outline'
+                    }
                     onClick={() => setComponentsFilter('rejected')}
-                    className='h-8 text-xs gap-1.5'
+                    className='h-8 gap-1.5 text-xs'
                   >
                     <span className='h-2 w-2 rounded-full bg-rose-500' />
                     Rejected ({componentStats.rejected})
@@ -1414,7 +1638,7 @@ export function UserProfile() {
               </div>
 
               <div className='relative w-full sm:w-64'>
-                <SearchIcon className='absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground' />
+                <SearchIcon className='absolute top-2.5 left-2.5 h-3.5 w-3.5 text-muted-foreground' />
                 <Input
                   placeholder='Search components or tags...'
                   value={componentSearchQuery}
@@ -1428,12 +1652,14 @@ export function UserProfile() {
             {componentsLoading ? (
               <div className='flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed'>
                 <Loader2 className='h-6 w-6 animate-spin text-primary' />
-                <p className='text-xs text-muted-foreground'>Loading uploaded components...</p>
+                <p className='text-xs text-muted-foreground'>
+                  Loading uploaded components...
+                </p>
               </div>
             ) : filteredComponents.length === 0 ? (
               <Card className='border-dashed'>
                 <CardContent className='flex flex-col items-center justify-center py-12 text-center'>
-                  <div className='h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center mb-3 text-muted-foreground'>
+                  <div className='mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground'>
                     <FolderOpen className='h-6 w-6' />
                   </div>
                   <h3 className='text-base font-semibold'>
@@ -1441,7 +1667,7 @@ export function UserProfile() {
                       ? 'No components uploaded yet'
                       : 'No matching components found'}
                   </h3>
-                  <p className='text-xs text-muted-foreground max-w-sm mt-1'>
+                  <p className='mt-1 max-w-sm text-xs text-muted-foreground'>
                     {userComponents.length === 0
                       ? 'This user has not submitted or uploaded any Figma components yet.'
                       : `No components matching your filter criteria.`}
@@ -1449,7 +1675,7 @@ export function UserProfile() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {filteredComponents.map((comp) => {
                   const isApproved = comp.status === 'approved'
                   const isPending = comp.status === 'pending' || !comp.status
@@ -1460,10 +1686,10 @@ export function UserProfile() {
                   return (
                     <Card
                       key={comp._id}
-                      className='group overflow-hidden border-border/60 hover:border-border transition-all flex flex-col'
+                      className='group flex flex-col overflow-hidden border-border/60 transition-all hover:border-border'
                     >
                       {/* Preview Image Frame */}
-                      <div className='relative h-44 w-full bg-neutral-900/5 dark:bg-neutral-900/40 overflow-hidden border-b border-border/50 flex items-center justify-center p-3'>
+                      <div className='relative flex h-44 w-full items-center justify-center overflow-hidden border-b border-border/50 bg-neutral-900/5 p-3 dark:bg-neutral-900/40'>
                         {comp.previewImageUrl ? (
                           <img
                             src={comp.previewImageUrl}
@@ -1471,26 +1697,26 @@ export function UserProfile() {
                             className='h-full w-full object-contain transition-transform duration-300 group-hover:scale-105'
                           />
                         ) : (
-                          <div className='flex flex-col items-center justify-center text-muted-foreground gap-1'>
+                          <div className='flex flex-col items-center justify-center gap-1 text-muted-foreground'>
                             <Layers className='h-8 w-8 stroke-[1.5]' />
                             <span className='text-xs'>No Preview Image</span>
                           </div>
                         )}
 
                         {/* Top Overlay Badges */}
-                        <div className='absolute top-2 left-2 flex items-center gap-1.5 flex-wrap'>
+                        <div className='absolute top-2 left-2 flex flex-wrap items-center gap-1.5'>
                           {isApproved && (
-                            <Badge className='bg-emerald-500/90 text-white font-medium text-[11px] px-2 py-0.5 shadow-sm'>
+                            <Badge className='bg-emerald-500/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm'>
                               Approved
                             </Badge>
                           )}
                           {isPending && (
-                            <Badge className='bg-amber-500/90 text-black font-semibold text-[11px] px-2 py-0.5 shadow-sm'>
+                            <Badge className='bg-amber-500/90 px-2 py-0.5 text-[11px] font-semibold text-black shadow-sm'>
                               Pending Review
                             </Badge>
                           )}
                           {isRejected && (
-                            <Badge className='bg-rose-500/90 text-white font-medium text-[11px] px-2 py-0.5 shadow-sm'>
+                            <Badge className='bg-rose-500/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm'>
                               Rejected
                             </Badge>
                           )}
@@ -1498,14 +1724,14 @@ export function UserProfile() {
                           {comp.pricingType === 'Pro' ? (
                             <Badge
                               variant='secondary'
-                              className='bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-1.5 py-0.2'
+                              className='py-0.2 border border-amber-500/30 bg-amber-500/20 px-1.5 text-[10px] text-amber-400'
                             >
                               <Sparkles className='mr-1 h-2.5 w-2.5' /> PRO
                             </Badge>
                           ) : (
                             <Badge
                               variant='outline'
-                              className='bg-background/80 backdrop-blur-sm text-[10px] px-1.5 py-0.2'
+                              className='py-0.2 bg-background/80 px-1.5 text-[10px] backdrop-blur-sm'
                             >
                               Free
                             </Badge>
@@ -1513,7 +1739,7 @@ export function UserProfile() {
                         </div>
 
                         {/* Hover Quick Preview Action */}
-                        <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2'>
+                        <div className='absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
                           <Button
                             size='sm'
                             variant='secondary'
@@ -1526,19 +1752,24 @@ export function UserProfile() {
                       </div>
 
                       {/* Card Content */}
-                      <CardContent className='p-4 flex-1 flex flex-col justify-between space-y-3'>
+                      <CardContent className='flex flex-1 flex-col justify-between space-y-3 p-4'>
                         <div className='space-y-2'>
                           <div className='flex items-start justify-between gap-2'>
-                            <h4 className='font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors'>
+                            <h4 className='line-clamp-1 text-sm font-semibold transition-colors group-hover:text-primary'>
                               {comp.name}
                             </h4>
-                            <span className='text-[10px] text-muted-foreground whitespace-nowrap'>
-                              {comp.createdAt ? format(new Date(comp.createdAt), 'MMM d, yyyy') : ''}
+                            <span className='text-[10px] whitespace-nowrap text-muted-foreground'>
+                              {comp.createdAt
+                                ? format(
+                                    new Date(comp.createdAt),
+                                    'MMM d, yyyy'
+                                  )
+                                : ''}
                             </span>
                           </div>
 
                           {comp.description && (
-                            <p className='text-xs text-muted-foreground line-clamp-2'>
+                            <p className='line-clamp-2 text-xs text-muted-foreground'>
                               {comp.description}
                             </p>
                           )}
@@ -1546,16 +1777,18 @@ export function UserProfile() {
                           {/* Tags */}
                           {Array.isArray(comp.tags) && comp.tags.length > 0 && (
                             <div className='flex flex-wrap gap-1 pt-1'>
-                              {comp.tags.slice(0, 3).map((tag: string, i: number) => (
-                                <span
-                                  key={i}
-                                  className='inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground'
-                                >
-                                  #{tag}
-                                </span>
-                              ))}
+                              {comp.tags
+                                .slice(0, 3)
+                                .map((tag: string, i: number) => (
+                                  <span
+                                    key={i}
+                                    className='inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground'
+                                  >
+                                    #{tag}
+                                  </span>
+                                ))}
                               {comp.tags.length > 3 && (
-                                <span className='text-[10px] text-muted-foreground self-center'>
+                                <span className='self-center text-[10px] text-muted-foreground'>
                                   +{comp.tags.length - 3}
                                 </span>
                               )}
@@ -1564,12 +1797,16 @@ export function UserProfile() {
                         </div>
 
                         {/* Stats & Actions Row */}
-                        <div className='pt-2 border-t flex items-center justify-between gap-2'>
+                        <div className='flex items-center justify-between gap-2 border-t pt-2'>
                           <div className='flex items-center gap-3 text-xs text-muted-foreground'>
                             <span className='flex items-center gap-1'>
-                              <Download className='h-3 w-3' /> {comp.downloadCount || 0}
+                              <Download className='h-3 w-3' />{' '}
+                              {comp.downloadCount || 0}
                             </span>
-                            <Badge variant='outline' className='text-[10px] h-4 px-1.5'>
+                            <Badge
+                              variant='outline'
+                              className='h-4 px-1.5 text-[10px]'
+                            >
                               {comp.designType || 'UI Design'}
                             </Badge>
                           </div>
@@ -1578,7 +1815,7 @@ export function UserProfile() {
                             <Button
                               size='sm'
                               variant='outline'
-                              className='h-7 text-xs px-2.5'
+                              className='h-7 px-2.5 text-xs'
                               onClick={() => handleCopyFigma(comp)}
                               disabled={isCopying}
                             >
@@ -1605,22 +1842,40 @@ export function UserProfile() {
                                   )}
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align='end' className='w-40 text-xs'>
-                                <DropdownMenuItem onClick={() => setPreviewModalComp(comp)}>
-                                  <Eye className='mr-2 h-3.5 w-3.5' /> View Details
+                              <DropdownMenuContent
+                                align='end'
+                                className='w-40 text-xs'
+                              >
+                                <DropdownMenuItem
+                                  onClick={() => setPreviewModalComp(comp)}
+                                >
+                                  <Eye className='mr-2 h-3.5 w-3.5' /> View
+                                  Details
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  onClick={() => handleUpdateComponentStatus(comp._id, 'approved')}
+                                  onClick={() =>
+                                    handleUpdateComponentStatus(
+                                      comp._id,
+                                      'approved'
+                                    )
+                                  }
                                   disabled={comp.status === 'approved'}
                                 >
-                                  <CheckCircle className='mr-2 h-3.5 w-3.5 text-emerald-500' /> Mark Approved
+                                  <CheckCircle className='mr-2 h-3.5 w-3.5 text-emerald-500' />{' '}
+                                  Mark Approved
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleUpdateComponentStatus(comp._id, 'pending')}
+                                  onClick={() =>
+                                    handleUpdateComponentStatus(
+                                      comp._id,
+                                      'pending'
+                                    )
+                                  }
                                   disabled={comp.status === 'pending'}
                                 >
-                                  <Clock className='mr-2 h-3.5 w-3.5 text-amber-500' /> Mark Pending
+                                  <Clock className='mr-2 h-3.5 w-3.5 text-amber-500' />{' '}
+                                  Mark Pending
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -1634,14 +1889,18 @@ export function UserProfile() {
                                   }
                                   disabled={comp.status === 'rejected'}
                                 >
-                                  <XCircle className='mr-2 h-3.5 w-3.5 text-rose-500' /> Mark Rejected
+                                  <XCircle className='mr-2 h-3.5 w-3.5 text-rose-500' />{' '}
+                                  Mark Rejected
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  onClick={() => handleDeleteComponent(comp._id, comp.name)}
+                                  onClick={() =>
+                                    handleDeleteComponent(comp._id, comp.name)
+                                  }
                                   className='text-destructive focus:text-destructive'
                                 >
-                                  <Trash2 className='mr-2 h-3.5 w-3.5' /> Delete Component
+                                  <Trash2 className='mr-2 h-3.5 w-3.5' /> Delete
+                                  Component
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -1658,16 +1917,24 @@ export function UserProfile() {
       </Main>
 
       {/* Component Quick View Dialog */}
-      <Dialog open={!!previewModalComp} onOpenChange={(open) => !open && setPreviewModalComp(null)}>
-        <DialogContent className='max-w-3xl overflow-hidden p-0 gap-0'>
+      <Dialog
+        open={!!previewModalComp}
+        onOpenChange={(open) => !open && setPreviewModalComp(null)}
+      >
+        <DialogContent className='max-w-3xl gap-0 overflow-hidden p-0'>
           {previewModalComp && (
             <div>
               <DialogHeader className='p-6 pb-2'>
                 <div className='flex items-center justify-between gap-4'>
                   <div>
-                    <DialogTitle className='text-xl font-bold text-foreground'>{previewModalComp.name}</DialogTitle>
-                    <DialogDescription className='text-xs mt-1'>
-                      Uploaded {previewModalComp.createdAt ? format(new Date(previewModalComp.createdAt), 'PPP') : 'N/A'}
+                    <DialogTitle className='text-xl font-bold text-foreground'>
+                      {previewModalComp.name}
+                    </DialogTitle>
+                    <DialogDescription className='mt-1 text-xs'>
+                      Uploaded{' '}
+                      {previewModalComp.createdAt
+                        ? format(new Date(previewModalComp.createdAt), 'PPP')
+                        : 'N/A'}
                     </DialogDescription>
                   </div>
                   <Button
@@ -1686,59 +1953,82 @@ export function UserProfile() {
                 </div>
               </DialogHeader>
 
-              <div className='relative max-h-[50vh] w-full bg-neutral-950 flex items-center justify-center p-4 border-y'>
+              <div className='relative flex max-h-[50vh] w-full items-center justify-center border-y bg-neutral-950 p-4'>
                 {previewModalComp.previewImageUrl ? (
                   <img
                     src={previewModalComp.previewImageUrl}
                     alt={previewModalComp.name}
-                    className='max-h-[45vh] w-auto max-w-full object-contain rounded-md shadow-lg'
+                    className='max-h-[45vh] w-auto max-w-full rounded-md object-contain shadow-lg'
                   />
                 ) : (
-                  <div className='py-16 text-muted-foreground flex flex-col items-center gap-2'>
+                  <div className='flex flex-col items-center gap-2 py-16 text-muted-foreground'>
                     <Layers className='h-12 w-12 stroke-[1.5]' />
                     <span>No Preview Available</span>
                   </div>
                 )}
               </div>
 
-              <div className='p-6 space-y-4'>
+              <div className='space-y-4 p-6'>
                 {previewModalComp.description && (
-                  <p className='text-sm text-muted-foreground leading-relaxed'>
+                  <p className='text-sm leading-relaxed text-muted-foreground'>
                     {previewModalComp.description}
                   </p>
                 )}
 
-                <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+                <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
                   <div className='rounded-lg border p-3'>
-                    <span className='text-[10px] text-muted-foreground uppercase font-medium'>Status</span>
-                    <p className='text-xs font-semibold capitalize mt-0.5'>{previewModalComp.status || 'pending'}</p>
+                    <span className='text-[10px] font-medium text-muted-foreground uppercase'>
+                      Status
+                    </span>
+                    <p className='mt-0.5 text-xs font-semibold capitalize'>
+                      {previewModalComp.status || 'pending'}
+                    </p>
                   </div>
                   <div className='rounded-lg border p-3'>
-                    <span className='text-[10px] text-muted-foreground uppercase font-medium'>Design Type</span>
-                    <p className='text-xs font-semibold mt-0.5'>{previewModalComp.designType || 'UI Design'}</p>
+                    <span className='text-[10px] font-medium text-muted-foreground uppercase'>
+                      Design Type
+                    </span>
+                    <p className='mt-0.5 text-xs font-semibold'>
+                      {previewModalComp.designType || 'UI Design'}
+                    </p>
                   </div>
                   <div className='rounded-lg border p-3'>
-                    <span className='text-[10px] text-muted-foreground uppercase font-medium'>Pricing</span>
-                    <p className='text-xs font-semibold mt-0.5'>{previewModalComp.pricingType || 'Free'}</p>
+                    <span className='text-[10px] font-medium text-muted-foreground uppercase'>
+                      Pricing
+                    </span>
+                    <p className='mt-0.5 text-xs font-semibold'>
+                      {previewModalComp.pricingType || 'Free'}
+                    </p>
                   </div>
                   <div className='rounded-lg border p-3'>
-                    <span className='text-[10px] text-muted-foreground uppercase font-medium'>Downloads</span>
-                    <p className='text-xs font-semibold mt-0.5'>{previewModalComp.downloadCount || 0}</p>
+                    <span className='text-[10px] font-medium text-muted-foreground uppercase'>
+                      Downloads
+                    </span>
+                    <p className='mt-0.5 text-xs font-semibold'>
+                      {previewModalComp.downloadCount || 0}
+                    </p>
                   </div>
                 </div>
 
-                {Array.isArray(previewModalComp.tags) && previewModalComp.tags.length > 0 && (
-                  <div className='space-y-1.5 pt-1'>
-                    <span className='text-xs font-medium text-muted-foreground'>Tags</span>
-                    <div className='flex flex-wrap gap-1.5'>
-                      {previewModalComp.tags.map((tag: string, i: number) => (
-                        <Badge key={i} variant='secondary' className='text-xs font-normal'>
-                          #{tag}
-                        </Badge>
-                      ))}
+                {Array.isArray(previewModalComp.tags) &&
+                  previewModalComp.tags.length > 0 && (
+                    <div className='space-y-1.5 pt-1'>
+                      <span className='text-xs font-medium text-muted-foreground'>
+                        Tags
+                      </span>
+                      <div className='flex flex-wrap gap-1.5'>
+                        {previewModalComp.tags.map((tag: string, i: number) => (
+                          <Badge
+                            key={i}
+                            variant='secondary'
+                            className='text-xs font-normal'
+                          >
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </div>
           )}
@@ -1763,47 +2053,57 @@ export function UserProfile() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className='sm:max-w-[500px]'>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <XCircle className="h-5 w-5 text-destructive shrink-0" />
+            <DialogTitle className='flex items-center gap-2 text-destructive'>
+              <XCircle className='h-5 w-5 shrink-0 text-destructive' />
               Reject Component
             </DialogTitle>
             <DialogDescription>
-              Provide a rejection reason or feedback for <strong>{rejectDialog.compName}</strong>. This message will be sent to the user on their dashboard.
+              Provide a rejection reason or feedback for{' '}
+              <strong>{rejectDialog.compName}</strong>. This message will be
+              sent to the user on their dashboard.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 py-2">
-            <Label htmlFor="user-comp-rejection-reason" className="text-sm font-semibold text-foreground">
+          <div className='flex flex-col gap-3 py-2'>
+            <Label
+              htmlFor='user-comp-rejection-reason'
+              className='text-sm font-semibold text-foreground'
+            >
               Rejection Message / Feedback
             </Label>
             <Textarea
-              id="user-comp-rejection-reason"
+              id='user-comp-rejection-reason'
               rows={4}
               placeholder="e.g. Preview image is low resolution, contains broken layers, or doesn't meet design guidelines..."
               value={rejectDialog.reason}
-              onChange={(e) => setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))}
-              className="resize-none"
+              onChange={(e) =>
+                setRejectDialog((prev) => ({ ...prev, reason: e.target.value }))
+              }
+              className='resize-none'
               autoFocus
             />
-            <p className="text-[11.5px] text-muted-foreground leading-relaxed">
-              The user will be immediately notified on their dashboard so they can adjust and resubmit.
+            <p className='text-[11.5px] leading-relaxed text-muted-foreground'>
+              The user will be immediately notified on their dashboard so they
+              can adjust and resubmit.
             </p>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-2.5 pt-2">
+          <DialogFooter className='gap-2 pt-2 sm:gap-2.5'>
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRejectDialog((prev) => ({ ...prev, open: false }))}
+              type='button'
+              variant='outline'
+              onClick={() =>
+                setRejectDialog((prev) => ({ ...prev, open: false }))
+              }
               disabled={rejectDialog.submitting}
             >
               Cancel
             </Button>
             <Button
-              type="button"
-              variant="destructive"
+              type='button'
+              variant='destructive'
               onClick={handleConfirmReject}
               disabled={rejectDialog.submitting}
             >
@@ -1816,18 +2116,22 @@ export function UserProfile() {
       {/* Manual Plan Activation Confirmation Dialog */}
       <Dialog
         open={!!activatingPlan}
-        onOpenChange={(open) => !open && !activatingSubmit && setActivatingPlan(null)}
+        onOpenChange={(open) =>
+          !open && !activatingSubmit && setActivatingPlan(null)
+        }
       >
         <DialogContent className='sm:max-w-lg'>
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
               {isPromotion ? (
                 <>
-                  <Gift className='h-5 w-5 text-purple-400' /> Promotional: {activatingPlan?.displayName}
+                  <Gift className='h-5 w-5 text-purple-400' /> Promotional:{' '}
+                  {activatingPlan?.displayName}
                 </>
               ) : (
                 <>
-                  <Zap className='h-5 w-5 text-amber-500' /> Activate {activatingPlan?.displayName}
+                  <Zap className='h-5 w-5 text-amber-500' /> Activate{' '}
+                  {activatingPlan?.displayName}
                 </>
               )}
             </DialogTitle>
@@ -1841,26 +2145,27 @@ export function UserProfile() {
           {activatingPlan && (
             <div className='space-y-4 py-2'>
               {/* Type Switcher: Paid vs Promotion */}
-              <div className='grid grid-cols-2 p-1 rounded-lg bg-muted/40 border text-xs font-medium'>
+              <div className='grid grid-cols-2 rounded-lg border bg-muted/40 p-1 text-xs font-medium'>
                 <button
                   type='button'
                   onClick={() => setIsPromotion(false)}
                   className={cn(
-                    'py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all',
+                    'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
                     !isPromotion
-                      ? 'bg-background shadow-sm font-bold text-foreground'
+                      ? 'bg-background font-bold text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
-                  <CreditCard className='h-3.5 w-3.5 text-amber-500' /> Paid / Manual
+                  <CreditCard className='h-3.5 w-3.5 text-amber-500' /> Paid /
+                  Manual
                 </button>
                 <button
                   type='button'
                   onClick={() => setIsPromotion(true)}
                   className={cn(
-                    'py-1.5 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all',
+                    'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 transition-all',
                     isPromotion
-                      ? 'bg-purple-600 text-white shadow-sm font-bold'
+                      ? 'bg-purple-600 font-bold text-white shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
@@ -1870,47 +2175,61 @@ export function UserProfile() {
 
               {isPromotion ? (
                 /* Promotional Callout Banner - No payment details required */
-                <div className='rounded-lg border border-purple-500/30 bg-purple-500/10 p-3.5 space-y-1.5'>
+                <div className='space-y-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 p-3.5'>
                   <div className='flex items-center justify-between'>
-                    <span className='text-xs font-bold text-purple-400 flex items-center gap-1.5'>
-                      <Gift className='h-4 w-4 text-purple-400' /> Admin Promotion
+                    <span className='flex items-center gap-1.5 text-xs font-bold text-purple-400'>
+                      <Gift className='h-4 w-4 text-purple-400' /> Admin
+                      Promotion
                     </span>
-                    <Badge className='bg-purple-500 text-white text-[10px] font-bold'>
+                    <Badge className='bg-purple-500 text-[10px] font-bold text-white'>
                       COMPLIMENTARY
                     </Badge>
                   </div>
-                  <p className='text-xs text-muted-foreground leading-relaxed'>
-                    No transaction ID, bank details, or payment amount required. This plan will be activated immediately as a promotional grant.
+                  <p className='text-xs leading-relaxed text-muted-foreground'>
+                    No transaction ID, bank details, or payment amount required.
+                    This plan will be activated immediately as a promotional
+                    grant.
                   </p>
                 </div>
               ) : (
                 /* Paid / Manual Payment Details Section */
-                <div className='space-y-3 rounded-lg border p-3.5 bg-muted/20'>
+                <div className='space-y-3 rounded-lg border bg-muted/20 p-3.5'>
                   <div className='flex items-center justify-between'>
-                    <span className='text-xs font-bold text-foreground flex items-center gap-1.5'>
-                      <CreditCard className='h-3.5 w-3.5 text-amber-500' /> Payment Record Details
+                    <span className='flex items-center gap-1.5 text-xs font-bold text-foreground'>
+                      <CreditCard className='h-3.5 w-3.5 text-amber-500' />{' '}
+                      Payment Record Details
                     </span>
-                    <Badge variant='outline' className='text-[10px] text-amber-500 border-amber-500/30'>
+                    <Badge
+                      variant='outline'
+                      className='border-amber-500/30 text-[10px] text-amber-500'
+                    >
                       Manual Payment
                     </Badge>
                   </div>
 
                   <div className='grid grid-cols-2 gap-3'>
                     <div className='space-y-1.5'>
-                      <Label htmlFor='plan-tx-id' className='text-xs font-medium flex items-center gap-1'>
-                        Transaction ID <span className='text-destructive'>*</span>
+                      <Label
+                        htmlFor='plan-tx-id'
+                        className='flex items-center gap-1 text-xs font-medium'
+                      >
+                        Transaction ID{' '}
+                        <span className='text-destructive'>*</span>
                       </Label>
                       <Input
                         id='plan-tx-id'
                         placeholder='e.g. UTR9284102948'
                         value={transactionId}
                         onChange={(e) => setTransactionId(e.target.value)}
-                        className='text-xs font-mono'
+                        className='font-mono text-xs'
                       />
                     </div>
 
                     <div className='space-y-1.5'>
-                      <Label htmlFor='plan-bank-name' className='text-xs font-medium flex items-center gap-1'>
+                      <Label
+                        htmlFor='plan-bank-name'
+                        className='flex items-center gap-1 text-xs font-medium'
+                      >
                         Bank Name <span className='text-destructive'>*</span>
                       </Label>
                       <Input
@@ -1923,7 +2242,10 @@ export function UserProfile() {
                     </div>
 
                     <div className='space-y-1.5'>
-                      <Label htmlFor='plan-payment-date' className='text-xs font-medium flex items-center gap-1'>
+                      <Label
+                        htmlFor='plan-payment-date'
+                        className='flex items-center gap-1 text-xs font-medium'
+                      >
                         Payment Date <span className='text-destructive'>*</span>
                       </Label>
                       <Input
@@ -1936,7 +2258,10 @@ export function UserProfile() {
                     </div>
 
                     <div className='space-y-1.5'>
-                      <Label htmlFor='plan-amount' className='text-xs font-medium flex items-center gap-1'>
+                      <Label
+                        htmlFor='plan-amount'
+                        className='flex items-center gap-1 text-xs font-medium'
+                      >
                         Amount (₹) <span className='text-destructive'>*</span>
                       </Label>
                       <Input
@@ -1955,7 +2280,7 @@ export function UserProfile() {
               )}
 
               {/* Plan parameters summary & overrides */}
-              <div className='rounded-lg border p-3 bg-muted/10 space-y-2.5 text-xs'>
+              <div className='space-y-2.5 rounded-lg border bg-muted/10 p-3 text-xs'>
                 <div className='flex items-center justify-between'>
                   <span className='text-muted-foreground'>Selected Plan:</span>
                   <span className='font-bold text-foreground'>
@@ -1965,7 +2290,10 @@ export function UserProfile() {
 
                 <div className='grid grid-cols-2 gap-3 pt-1'>
                   <div className='space-y-1'>
-                    <Label htmlFor='plan-custom-duration' className='text-[11px] text-muted-foreground'>
+                    <Label
+                      htmlFor='plan-custom-duration'
+                      className='text-[11px] text-muted-foreground'
+                    >
                       Duration (Days)
                     </Label>
                     <Input
@@ -1973,12 +2301,17 @@ export function UserProfile() {
                       type='number'
                       min='1'
                       value={customDurationDays}
-                      onChange={(e) => setCustomDurationDays(Number(e.target.value))}
+                      onChange={(e) =>
+                        setCustomDurationDays(Number(e.target.value))
+                      }
                       className='h-8 text-xs'
                     />
                   </div>
                   <div className='space-y-1'>
-                    <Label htmlFor='plan-custom-quota' className='text-[11px] text-muted-foreground'>
+                    <Label
+                      htmlFor='plan-custom-quota'
+                      className='text-[11px] text-muted-foreground'
+                    >
                       Component Limit
                     </Label>
                     <Input
@@ -1986,14 +2319,16 @@ export function UserProfile() {
                       type='number'
                       min='1'
                       value={customComponentLimit}
-                      onChange={(e) => setCustomComponentLimit(Number(e.target.value))}
+                      onChange={(e) =>
+                        setCustomComponentLimit(Number(e.target.value))
+                      }
                       className='h-8 text-xs'
                     />
                   </div>
                 </div>
               </div>
 
-              <p className='text-[11px] text-muted-foreground leading-relaxed'>
+              <p className='text-[11px] leading-relaxed text-muted-foreground'>
                 {isPromotion
                   ? 'Activation starts immediately upon confirmation as an admin promotion (₹0).'
                   : 'Activation starts immediately upon confirmation and registers the manual transaction under billing records.'}
@@ -2016,14 +2351,15 @@ export function UserProfile() {
               {isPromotion ? (
                 <Button
                   type='button'
-                  className='h-9 px-4 bg-purple-600 text-white hover:bg-purple-500 font-bold gap-1.5 shadow-sm transition-all'
+                  className='h-9 gap-1.5 bg-purple-600 px-4 font-bold text-white shadow-sm transition-all hover:bg-purple-500'
                   disabled={activatingSubmit}
                   onClick={() => handleActivatePlan(true)}
                   title='Activate as promotional grant (no payment details required)'
                 >
                   {activatingSubmit ? (
                     <>
-                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' /> Activating...
+                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' />{' '}
+                      Activating...
                     </>
                   ) : (
                     <>
@@ -2034,17 +2370,19 @@ export function UserProfile() {
               ) : (
                 <Button
                   type='button'
-                  className='h-9 px-4 bg-amber-500 text-black hover:bg-amber-400 font-bold gap-1.5 shadow-sm transition-all'
+                  className='h-9 gap-1.5 bg-amber-500 px-4 font-bold text-black shadow-sm transition-all hover:bg-amber-400'
                   disabled={activatingSubmit}
                   onClick={() => handleActivatePlan(false)}
                 >
                   {activatingSubmit ? (
                     <>
-                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' /> Activating...
+                      <Loader2 className='mr-1.5 h-4 w-4 animate-spin' />{' '}
+                      Activating...
                     </>
                   ) : (
                     <>
-                      <Zap className='mr-1.5 h-4 w-4 fill-current' /> Confirm & Activate
+                      <Zap className='mr-1.5 h-4 w-4 fill-current' /> Confirm &
+                      Activate
                     </>
                   )}
                 </Button>
@@ -2063,10 +2401,11 @@ export function UserProfile() {
             </DialogTitle>
             <DialogDescription>
               Are you sure you want to cancel the active subscription for{' '}
-              <span className='font-semibold text-foreground'>{user.name}</span>? The user will be immediately downgraded to the Free Tier.
+              <span className='font-semibold text-foreground'>{user.name}</span>
+              ? The user will be immediately downgraded to the Free Tier.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className='gap-2 sm:gap-2.5 pt-2'>
+          <DialogFooter className='gap-2 pt-2 sm:gap-2.5'>
             <Button
               type='button'
               variant='outline'

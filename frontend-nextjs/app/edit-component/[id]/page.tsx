@@ -19,7 +19,9 @@ function AuthRequiredCard({ onLogin }: { onLogin: () => void }) {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-[#F97316]">
           <LockKeyhole size={26} strokeWidth={2} />
         </div>
-        <h1 className="text-xl font-black tracking-tight text-gray-900">Authentication Required</h1>
+        <h1 className="text-xl font-black tracking-tight text-gray-900">
+          Authentication Required
+        </h1>
         <p className="mx-auto mt-2 max-w-sm text-xs font-medium leading-5 text-gray-500">
           Sign in to edit your submitted components.
         </p>
@@ -35,7 +37,11 @@ function AuthRequiredCard({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-export default function EditComponentPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditComponentPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -48,16 +54,22 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
     enabled: !!id,
   });
 
-  const initialValues = useMemo<Partial<ComponentEditorValues> | undefined>(() => {
+  const initialValues = useMemo<
+    Partial<ComponentEditorValues> | undefined
+  >(() => {
     if (!componentData) return undefined;
 
     const existingTags = componentData.tags || [];
-    const platformTag = existingTags.some((tag) => tag.toLowerCase() === "app") ? "app" : "web";
+    const platformTag = existingTags.some((tag) => tag.toLowerCase() === "app")
+      ? "app"
+      : "web";
 
     return {
       name: componentData.name || "",
       description: componentData.description || "",
-      tags: existingTags.filter((tag) => !["web", "app"].includes(tag.toLowerCase())),
+      tags: existingTags.filter(
+        (tag) => !["web", "app"].includes(tag.toLowerCase()),
+      ),
       figmaDataBase64: componentData.figmaDataBase64 || "",
       designType: componentData.designType || "UI Design",
       pricingType: componentData.pricingType || "Free",
@@ -94,14 +106,20 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
       return;
     }
 
-    setStatus(values.previewFile ? "Uploading new preview image..." : "Updating component...");
+    setStatus(
+      values.previewFile
+        ? "Uploading new preview image..."
+        : "Updating component...",
+    );
 
     try {
       await updateComponentMutation.mutateAsync(values);
       setStatus("Component updated successfully.");
       router.push("/dashboard?tab=my-components");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not update component.");
+      setStatus(
+        error instanceof Error ? error.message : "Could not update component.",
+      );
     }
   }
 
@@ -122,7 +140,9 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
     return (
       <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center gap-3 bg-[#FAFAFB]">
         <Loader2 className="h-9 w-9 animate-spin text-[#F97316]" />
-        <p className="text-xs font-semibold text-gray-500">Loading component details...</p>
+        <p className="text-xs font-semibold text-gray-500">
+          Loading component details...
+        </p>
       </div>
     );
   }

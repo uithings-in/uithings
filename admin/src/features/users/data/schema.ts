@@ -14,10 +14,7 @@ export const userAuthProviderSchema = z.union([
 ])
 export type UserAuthProvider = z.infer<typeof userAuthProviderSchema>
 
-export const userRoleSchema = z.union([
-  z.literal('admin'),
-  z.literal('user'),
-])
+export const userRoleSchema = z.union([z.literal('admin'), z.literal('user')])
 export type UserRole = z.infer<typeof userRoleSchema>
 
 export const userSchema = z.object({

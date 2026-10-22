@@ -149,12 +149,12 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
                 response.razorpay_order_id,
                 response.razorpay_payment_id,
                 response.razorpay_signature,
-                plan._id
+                plan._id,
               );
               await refetchSubscription();
               if (result.data?.isQueued) {
                 alert(
-                  "Plan purchased! It has been queued and will activate after your current plan expires."
+                  "Plan purchased! It has been queued and will activate after your current plan expires.",
                 );
               } else {
                 alert("Payment successful! You now have Pro access.");
@@ -184,14 +184,14 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
         setError(
           message === "SUBSCRIPTION_EXISTS"
             ? "Subscription already exists."
-            : message || "Failed to initiate payment. Please try again."
+            : message || "Failed to initiate payment. Please try again.",
         );
       } finally {
         setLoading(false);
         setSelectedPlan(null);
       }
     },
-    [onClose, refetchSubscription, user]
+    [onClose, refetchSubscription, user],
   );
 
   const handlePlanSelect = async (preferredKey: string) => {
@@ -347,13 +347,21 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
               <Zap size={18} className="fill-[#7C5CFF]" />
             </div>
 
-            <h3 className="text-sm font-semibold text-white mt-4">{basicPlan.name}</h3>
+            <h3 className="text-sm font-semibold text-white mt-4">
+              {basicPlan.name}
+            </h3>
 
             <div className="mt-2 flex items-baseline justify-center gap-1">
-              <span className="text-xl font-bold text-[#7C5CFF]">{basicPlan.pricePrefix}</span>
-              <span className="text-3xl font-extrabold text-[#7C5CFF]">{basicPlan.price}</span>
+              <span className="text-xl font-bold text-[#7C5CFF]">
+                {basicPlan.pricePrefix}
+              </span>
+              <span className="text-3xl font-extrabold text-[#7C5CFF]">
+                {basicPlan.price}
+              </span>
             </div>
-            <span className="text-[11px] text-[#8F8A98] mt-0.5">{basicPlan.period}</span>
+            <span className="text-[11px] text-[#8F8A98] mt-0.5">
+              {basicPlan.period}
+            </span>
 
             <p className="text-[11.5px] text-[#A6A6C1] mt-3 mb-6 leading-relaxed">
               {basicPlan.description}
@@ -400,8 +408,12 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
             </h3>
 
             <div className="relative z-10 mt-2 flex items-baseline justify-center gap-1">
-              <span className="text-xl font-bold text-white">{advancePlan.pricePrefix}</span>
-              <span className="text-3xl font-extrabold text-white">{advancePlan.price}</span>
+              <span className="text-xl font-bold text-white">
+                {advancePlan.pricePrefix}
+              </span>
+              <span className="text-3xl font-extrabold text-white">
+                {advancePlan.price}
+              </span>
             </div>
             <span className="relative z-10 text-[11px] text-[#A6A6C1] mt-0.5">
               {advancePlan.period}
@@ -438,13 +450,21 @@ export function PricingModal({ isOpen, onClose }: PricingModalProps) {
               <SquareMousePointer size={18} />
             </div>
 
-            <h3 className="text-sm font-semibold text-white mt-4">{premiumPlan.name}</h3>
+            <h3 className="text-sm font-semibold text-white mt-4">
+              {premiumPlan.name}
+            </h3>
 
             <div className="mt-2 flex items-baseline justify-center gap-1">
-              <span className="text-xl font-bold text-[#60A5FA]">{premiumPlan.pricePrefix}</span>
-              <span className="text-3xl font-extrabold text-[#60A5FA]">{premiumPlan.price}</span>
+              <span className="text-xl font-bold text-[#60A5FA]">
+                {premiumPlan.pricePrefix}
+              </span>
+              <span className="text-3xl font-extrabold text-[#60A5FA]">
+                {premiumPlan.price}
+              </span>
             </div>
-            <span className="text-[11px] text-[#8F8A98] mt-0.5">{premiumPlan.period}</span>
+            <span className="text-[11px] text-[#8F8A98] mt-0.5">
+              {premiumPlan.period}
+            </span>
 
             <p className="text-[11.5px] text-[#A6A6C1] mt-3 mb-6 leading-relaxed">
               {premiumPlan.description}

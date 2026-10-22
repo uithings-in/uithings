@@ -1,5 +1,12 @@
 "use client";
-import { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { authApi } from "../api/auth";
@@ -14,7 +21,11 @@ interface AuthContextValue {
   isInitialized: boolean;
   refetchUser: () => Promise<any>;
   login: (input: { email: string; password: string }) => Promise<void>;
-  register: (input: { name: string; email: string; password: string }) => Promise<void>;
+  register: (input: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
   registerModalOpen: boolean;
@@ -62,7 +73,10 @@ function getCookie(name: string): string | null {
 function getStoredUser(): User | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem("authUser") || localStorage.getItem("user") || getCookie("authUser");
+    const raw =
+      localStorage.getItem("authUser") ||
+      localStorage.getItem("user") ||
+      getCookie("authUser");
     return raw ? normalizeUser(JSON.parse(raw)) : null;
   } catch {
     return null;
@@ -86,10 +100,14 @@ export function AuthProvider({
   useEffect(() => {
     setIsMounted(true);
     const stored = getStoredUser();
-    let token = localStorage.getItem("accessToken") || localStorage.getItem("token") || getCookie("accessToken");
+    let token =
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      getCookie("accessToken");
     if (!token && typeof window !== "undefined") {
       try {
-        const raw = localStorage.getItem("authUser") || localStorage.getItem("user");
+        const raw =
+          localStorage.getItem("authUser") || localStorage.getItem("user");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed?.token || parsed?.accessToken) {
@@ -118,11 +136,16 @@ export function AuthProvider({
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
-    return () => window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    return () =>
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
   }, [queryClient]);
 
   const hasToken = isMounted
-    ? Boolean(localStorage.getItem("accessToken") || localStorage.getItem("token") || getCookie("accessToken"))
+    ? Boolean(
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("token") ||
+        getCookie("accessToken"),
+      )
     : Boolean(initialUser);
 
   const authQuery = useQuery({
@@ -132,7 +155,8 @@ export function AuthProvider({
         const freshUser = normalizeUser(await authApi.me());
         if (typeof window !== "undefined") {
           localStorage.setItem("authUser", JSON.stringify(freshUser));
-          const token = localStorage.getItem("accessToken") || getCookie("accessToken");
+          const token =
+            localStorage.getItem("accessToken") || getCookie("accessToken");
           if (token) setAuthCookies(token, freshUser);
         }
         return freshUser;
@@ -164,32 +188,41 @@ export function AuthProvider({
   const loading = isMounted && hasToken ? authQuery.isLoading && !user : false;
   const isInitialized = isMounted || !!initialUser;
 
-  const login = useCallback(async (input: { email: string; password: string }) => {
-    const payload = await authApi.login(input);
-    const normalized = normalizeUser(payload.user);
-    localStorage.setItem("accessToken", payload.token);
-    localStorage.setItem("authUser", JSON.stringify(normalized));
-    setAuthCookies(payload.token, normalized);
-    queryClient.setQueryData(["auth", "me"], normalized);
-  }, [queryClient]);
+  const login = useCallback(
+    async (input: { email: string; password: string }) => {
+      const payload = await authApi.login(input);
+      const normalized = normalizeUser(payload.user);
+      localStorage.setItem("accessToken", payload.token);
+      localStorage.setItem("authUser", JSON.stringify(normalized));
+      setAuthCookies(payload.token, normalized);
+      queryClient.setQueryData(["auth", "me"], normalized);
+    },
+    [queryClient],
+  );
 
-  const register = useCallback(async (input: { name: string; email: string; password: string }) => {
-    const payload = await authApi.register(input);
-    const normalized = normalizeUser(payload.user);
-    localStorage.setItem("accessToken", payload.token);
-    localStorage.setItem("authUser", JSON.stringify(normalized));
-    setAuthCookies(payload.token, normalized);
-    queryClient.setQueryData(["auth", "me"], normalized);
-  }, [queryClient]);
+  const register = useCallback(
+    async (input: { name: string; email: string; password: string }) => {
+      const payload = await authApi.register(input);
+      const normalized = normalizeUser(payload.user);
+      localStorage.setItem("accessToken", payload.token);
+      localStorage.setItem("authUser", JSON.stringify(normalized));
+      setAuthCookies(payload.token, normalized);
+      queryClient.setQueryData(["auth", "me"], normalized);
+    },
+    [queryClient],
+  );
 
-  const loginWithGoogle = useCallback(async (idToken: string) => {
-    const payload = await authApi.googleLogin(idToken);
-    const normalized = normalizeUser(payload.user);
-    localStorage.setItem("accessToken", payload.token);
-    localStorage.setItem("authUser", JSON.stringify(normalized));
-    setAuthCookies(payload.token, normalized);
-    queryClient.setQueryData(["auth", "me"], normalized);
-  }, [queryClient]);
+  const loginWithGoogle = useCallback(
+    async (idToken: string) => {
+      const payload = await authApi.googleLogin(idToken);
+      const normalized = normalizeUser(payload.user);
+      localStorage.setItem("accessToken", payload.token);
+      localStorage.setItem("authUser", JSON.stringify(normalized));
+      setAuthCookies(payload.token, normalized);
+      queryClient.setQueryData(["auth", "me"], normalized);
+    },
+    [queryClient],
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem("accessToken");
@@ -232,7 +265,7 @@ export function AuthProvider({
       setLoginModalOpen,
       pricingModalOpen,
       setPricingModalOpen,
-    ]
+    ],
   );
 
   return (
@@ -240,7 +273,12 @@ export function AuthProvider({
       {children}
       {loginModalOpen && <LoginModal />}
       {registerModalOpen && <RegisterModal />}
-      {pricingModalOpen && <PricingModal isOpen={pricingModalOpen} onClose={() => setPricingModalOpen(false)} />}
+      {pricingModalOpen && (
+        <PricingModal
+          isOpen={pricingModalOpen}
+          onClose={() => setPricingModalOpen(false)}
+        />
+      )}
     </AuthContext.Provider>
   );
 }
@@ -252,6 +290,3 @@ export function useAuth() {
   }
   return context;
 }
-
-
-

@@ -2,7 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Copy, Monitor, Smartphone, Sparkles, Crown, Eye, Check, Moon, Sun } from "lucide-react";
+import {
+  Copy,
+  Monitor,
+  Smartphone,
+  Sparkles,
+  Crown,
+  Eye,
+  Check,
+  Moon,
+  Sun,
+} from "lucide-react";
 import type { ComponentFormValues } from "./types";
 
 interface LivePreviewCardProps {
@@ -54,10 +64,11 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
           <button
             type="button"
             onClick={() => setActiveTheme("dark")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${activeTheme === "dark"
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
+              activeTheme === "dark"
                 ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
                 : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-              }`}
+            }`}
             title="Preview Dark Mode"
           >
             <Moon size={9.5} />
@@ -66,10 +77,11 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
           <button
             type="button"
             onClick={() => setActiveTheme("light")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${activeTheme === "light"
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
+              activeTheme === "light"
                 ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
                 : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-              }`}
+            }`}
             title="Preview Light Mode"
           >
             <Sun size={9.5} />
@@ -82,8 +94,9 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
       <article className="group relative overflow-hidden rounded-lg border border-gray-200/90 dark:border-white/[0.1] bg-white dark:bg-[#17171A] shadow-2xs flex flex-col transition-all">
         {/* Screenshot Container */}
         <div
-          className={`relative aspect-[16/9] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
-            }`}
+          className={`relative aspect-[16/9] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${
+            activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
+          }`}
         >
           {activeUrl ? (
             <Image
@@ -132,8 +145,17 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
               <h4 className="truncate text-xs font-semibold text-gray-900 dark:text-[#F5F5F5] leading-snug">
                 {name.trim() || "Untitled Component"}
               </h4>
-              <span className="shrink-0 text-gray-400 dark:text-[#71717A]" title={platformTag === "web" ? "Web Component" : "Mobile Component"}>
-                {platformTag === "web" ? <Monitor size={11} /> : <Smartphone size={11} />}
+              <span
+                className="shrink-0 text-gray-400 dark:text-[#71717A]"
+                title={
+                  platformTag === "web" ? "Web Component" : "Mobile Component"
+                }
+              >
+                {platformTag === "web" ? (
+                  <Monitor size={11} />
+                ) : (
+                  <Smartphone size={11} />
+                )}
               </span>
             </div>
 

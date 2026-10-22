@@ -16,7 +16,11 @@ export interface SubscriptionCardProps {
   className?: string;
 }
 
-export function SubscriptionCardSkeleton({ className = "" }: { className?: string }) {
+export function SubscriptionCardSkeleton({
+  className = "",
+}: {
+  className?: string;
+}) {
   return (
     <div
       aria-busy="true"
@@ -78,7 +82,9 @@ export function SubscriptionCard({
   // ── Collapsed mode ───────────────────────────────────────────────────────────
   if (collapsed) {
     return (
-      <div className={`mx-2 mb-4 flex justify-center relative group/collapsed ${className}`}>
+      <div
+        className={`mx-2 mb-4 flex justify-center relative group/collapsed ${className}`}
+      >
         <button
           type="button"
           onClick={onManage}
@@ -127,7 +133,10 @@ export function SubscriptionCard({
     pulseDot = false;
   }
 
-  const isUrgentOrExpired = info.state === "urgent" || info.state === "expired" || info.state === "none";
+  const isUrgentOrExpired =
+    info.state === "urgent" ||
+    info.state === "expired" ||
+    info.state === "none";
 
   return (
     <section
@@ -159,12 +168,18 @@ export function SubscriptionCard({
         </div>
 
         {/* Status: small dot + text, NO pill background */}
-        <div className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium ${statusTextColor}`}>
+        <div
+          className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium ${statusTextColor}`}
+        >
           <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
             {pulseDot && (
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusDotColor}`} />
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${statusDotColor}`}
+              />
             )}
-            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${statusDotColor}`} />
+            <span
+              className={`relative inline-flex rounded-full h-1.5 w-1.5 ${statusDotColor}`}
+            />
           </span>
           <span>{info.statusLabel}</span>
         </div>
@@ -212,7 +227,12 @@ export function SubscriptionCard({
             <dd className="text-sm font-semibold text-white tabular-nums">
               {info.isUnlimited ? (
                 <span className="flex items-center gap-1.5">
-                  <Infinity size={15} strokeWidth={2.2} className="text-white/80 shrink-0" aria-hidden="true" />
+                  <Infinity
+                    size={15}
+                    strokeWidth={2.2}
+                    className="text-white/80 shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>Unlimited</span>
                 </span>
               ) : (
@@ -234,9 +254,7 @@ export function SubscriptionCard({
         <dl className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-0.5 min-w-0">
             <dt className="text-[11px] font-medium text-white/55">Downloads</dt>
-            <dd className="text-sm font-semibold text-white">
-              Unlimited
-            </dd>
+            <dd className="text-sm font-semibold text-white">Unlimited</dd>
           </div>
 
           <div className="flex flex-col gap-0.5 min-w-0">
