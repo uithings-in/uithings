@@ -11,7 +11,7 @@ import type { PaginatedComponentResponse, ComponentItem } from "../../lib/types"
 import Navbar from "../../components/landing/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { SubscriptionCard, SubscriptionCardSkeleton } from "../../components/sidebar/SubscriptionCard";
-import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Layers, Search, SquarePen, Moon, Sun, ChevronRight, Sparkles, Clock } from "lucide-react";
+import { Scaling, Frame, Copy, ArrowDownToLine, Crown, Heart, Search, SquarePen, Moon, Sun, ChevronRight, Sparkles, Clock } from "lucide-react";
 
 // ── icons (inline SVGs to avoid extra deps) ──────────────────────────────────
 function IconGrid() {
@@ -259,9 +259,6 @@ function PreviewModal({
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 shrink-0 border-b border-gray-100/80 w-full">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
-            <div className="text-[#238B45] w-5 h-5 flex items-center justify-center shrink-0">
-              <Layers size={18} strokeWidth={2.25} />
-            </div>
             <span className="font-bold text-[0.88rem] sm:text-[0.95rem] text-gray-900 tracking-tight truncate">
               {item.name}
             </span>
@@ -1035,21 +1032,22 @@ export default function ComponentsClient({
         <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-sans h-full self-start">
 
           {/* Plan / Subscription Summary Card */}
-          {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
-            <SubscriptionCardSkeleton />
-          ) : (
-            <SubscriptionCard
-              subscription={isProUser ? activeSubscription : null}
-              onManage={() => setPricingModalOpen(true)}
-            />
-          )}
+          <div className="min-h-[267px] shrink-0">
+            {(!isInitialized || (!!user && isSubLoading && subscriptionData === undefined) || (isProUser && isCurrentSubLoading && currentSubscription === undefined)) ? (
+              <SubscriptionCardSkeleton />
+            ) : (
+              <SubscriptionCard
+                subscription={isProUser ? activeSubscription : null}
+                onManage={() => setPricingModalOpen(true)}
+              />
+            )}
+          </div>
 
           {/* Components section (Fixed in Position) */}
           <div className="px-6 flex items-center gap-2 mb-3 shrink-0">
-            <span className="text-[#d66a04]"><Layers size={20} strokeWidth={2.25} /></span>
             <span className="font-bold text-white text-[15px]">Components</span>
             <span className="ml-auto text-[0.65rem] font-bold bg-[#e5e7eb] text-[#4a5565] px-2 py-0.5 rounded">
-              {total}
+              {total > 0 ? `${total}+` : total}
             </span>
           </div>
 

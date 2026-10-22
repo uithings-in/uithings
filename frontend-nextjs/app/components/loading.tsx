@@ -49,10 +49,47 @@ export default function ComponentsLoading() {
 
         {/* Left Sidebar Skeleton */}
         <aside className="relative z-10 hidden lg:flex flex-col w-[260px] shrink-0 bg-transparent pt-4 font-manrope h-full self-start">
-          <div className="mx-4 mb-6 shrink-0 rounded-2xl border border-white/30 bg-white/10 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-            <div className="flex flex-col items-center justify-center py-3 gap-3 animate-pulse">
-              <div className="h-6 w-6 rounded-full bg-white/20" />
-              <div className="h-3 w-20 rounded bg-white/20" />
+          <div className="min-h-[267px] shrink-0">
+            <div
+              aria-busy="true"
+              aria-label="Loading subscription details"
+              className="mx-3 sm:mx-4 mb-6 shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 shadow-[0_1px_2px_rgba(0,0,0,0.2)] font-sans animate-pulse h-[243px] flex flex-col justify-between"
+            >
+              {/* Header skeleton */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="h-7 w-7 rounded-full bg-white/10 shrink-0" />
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="h-3.5 w-24 bg-white/20 rounded" />
+                    <div className="h-3 w-16 bg-white/10 rounded" />
+                  </div>
+                </div>
+                <div className="h-3.5 w-14 bg-white/15 rounded shrink-0" />
+              </div>
+
+              {/* Hero headline skeleton */}
+              <div className="mt-3 space-y-1.5">
+                <div className="h-4 w-40 bg-white/20 rounded" />
+                <div className="h-3.5 w-44 bg-white/10 rounded" />
+              </div>
+
+              {/* Hairline divider */}
+              <div className="my-3.5 border-t border-white/[0.08]" />
+
+              {/* Stats skeleton */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <div className="h-3 w-16 bg-white/10 rounded" />
+                  <div className="h-4 w-16 bg-white/20 rounded" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="h-3 w-12 bg-white/10 rounded" />
+                  <div className="h-4 w-10 bg-white/20 rounded" />
+                </div>
+              </div>
+
+              {/* Button skeleton */}
+              <div className="mt-3.5 h-10 w-full rounded-xl border border-white/[0.14] bg-transparent shrink-0" />
             </div>
           </div>
 
