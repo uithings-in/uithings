@@ -191,11 +191,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full transition-colors duration-200 ${
-        hasBackground
+      className={`landing-nav fixed top-0 left-0 right-0 z-50 h-[60px] w-full transition-colors duration-200 ${hasBackground
           ? "bg-[#05050A]/90 backdrop-blur-xl shadow-lg is-scrolled"
           : "bg-transparent"
-      }`}
+        }`}
     >
       {isComponentsPage ? (
         /* Full-width, edge-to-edge transparent layout on /components */
