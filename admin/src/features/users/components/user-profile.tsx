@@ -565,13 +565,6 @@ export function UserProfile() {
                   : 'border-border/70 bg-card hover:border-border'
               )}
             >
-              {isFeatured && (
-                <div className='absolute top-0 right-0'>
-                  <span className='inline-flex items-center gap-1 bg-amber-500 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-bl-lg shadow-sm'>
-                    <Sparkles className='h-2.5 w-2.5' /> POPULAR
-                  </span>
-                </div>
-              )}
 
               <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
                 <div className='space-y-1'>
