@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -33,8 +33,13 @@ interface AddComponentPageProps {
 export function AddComponentView({ onSuccess, onCancel }: AddComponentPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const allowPro = user?.role === "admin";
+  const { user, refetchUser } = useAuth();
+  const allowPro = user?.role === "admin" || !!user?.canUploadPro;
+
+  // Refresh user permissions from backend on mount
+  useEffect(() => {
+    refetchUser?.();
+  }, [refetchUser]);
 
   const {
     values,

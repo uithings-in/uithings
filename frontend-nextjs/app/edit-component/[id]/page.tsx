@@ -135,7 +135,7 @@ export default function EditComponentPage({ params }: { params: Promise<{ id: st
       currentPreviewImageUrl={componentData.previewImageUrl}
       status={status}
       isSubmitting={updateComponentMutation.isPending}
-      allowPro
+      allowPro={user?.role === "admin" || !!user?.canUploadPro}
       onClose={() => router.back()}
       onSubmit={handleSubmit}
     />

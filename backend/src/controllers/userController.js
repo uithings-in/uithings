@@ -27,6 +27,7 @@ const getUsers = asyncHandler(async (req, res) => {
       profilePicture: user.profilePicture || "",
       role: user.role || "user",
       isProUser: !!user.isProUser,
+      canUploadPro: !!user.canUploadPro,
       activeSubscription: user.activeSubscription,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -63,6 +64,7 @@ const getUserById = asyncHandler(async (req, res) => {
       profilePicture: user.profilePicture || "",
       role: user.role || "user",
       isProUser: !!user.isProUser,
+      canUploadPro: !!user.canUploadPro,
       activeSubscription: user.activeSubscription,
       uploadedComponentsCount,
       createdAt: user.createdAt,
@@ -82,12 +84,13 @@ const updateUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
-  const { name, role, status, isProUser } = req.body;
+  const { name, role, status, isProUser, canUploadPro } = req.body;
 
   if (name !== undefined) user.name = name.trim();
   if (role !== undefined) user.role = role;
   if (status !== undefined) user.status = status;
   if (isProUser !== undefined) user.isProUser = Boolean(isProUser);
+  if (canUploadPro !== undefined) user.canUploadPro = Boolean(canUploadPro);
 
   await user.save();
 
@@ -104,6 +107,7 @@ const updateUser = asyncHandler(async (req, res) => {
       profilePicture: user.profilePicture || "",
       role: user.role,
       isProUser: !!user.isProUser,
+      canUploadPro: !!user.canUploadPro,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     },

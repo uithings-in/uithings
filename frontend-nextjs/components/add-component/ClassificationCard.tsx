@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import {
   SlidersHorizontal,
   Layout,
@@ -11,7 +10,6 @@ import {
   Crown,
   Sparkles,
   Lock,
-  ArrowUpRight,
 } from "lucide-react";
 import type { DesignType, PlatformTag, PricingType } from "./types";
 
@@ -121,13 +119,9 @@ export function ClassificationCard({
               Access Level
             </label>
             {!allowPro && (
-              <Link
-                href="/dashboard?page=plans-billing"
-                className="text-[10px] font-medium text-[#EA580C] dark:text-[#FB923C] hover:underline inline-flex items-center gap-0.5"
-              >
-                <span>Upgrade</span>
-                <ArrowUpRight size={9} />
-              </Link>
+              <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                Admin approval required
+              </span>
             )}
           </div>
 
@@ -144,12 +138,12 @@ export function ClassificationCard({
               <span>Free</span>
             </button>
 
-            {/* Pro Option (disabled if user is on free tier) */}
+            {/* Pro Option (disabled if user is not authorized to upload Pro) */}
             <button
               type="button"
               disabled={!allowPro}
               onClick={() => allowPro && onPricingTypeChange("Pro")}
-              title={!allowPro ? "Upgrade to Pro to publish premium components" : undefined}
+              title={!allowPro ? "Only admin can activate Pro component uploads for your account" : undefined}
               className={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all ${!allowPro
                   ? "opacity-50 cursor-not-allowed text-gray-400 dark:text-[#71717A]"
                   : pricingType === "Pro"

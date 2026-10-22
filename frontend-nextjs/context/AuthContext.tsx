@@ -12,6 +12,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isInitialized: boolean;
+  refetchUser: () => Promise<any>;
   login: (input: { email: string; password: string }) => Promise<void>;
   register: (input: { name: string; email: string; password: string }) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
@@ -26,14 +27,15 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function normalizeUser(user: User): User {
+function normalizeUser(user: any): User {
   return {
-    id: user.id || (user as User & { _id?: string })._id || "",
+    id: user.id || user._id || "",
     name: user.name,
     email: user.email,
     profilePicture: user.profilePicture,
     role: user.role,
-    isProUser: user.isProUser,
+    isProUser: !!user.isProUser,
+    canUploadPro: Boolean(user.canUploadPro),
     subscription: user.subscription,
   };
 }
@@ -100,6 +102,8 @@ export function AuthProvider({
     if (stored && token) {
       queryClient.setQueryData(["auth", "me"], stored);
       setAuthCookies(token, stored);
+      // Immediately invalidate so fresh permissions from backend are loaded
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
     }
   }, [queryClient]);
 
@@ -146,9 +150,15 @@ export function AuthProvider({
     },
     enabled: hasToken,
     initialData: initialUser ? normalizeUser(initialUser) : undefined,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
     retry: false,
   });
+
+  const refetchUser = useCallback(async () => {
+    return authQuery.refetch();
+  }, [authQuery]);
 
   const user = authQuery.data ?? (isMounted ? getStoredUser() : initialUser);
   const loading = isMounted && hasToken ? authQuery.isLoading && !user : false;
@@ -195,6 +205,7 @@ export function AuthProvider({
       user,
       loading,
       isInitialized,
+      refetchUser,
       login,
       register,
       loginWithGoogle,
@@ -210,6 +221,7 @@ export function AuthProvider({
       user,
       loading,
       isInitialized,
+      refetchUser,
       login,
       register,
       loginWithGoogle,

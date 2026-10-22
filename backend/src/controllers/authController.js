@@ -53,6 +53,7 @@ const register = asyncHandler(async (req, res) => {
         profilePicture: user.profilePicture,
         role: user.role,
         isProUser: false,
+        canUploadPro: false,
         subscription: null,
       },
     },
@@ -150,6 +151,7 @@ const login = asyncHandler(async (req, res) => {
         profilePicture: user.profilePicture,
         role: user.role,
         isProUser: isPro,
+        canUploadPro: !!user.canUploadPro,
         subscription: subscriptionData,
       },
     },
@@ -158,7 +160,7 @@ const login = asyncHandler(async (req, res) => {
 
 const me = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.userId)
-    .select("name email profilePicture role isProUser activeSubscription createdAt updatedAt")
+    .select("name email profilePicture role isProUser canUploadPro activeSubscription createdAt updatedAt")
     .populate("activeSubscription");
 
   if (!user) {
@@ -207,6 +209,7 @@ const me = asyncHandler(async (req, res) => {
       profilePicture: user.profilePicture,
       role: user.role,
       isProUser: isPro,
+      canUploadPro: !!user.canUploadPro,
       subscription: subscriptionData,
     },
   });
@@ -312,6 +315,7 @@ const googleAuth = asyncHandler(async (req, res) => {
         profilePicture: user.profilePicture,
         role: user.role,
         isProUser: isPro,
+        canUploadPro: !!user.canUploadPro,
         subscription: subscriptionData,
       },
     },

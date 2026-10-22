@@ -18,6 +18,7 @@ export const users: User[] = Array.from({ length: 20 }, () => {
     profilePicture: authProvider === 'google' ? faker.image.avatar() : '',
     role: faker.helpers.arrayElement(['admin', 'user'] as const),
     isProUser: faker.datatype.boolean(),
+    canUploadPro: faker.datatype.boolean(),
     uploadedComponentsCount: faker.number.int({ min: 0, max: 25 }),
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),

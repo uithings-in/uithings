@@ -28,6 +28,7 @@ export const authApi = {
       profilePicture: user.profilePicture,
       role: user.role,
       isProUser: user.isProUser,
+      canUploadPro: user.canUploadPro,
       subscription: user.subscription,
     };
   },

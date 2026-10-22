@@ -12,6 +12,7 @@ const MOCK_USER: User = {
   profilePicture: '',
   role: 'admin',
   isProUser: true,
+  canUploadPro: false,
   uploadedComponentsCount: 5,
   createdAt: new Date('2026-01-01'),
   updatedAt: new Date('2026-02-02'),

@@ -5,6 +5,7 @@ export interface User {
   profilePicture?: string;
   role: "user" | "admin";
   isProUser?: boolean;
+  canUploadPro?: boolean;
   subscription?: {
     status: string;
     endDate: string;

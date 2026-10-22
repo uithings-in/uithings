@@ -446,7 +446,7 @@ export function ComponentEditorModal({
                             type="button"
                             onClick={() => (allowPro || option === "Free" ? setPricingType(option) : undefined)}
                             disabled={!allowPro && option === "Pro"}
-                            title={!allowPro && option === "Pro" ? "Only admins can mark as Pro" : undefined}
+                            title={!allowPro && option === "Pro" ? "Only admins or authorized creators can mark as Pro" : undefined}
                             className={`rounded-md py-1 text-[11px] font-bold flex items-center justify-center gap-1 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
                               pricingType === option
                                 ? "bg-white dark:bg-neutral-700 text-gray-900 dark:text-white shadow-xs"
