@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import CosmicAtmosphere from "./CosmicAtmosphere";
-import WhitePill from "./WhitePill";
 import TypographyMockup from "./TypographyMockup";
 import WireframeMockup from "./WireframeMockup";
 import FullUiMockup from "./FullUiMockup";
@@ -10,43 +8,19 @@ import ResponsiveMockup from "./ResponsiveMockup";
 
 const steps = [
   {
-    badge: "Step - 01",
     icon: "/landing/icon-browse.svg",
     title: "Brows",
-    description: (
-      <>
-        Explore All Components,
-        <br />
-        or All Inspiration
-      </>
-    ),
-    highlighted: false,
+    description: "Explore All Components",
   },
   {
-    badge: "STEP -02",
     icon: "/landing/icon-copy.svg",
     title: "Copy",
-    description: (
-      <>
-        Copy from 100+ designs
-        <br />
-        (50 more coming soon)
-      </>
-    ),
-    highlighted: true,
+    description: "Copy from 100+ designs",
   },
   {
-    badge: "Step  - 03",
     icon: "/landing/icon-paste.svg",
     title: "Paste",
-    description: (
-      <>
-        Paste into your project.{" "}
-        <br />
-        Works best on app virions
-      </>
-    ),
-    highlighted: false,
+    description: "Paste into your project",
   },
 ];
 
@@ -87,9 +61,9 @@ const featureCards: FeatureCardData[] = [
   },
   {
     id: "select-wireframe",
-    pillLabel: "Select Wireframe",
+    pillLabel: "Select Wire-frame",
     headline:
-      "Pick from a curated library of section-based wireframes to quickly map out the structure that fits your project best.",
+      "Pick from a curated library of section-based wire-frames to quickly map out the structure that fits your project best.",
     reverse: true,
     mockup: <WireframeMockup />,
     items: [
@@ -139,7 +113,7 @@ const featureCards: FeatureCardData[] = [
     id: "responsive-default",
     pillLabel: "Responsive by Default",
     headline:
-      "Every component and screen auto-adjusts seamlessly across mobile, tablet, desktop, and ultra-wide displays.",
+      "Transform simple wireframes into polished UI designs by toggling diverse sections and exploring multiple themes.",
     reverse: true,
     mockup: <ResponsiveMockup />,
     items: [
@@ -167,14 +141,18 @@ export default function StackingProcessSection() {
     <section id="process" className="relative pb-10 pt-16 md:pb-14 md:pt-24">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="mx-auto mb-16 max-w-[747px] text-center md:mb-20">
+        <div className="mx-auto mb-16 max-w-[1000px] text-center">
+          <span className="text-base font-medium tracking-wide text-[#8E8EA0]">
+            Step Taken
+          </span>
           <h2
-            className="text-[40px] font-normal leading-[1.15] tracking-[-2.5px] text-[#F7F7FD] sm:text-[56px] sm:leading-[70px] sm:tracking-[-3.36px]"
-            style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+            className="mx-auto mt-4 max-w-[950px] text-4xl font-normal leading-[1.15] tracking-[-2px] text-white sm:text-5xl md:text-[58px] md:leading-[1.12] md:tracking-[-3px] font-heading"
           >
-            Design your dream website in minutes, not weeks.
+            <span className="inline-block sm:whitespace-nowrap">Design your dream website in minutes</span>
+            <br />
+            <span>not weeks</span>
           </h2>
-          <p className="mt-3 text-lg leading-relaxed text-[#FFF8F8] sm:text-xl sm:leading-[25px]">
+          <p className="mt-5 text-sm text-[#8E8EA0] sm:text-base">
             Brand it. Build it. Go live—fully responsive, zero hassle.
           </p>
         </div>
@@ -188,107 +166,214 @@ export default function StackingProcessSection() {
               top: "calc(72px + 0px)",
             }}
           >
-            <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] px-6 py-8 shadow-[0_-12px_30px_rgba(0,0,0,0.6)] sm:px-16 sm:py-10 md:min-h-[583px]">
-              <CosmicAtmosphere />
-              <div className="relative z-10">
-                <div className="mb-10 flex flex-col items-center gap-5 text-center">
-                  <div className="inline-flex items-center justify-center rounded-[99px] border-[3px] border-white bg-white px-3.5 py-1.5">
-                    <span className="text-xl font-semibold leading-[25px] text-black">
-                      Step Taken
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {steps.map((step) => (
+                <div
+                  key={step.title}
+                  className="group relative flex h-[260px] sm:h-[280px] flex-col justify-between overflow-hidden rounded-[20px] border border-white/[0.08] p-7 sm:p-8 shadow-2xl transition-all duration-300 hover:border-white/20"
+                  style={{
+                    background:
+                      "radial-gradient(110% 100% at 8% 8%, rgba(20, 24, 75, 0.95) 0%, rgba(9, 11, 38, 0.98) 55%, #050614 100%)",
+                  }}
+                >
+                  {/* Soft purple/indigo light leak */}
+                  <div className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-[#3b3dbf]/25 blur-3xl" />
+                  <div className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#2a2d78]/30 blur-2xl" />
+
+                  {/* Top Row: Icon aligned on the top right */}
+                  <div className="relative z-10 flex w-full justify-end">
+                    <span className="relative flex size-10 items-center justify-center">
+                      <img
+                        src={step.icon}
+                        alt=""
+                        className="size-9 object-contain opacity-90 transition-opacity duration-200 group-hover:opacity-100"
+                      />
                     </span>
                   </div>
-                  <p className="max-w-2xl text-xl leading-[25px] text-[#F6E9E9]">
-                    Instantly update your project&apos;s look with fresh color palettes and
-                    rapid, seamless branding customization options.
-                  </p>
-                </div>
 
-                <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-3">
-                  {steps.map((step) => (
-                    <div
-                      key={step.title}
-                      className={`relative flex size-[280px] flex-col items-center overflow-hidden rounded-[10px] sm:size-[300px] ${
-                        step.highlighted
-                          ? "bg-[#1E1C5D]"
-                          : "border border-white bg-transparent"
-                      }`}
+                  {/* Bottom Content: Title and Description */}
+                  <div className="relative z-10 flex flex-col items-start">
+                    <h3
+                      className="text-[38px] font-normal leading-[1.1] tracking-[-1.5px] text-white font-heading"
                     >
-                      <div className="mt-6 inline-flex items-center justify-center rounded-[30px] bg-white px-2.5 py-1.5">
-                        <span className="text-sm font-medium leading-[17px] text-black">
-                          {step.badge}
-                        </span>
-                      </div>
-                      <span className="relative mt-4 size-[60px] overflow-hidden">
-                        <img
-                          src={step.icon}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="absolute inset-0 size-full max-w-none"
-                        />
-                      </span>
-                      <h3
-                        className="mt-2 text-[64px] font-normal leading-[80px] tracking-[-3.84px] text-white font-heading"
-                      >
-                        {step.title}
-                      </h3>
-                      <p className="mt-1 text-center text-xl leading-[25px] text-white">
-                        {step.description}
-                      </p>
-                    </div>
-                  ))}
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-sm text-[#84879F]">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* Cards 2-5: Feature Rows */}
+        {/* Text before Components Section */}
+        <div id="components" className="mx-auto mb-12 mt-20 max-w-[900px] text-center md:mb-16 md:mt-28">
+          <h2 className="text-4xl font-normal leading-[1.15] tracking-[-2px] text-white sm:text-5xl md:text-[56px] md:leading-[1.12] md:tracking-[-3px] font-heading">
+            Components that helps to <br />
+            design perfect
+          </h2>
+          <p className="mt-4 text-sm text-[#8E8EA0] sm:text-base">
+            Brand it. Build it. Go live—fully responsive, zero hassle.
+          </p>
+        </div>
+
+        {/* Stacking Cards Container */}
+        <div className="relative flex flex-col gap-16 md:gap-24">
+          {/* Cards: Feature Rows */}
           {featureCards.map((card, idx) => {
             const zIndex = 20 + idx * 10;
-            const topOffset = 72 + (idx + 1) * 14;
+            const topOffset = 72 + idx * 14;
+
+            if (card.id === "update-branding") {
+              return (
+                <div
+                  key={card.id}
+                  className="sticky transition-transform duration-200 gpu-accel"
+                  style={{
+                    top: `calc(${topOffset}px)`,
+                    zIndex: zIndex,
+                  }}
+                >
+                  <div
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    style={{
+                      background:
+                        "radial-gradient(120% 120% at 20% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
+                    }}
+                  >
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                      <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
+                        {card.mockup}
+                      </div>
+
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
+                        <div className="w-fit">
+                          <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
+                            {card.pillLabel}
+                          </h3>
+                          <div className="mt-2.5 h-[1.5px] w-full bg-white/20" />
+                        </div>
+                        <p className="mt-6 text-base font-normal leading-relaxed text-[#B4B7C9] sm:text-lg">
+                          {card.headline}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            if (card.id === "select-wireframe") {
+              return (
+                <div
+                  key={card.id}
+                  className="sticky transition-transform duration-200 gpu-accel"
+                  style={{
+                    top: `calc(${topOffset}px)`,
+                    zIndex: zIndex,
+                  }}
+                >
+                  <div
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    style={{
+                      background:
+                        "radial-gradient(120% 120% at 80% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
+                    }}
+                  >
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
+                        <div className="w-fit">
+                          <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
+                            {card.pillLabel}
+                          </h3>
+                          <div className="mt-2.5 h-[1.5px] w-full bg-white/20" />
+                        </div>
+                        <p className="mt-6 text-base font-normal leading-relaxed text-[#B4B7C9] sm:text-lg">
+                          {card.headline}
+                        </p>
+                      </div>
+
+                      <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
+                        {card.mockup}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            if (card.id === "upgrade-ui") {
+              return (
+                <div
+                  key={card.id}
+                  className="sticky transition-transform duration-200 gpu-accel"
+                  style={{
+                    top: `calc(${topOffset}px)`,
+                    zIndex: zIndex,
+                  }}
+                >
+                  <div
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    style={{
+                      background:
+                        "radial-gradient(120% 120% at 20% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
+                    }}
+                  >
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                      <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
+                        {card.mockup}
+                      </div>
+
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
+                        <div className="w-fit">
+                          <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
+                            {card.pillLabel}
+                          </h3>
+                          <div className="mt-2.5 h-[1.5px] w-full bg-white/20" />
+                        </div>
+                        <p className="mt-6 text-base font-normal leading-relaxed text-[#B4B7C9] sm:text-lg">
+                          {card.headline}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
 
             return (
               <div
                 key={card.id}
-                id={idx === 0 ? "components" : undefined}
                 className="sticky transition-transform duration-200 gpu-accel"
                 style={{
                   top: `calc(${topOffset}px)`,
                   zIndex: zIndex,
                 }}
               >
-                <div className="relative overflow-hidden rounded-[20px] border-2 border-[rgba(250,250,250,0.12)] bg-[#07071d] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[583px]">
-                  <CosmicAtmosphere />
-                  <div className="relative z-10">
-                    <div
-                      className={`flex flex-col items-center gap-10 px-6 py-10 sm:px-11 lg:flex-row lg:items-end lg:gap-[74px] ${
-                        card.reverse ? "lg:flex-row-reverse" : ""
-                      }`}
-                    >
-                      <div className="w-full shrink-0 overflow-hidden rounded-2xl border-2 border-white lg:h-[366px] lg:w-[528px]">
-                        {card.mockup}
+                <div
+                  className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                  style={{
+                    background:
+                      "radial-gradient(120% 120% at 80% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
+                  }}
+                >
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                    <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
+                      <div className="w-fit">
+                        <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
+                          {card.pillLabel}
+                        </h3>
+                        <div className="mt-2.5 h-[1.5px] w-full bg-white/20" />
                       </div>
+                      <p className="mt-6 text-base font-normal leading-relaxed text-[#B4B7C9] sm:text-lg">
+                        {card.headline}
+                      </p>
+                    </div>
 
-                      <div className="flex w-full max-w-[423px] flex-col items-start gap-6">
-                        <div className="flex w-full flex-col items-start gap-9">
-                          <WhitePill>{card.pillLabel}</WhitePill>
-                          <p className="w-full text-justify text-xl font-normal leading-[25px] text-[#FFF8F8]">
-                            {card.headline}
-                          </p>
-                        </div>
-
-                        <div className="relative flex w-full gap-5">
-                          <div className="relative h-[78px] w-[2.5px] shrink-0 bg-gradient-to-b from-[#4343D5] via-white/40 to-transparent" />
-                          <div className="flex flex-col gap-4 text-sm leading-[17px] text-[#B8B8B8]">
-                            {card.items.map((item) => (
-                              <div key={item.title}>
-                                <p className="font-bold text-[#B8B8B8]">{item.title}</p>
-                                <p className="font-medium">{item.description}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
+                      {card.mockup}
                     </div>
                   </div>
                 </div>

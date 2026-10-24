@@ -4,8 +4,17 @@ import React, { useState } from "react";
 import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import StarField from "./StarField";
+import { cn } from "@/lib/utils";
 
-export default function CtaAndFooterSection() {
+interface CtaAndFooterSectionProps {
+  className?: string;
+  blendTop?: boolean;
+}
+
+export default function CtaAndFooterSection({
+  className,
+  blendTop = false,
+}: CtaAndFooterSectionProps = {}) {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
@@ -25,7 +34,13 @@ export default function CtaAndFooterSection() {
   return (
     <section
       id="cta"
-      className="relative overflow-hidden bg-[#070416] pt-20 pb-12 sm:pt-28 text-[#F7F7FD]"
+      className={cn(
+        "relative overflow-hidden text-[#F7F7FD]",
+        blendTop
+          ? "bg-transparent pt-8 sm:pt-12 pb-12"
+          : "bg-[#070416] pt-20 pb-12 sm:pt-28",
+        className,
+      )}
     >
       {/* Background Radial Glow */}
       <div

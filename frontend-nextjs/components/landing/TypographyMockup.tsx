@@ -1,15 +1,16 @@
+import React from "react";
+import Image from "next/image";
+
 export default function TypographyMockup() {
   return (
-    <div className="relative h-full min-h-[280px] w-full overflow-hidden bg-[#07071d] lg:h-[366px]">
-      <img
-        src="/landing/mockup-branding.png"
-        alt="Typography anatomy diagram"
-        className="absolute inset-0 size-full object-cover"
-      />
-      <img
-        src="/landing/mockup-swatches.png"
-        alt=""
-        className="absolute left-6 top-4 h-[51px] w-[145px] object-cover"
+    <div className="relative flex size-full items-center justify-center overflow-hidden">
+      <Image
+        src="/landing/update-branding.svg"
+        alt="Update Branding"
+        width={467}
+        height={299}
+        className="w-full max-w-[560px] h-auto object-contain drop-shadow-2xl"
+        priority
       />
     </div>
   );
