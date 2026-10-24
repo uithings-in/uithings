@@ -42,7 +42,7 @@ const DEFAULT_LANDING_PLANS = [
     planKey: "pro_starter",
     name: "Basic Plan",
     pricePrefix: "₹",
-    price: "99",
+    price: "10",
     period: "per user / 180 days",
     description: "Perfect for testing and light creative needs.",
     features: [
