@@ -1,10 +1,16 @@
+import React from "react";
+import Image from "next/image";
+
 export default function WireframeMockup() {
   return (
-    <div className="relative h-full min-h-[280px] w-full overflow-hidden bg-[#07071d] lg:h-[366px]">
-      <img
-        src="/landing/mockup-wireframe-2.png"
-        alt="Section-based wireframe screens"
-        className="absolute inset-0 size-full object-cover"
+    <div className="relative flex size-full items-center justify-center overflow-hidden">
+      <Image
+        src="/landing/wire-frame.svg"
+        alt="Select Wire-frame"
+        width={518}
+        height={321}
+        className="w-full max-w-[580px] h-auto object-contain drop-shadow-2xl"
+        priority
       />
     </div>
   );

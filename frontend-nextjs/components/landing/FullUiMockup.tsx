@@ -1,10 +1,16 @@
+import React from "react";
+import Image from "next/image";
+
 export default function FullUiMockup() {
   return (
-    <div className="relative h-full min-h-[280px] w-full overflow-hidden bg-[#07071d] lg:h-[366px]">
-      <img
-        src="/landing/mockup-fullui.png"
-        alt="Polished mobile UI screens"
-        className="absolute inset-0 size-full object-cover object-center"
+    <div className="relative flex size-full items-center justify-center overflow-hidden">
+      <Image
+        src="/landing/full-ui.svg"
+        alt="Upgrade to Full UI"
+        width={505}
+        height={274}
+        className="w-full max-w-[580px] h-auto object-contain drop-shadow-2xl"
+        priority
       />
     </div>
   );

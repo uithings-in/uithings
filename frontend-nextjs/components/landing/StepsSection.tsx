@@ -1,110 +1,84 @@
 import React from "react";
-import { CosmicPanel } from "./CosmicAtmosphere";
 
 const steps = [
   {
-    badge: "Step - 01",
     icon: "/landing/icon-browse.svg",
     title: "Brows",
-    description: (
-      <>
-        Explore All Components,
-        <br />
-        or All Inspiration
-      </>
-    ),
-    highlighted: false,
+    description: "Explore All Components",
   },
   {
-    badge: "STEP -02",
     icon: "/landing/icon-copy.svg",
     title: "Copy",
-    description: (
-      <>
-        Copy from 100+ designs
-        <br />
-        (50 more coming soon)
-      </>
-    ),
-    highlighted: true,
+    description: "Copy from 100+ designs",
   },
   {
-    badge: "Step  - 03",
     icon: "/landing/icon-paste.svg",
     title: "Paste",
-    description: (
-      <>
-        Paste into your project.{" "}
-        <br />
-        Works best on app virions
-      </>
-    ),
-    highlighted: false,
+    description: "Paste into your project",
   },
 ];
 
 export default function StepsSection() {
   return (
-    <section id="process" className="relative overflow-hidden py-16 md:py-24">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-12 max-w-[747px] text-center">
+    <section id="process" className="relative overflow-hidden bg-black py-16 md:py-24">
+      <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mx-auto mb-16 max-w-[1000px] text-center">
+          <span className="text-base font-medium tracking-wide text-[#8E8EA0]">
+            Step Taken
+          </span>
           <h2
-            className="text-[40px] font-normal leading-[70px] tracking-[-3.36px] text-[#F7F7FD] sm:text-[56px]"
-            style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+            className="mx-auto mt-4 max-w-[950px] text-4xl font-normal leading-[1.15] tracking-[-2px] text-white sm:text-5xl md:text-[58px] md:leading-[1.12] md:tracking-[-3px] font-heading"
           >
-            Design your dream website in minutes, not weeks.
+            <span className="inline-block sm:whitespace-nowrap">Design your dream website in minutes</span>
+            <br />
+            <span>not weeks</span>
           </h2>
-          <p className="mt-3 text-xl leading-[25px] text-[#FFF8F8]">
+          <p className="mt-5 text-sm text-[#8E8EA0] sm:text-base">
             Brand it. Build it. Go live—fully responsive, zero hassle.
           </p>
         </div>
 
-        <CosmicPanel className="min-h-[583px] px-6 py-8 sm:px-16 sm:py-10">
-          <div className="mb-10 flex flex-col items-center gap-5 text-center">
-            <div className="inline-flex items-center justify-center rounded-[99px] border-[3px] border-white bg-white px-3.5 py-1.5">
-              <span className="text-xl leading-[25px] text-black">Step Taken</span>
-            </div>
-            <p className="max-w-2xl text-xl leading-[25px] text-[#F6E9E9]">
-              Instantly update your project&apos;s look with fresh color palettes and
-              rapid, seamless branding customization options.
-            </p>
-          </div>
+        {/* 3 Steps Cards */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {steps.map((step) => (
+            <div
+              key={step.title}
+              className="group relative flex h-[260px] sm:h-[280px] flex-col justify-between overflow-hidden rounded-[20px] border border-white/[0.08] p-7 sm:p-8 shadow-2xl transition-all duration-300 hover:border-white/20"
+              style={{
+                background:
+                  "radial-gradient(110% 100% at 8% 8%, rgba(20, 24, 75, 0.95) 0%, rgba(9, 11, 38, 0.98) 55%, #050614 100%)",
+              }}
+            >
+              {/* Soft purple/indigo light leak */}
+              <div className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-[#3b3dbf]/25 blur-3xl" />
+              <div className="pointer-events-none absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#2a2d78]/30 blur-2xl" />
 
-          <div className="grid grid-cols-1 justify-items-center gap-6 md:grid-cols-3">
-            {steps.map((step) => (
-              <div
-                key={step.title}
-                className={`relative flex size-[300px] flex-col items-center overflow-hidden rounded-[10px] ${
-                  step.highlighted
-                    ? "bg-[#1E1C5D]"
-                    : "border border-white bg-transparent"
-                }`}
-              >
-                <div className="mt-6 inline-flex items-center justify-center rounded-[30px] bg-white px-2.5 py-1.5">
-                  <span className="text-sm font-medium leading-[17px] text-black">
-                    {step.badge}
-                  </span>
-                </div>
-                <span className="relative mt-4 size-[60px] overflow-hidden">
+              {/* Top Row: Icon aligned on the top right */}
+              <div className="relative z-10 flex w-full justify-end">
+                <span className="relative flex size-10 items-center justify-center">
                   <img
                     src={step.icon}
                     alt=""
-                    className="absolute inset-0 size-full max-w-none"
+                    className="size-9 object-contain opacity-90 transition-opacity duration-200 group-hover:opacity-100"
                   />
                 </span>
+              </div>
+
+              {/* Bottom Content: Title and Description */}
+              <div className="relative z-10 flex flex-col items-start">
                 <h3
-                  className="mt-2 text-[64px] font-normal leading-[80px] tracking-[-3.84px] text-white"
-                  style={{ fontFamily: "'Bricolage Grotesque', sans-serif" }}
+                  className="text-[38px] font-normal leading-[1.1] tracking-[-1.5px] text-white font-heading"
                 >
                   {step.title}
                 </h3>
-                <p className="mt-1 text-center text-xl leading-[25px] text-white">
+                <p className="mt-3 text-sm text-[#84879F]">
                   {step.description}
                 </p>
               </div>
-            ))}
-          </div>
-        </CosmicPanel>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
