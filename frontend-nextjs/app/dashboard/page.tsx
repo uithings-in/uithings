@@ -2568,7 +2568,7 @@ function DashboardContent() {
       <aside className="w-full md:w-[250px] lg:w-[260px] bg-[#FDFDFE] dark:bg-[#08080A] border-r border-gray-200/90 dark:border-white/[0.08] p-4 flex flex-col justify-between shrink-0 select-none md:h-full overflow-y-auto">
         <div>
           {/* Brand Logo & Name */}
-          <div className="flex items-center justify-between gap-2.5 pb-4 mb-3 border-b border-gray-100 dark:border-white/[0.08]">
+          <div className="flex items-center pb-4 mb-3 border-b border-gray-100 dark:border-white/[0.08]">
             <Link
               href="/"
               className="flex items-center gap-2 hover:opacity-85 transition"
@@ -2580,10 +2580,6 @@ function DashboardContent() {
                 className={`h-7 w-auto object-contain transition ${isDarkMode ? "invert-0" : "invert"}`}
               />
             </Link>
-            <ChevronDown
-              size={14}
-              className="text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
-            />
           </div>
 
           {/* SALES OPERATIONS & INSIGHTS NAV WITH SMOOTH PILL SWIPE ANIMATION */}

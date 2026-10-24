@@ -52,14 +52,17 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const [figmaDataBase64, setFigmaPayloadState] = useState("");
   const [previewFile, setPreviewFileState] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [darkPreviewFile, setDarkPreviewFileState] = useState<File | null>(
-    null,
-  );
-  const [darkPreviewUrl, setDarkPreviewUrl] = useState<string>("");
   const [lightPreviewFile, setLightPreviewFileState] = useState<File | null>(
     null,
   );
   const [lightPreviewUrl, setLightPreviewUrl] = useState<string>("");
+  const [darkPreviewFile, setDarkPreviewFileState] = useState<File | null>(
+    null,
+  );
+  const [darkPreviewUrl, setDarkPreviewUrl] = useState<string>("");
+  const [wireframePreviewFile, setWireframePreviewFileState] =
+    useState<File | null>(null);
+  const [wireframePreviewUrl, setWireframePreviewUrl] = useState<string>("");
   const [designType, setDesignTypeState] = useState<DesignType>(
     initialClassification.designType,
   );
@@ -95,6 +98,17 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setIsDraftLoaded(true);
   }, [allowPro]);
 
+  // Object URL cleanup for light mode preview
+  useEffect(() => {
+    if (lightPreviewFile) {
+      const url = URL.createObjectURL(lightPreviewFile);
+      setLightPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setLightPreviewUrl("");
+    }
+  }, [lightPreviewFile]);
+
   // Object URL cleanup for dark mode preview
   useEffect(() => {
     if (darkPreviewFile) {
@@ -106,16 +120,16 @@ export function useAddComponentForm(allowPro: boolean = false) {
     }
   }, [darkPreviewFile]);
 
-  // Object URL cleanup for light mode preview
+  // Object URL cleanup for wireframe preview
   useEffect(() => {
-    if (lightPreviewFile) {
-      const url = URL.createObjectURL(lightPreviewFile);
-      setLightPreviewUrl(url);
+    if (wireframePreviewFile) {
+      const url = URL.createObjectURL(wireframePreviewFile);
+      setWireframePreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     } else {
-      setLightPreviewUrl("");
+      setWireframePreviewUrl("");
     }
-  }, [lightPreviewFile]);
+  }, [wireframePreviewFile]);
 
   // Object URL cleanup for legacy/fallback previewFile
   useEffect(() => {
@@ -193,8 +207,9 @@ export function useAddComponentForm(allowPro: boolean = false) {
       description.trim() ||
       tags.length ||
       figmaDataBase64 ||
-      darkPreviewFile ||
       lightPreviewFile ||
+      darkPreviewFile ||
+      wireframePreviewFile ||
       previewFile,
     );
   }, [
@@ -202,8 +217,9 @@ export function useAddComponentForm(allowPro: boolean = false) {
     description,
     tags,
     figmaDataBase64,
-    darkPreviewFile,
     lightPreviewFile,
+    darkPreviewFile,
+    wireframePreviewFile,
     previewFile,
   ]);
 
@@ -267,18 +283,6 @@ export function useAddComponentForm(allowPro: boolean = false) {
     [name],
   );
 
-  const setDarkPreviewFile = useCallback(
-    (file: File | null) => {
-      setDarkPreviewFileState(file);
-      if (!file) {
-        setDarkPreviewUrl("");
-      } else {
-        suggestNameFromFile(file);
-      }
-    },
-    [suggestNameFromFile],
-  );
-
   const setLightPreviewFile = useCallback(
     (file: File | null) => {
       setLightPreviewFileState(file);
@@ -291,16 +295,40 @@ export function useAddComponentForm(allowPro: boolean = false) {
     [suggestNameFromFile],
   );
 
+  const setDarkPreviewFile = useCallback(
+    (file: File | null) => {
+      setDarkPreviewFileState(file);
+      if (!file) {
+        setDarkPreviewUrl("");
+      } else {
+        suggestNameFromFile(file);
+      }
+    },
+    [suggestNameFromFile],
+  );
+
+  const setWireframePreviewFile = useCallback(
+    (file: File | null) => {
+      setWireframePreviewFileState(file);
+      if (!file) {
+        setWireframePreviewUrl("");
+      } else {
+        suggestNameFromFile(file);
+      }
+    },
+    [suggestNameFromFile],
+  );
+
   // Set preview file + auto-suggest component name from filename if name is empty (legacy/generic)
   const setPreviewFile = useCallback(
     (file: File | null) => {
       setPreviewFileState(file);
-      if (!darkPreviewFile) {
-        setDarkPreviewFileState(file);
+      if (!lightPreviewFile && !darkPreviewFile) {
+        setLightPreviewFileState(file);
       }
       suggestNameFromFile(file);
     },
-    [darkPreviewFile, suggestNameFromFile],
+    [lightPreviewFile, darkPreviewFile, suggestNameFromFile],
   );
 
   const markTouched = useCallback((field: string) => {
@@ -308,7 +336,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
   }, []);
 
   const hasAnyPreview = Boolean(
-    darkPreviewFile || lightPreviewFile || previewFile,
+    lightPreviewFile || darkPreviewFile || wireframePreviewFile || previewFile,
   );
 
   // Validation
@@ -322,10 +350,13 @@ export function useAddComponentForm(allowPro: boolean = false) {
     }
     if (touched.previewFile && !hasAnyPreview) {
       errs.previewFile =
-        "At least one preview screenshot (Dark or Light) is required.";
+        "At least one preview screenshot (Light, Dark, or Wireframe) is required.";
+    }
+    if (touched.designType && !designType) {
+      errs.designType = "Please select at least one design type.";
     }
     return errs;
-  }, [name, figmaDataBase64, hasAnyPreview, touched]);
+  }, [name, figmaDataBase64, hasAnyPreview, designType, touched]);
 
   // Missing required list for tooltip/hints
   const missingFields = useMemo(() => {
@@ -333,8 +364,9 @@ export function useAddComponentForm(allowPro: boolean = false) {
     if (!figmaDataBase64.trim()) missing.push("Figma Asset Payload");
     if (!hasAnyPreview) missing.push("Preview Screenshot");
     if (!name.trim()) missing.push("Component Name");
+    if (!designType) missing.push("Design Type");
     return missing;
-  }, [figmaDataBase64, hasAnyPreview, name]);
+  }, [figmaDataBase64, hasAnyPreview, name, designType]);
 
   const canPublish = missingFields.length === 0;
 
@@ -362,11 +394,11 @@ export function useAddComponentForm(allowPro: boolean = false) {
       {
         id: "classification",
         label: "Classification & tags configured",
-        completed: Boolean(tags.length > 0),
+        completed: Boolean(tags.length > 0 && designType),
         required: false,
       },
     ];
-  }, [figmaDataBase64, hasAnyPreview, name, tags]);
+  }, [figmaDataBase64, hasAnyPreview, name, tags, designType]);
 
   const completedCount = checklist.filter((item) => item.completed).length;
 
@@ -380,17 +412,20 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setFigmaPayloadState("");
     setPreviewFileState(null);
     setPreviewUrl("");
-    setDarkPreviewFileState(null);
-    setDarkPreviewUrl("");
     setLightPreviewFileState(null);
     setLightPreviewUrl("");
+    setDarkPreviewFileState(null);
+    setDarkPreviewUrl("");
+    setWireframePreviewFileState(null);
+    setWireframePreviewUrl("");
     setTouched({});
     setLastSavedTime(null);
   }, []);
 
   const effectivePreviewFile =
-    darkPreviewFile || lightPreviewFile || previewFile;
-  const effectivePreviewUrl = darkPreviewUrl || lightPreviewUrl || previewUrl;
+    lightPreviewFile || darkPreviewFile || wireframePreviewFile || previewFile;
+  const effectivePreviewUrl =
+    lightPreviewUrl || darkPreviewUrl || wireframePreviewUrl || previewUrl;
 
   const values: ComponentFormValues = {
     name,
@@ -399,10 +434,12 @@ export function useAddComponentForm(allowPro: boolean = false) {
     figmaDataBase64,
     previewFile: effectivePreviewFile,
     previewUrl: effectivePreviewUrl,
-    darkPreviewFile,
-    darkPreviewUrl,
     lightPreviewFile,
     lightPreviewUrl,
+    darkPreviewFile,
+    darkPreviewUrl,
+    wireframePreviewFile,
+    wireframePreviewUrl,
     designType,
     pricingType,
     platformTag,
@@ -415,8 +452,9 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setTags,
     setFigmaPayload,
     setPreviewFile,
-    setDarkPreviewFile,
     setLightPreviewFile,
+    setDarkPreviewFile,
+    setWireframePreviewFile,
     setDesignType,
     setPricingType,
     setPlatformTag,

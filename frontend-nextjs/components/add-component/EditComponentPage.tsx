@@ -89,10 +89,12 @@ export function EditComponentView({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [figmaDataBase64, setFigmaPayload] = useState("");
-  const [darkPreviewFile, setDarkPreviewFile] = useState<File | null>(null);
-  const [darkPreviewUrl, setDarkPreviewUrl] = useState("");
   const [lightPreviewFile, setLightPreviewFile] = useState<File | null>(null);
   const [lightPreviewUrl, setLightPreviewUrl] = useState("");
+  const [darkPreviewFile, setDarkPreviewFile] = useState<File | null>(null);
+  const [darkPreviewUrl, setDarkPreviewUrl] = useState("");
+  const [wireframePreviewFile, setWireframePreviewFile] = useState<File | null>(null);
+  const [wireframePreviewUrl, setWireframePreviewUrl] = useState("");
   const [designType, setDesignType] = useState<DesignType>("UI Design");
   const [pricingType, setPricingType] = useState<PricingType>("Free");
   const [platformTag, setPlatformTag] = useState<PlatformTag>("web");
@@ -119,16 +121,19 @@ export function EditComponentView({
 
     setFigmaPayload(component.figmaDataBase64 || "");
 
-    const darkImg =
-      component.darkPreviewImageUrl || component.previewImageUrl || "";
     const lightImg =
       component.lightPreviewImageUrl || component.previewImageUrl || "";
-    setDarkPreviewUrl(darkImg);
+    const darkImg =
+      component.darkPreviewImageUrl || component.previewImageUrl || "";
+    const wireframeImg = component.wireframePreviewImageUrl || "";
     setLightPreviewUrl(lightImg);
+    setDarkPreviewUrl(darkImg);
+    setWireframePreviewUrl(wireframeImg);
 
     if (
       component.designType === "Wireframe" ||
-      component.designType === "UI Design"
+      component.designType === "UI Design" ||
+      component.designType === "Both"
     ) {
       setDesignType(component.designType);
     }
@@ -139,15 +144,6 @@ export function EditComponentView({
     setIsInitialized(true);
   }, [component, isInitialized]);
 
-  // Object URL cleanup for dark mode preview
-  useEffect(() => {
-    if (darkPreviewFile) {
-      const url = URL.createObjectURL(darkPreviewFile);
-      setDarkPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
-    }
-  }, [darkPreviewFile]);
-
   // Object URL cleanup for light mode preview
   useEffect(() => {
     if (lightPreviewFile) {
@@ -157,6 +153,31 @@ export function EditComponentView({
     }
   }, [lightPreviewFile]);
 
+  // Object URL cleanup for dark mode preview
+  useEffect(() => {
+    if (darkPreviewFile) {
+      const url = URL.createObjectURL(darkPreviewFile);
+      setDarkPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [darkPreviewFile]);
+
+  // Object URL cleanup for wireframe preview
+  useEffect(() => {
+    if (wireframePreviewFile) {
+      const url = URL.createObjectURL(wireframePreviewFile);
+      setWireframePreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [wireframePreviewFile]);
+
+  const handleLightFileSelect = (file: File | null) => {
+    setLightPreviewFile(file);
+    if (!file) {
+      setLightPreviewUrl("");
+    }
+  };
+
   const handleDarkFileSelect = (file: File | null) => {
     setDarkPreviewFile(file);
     if (!file) {
@@ -164,10 +185,10 @@ export function EditComponentView({
     }
   };
 
-  const handleLightFileSelect = (file: File | null) => {
-    setLightPreviewFile(file);
+  const handleWireframeFileSelect = (file: File | null) => {
+    setWireframePreviewFile(file);
     if (!file) {
-      setLightPreviewUrl("");
+      setWireframePreviewUrl("");
     }
   };
 
@@ -186,10 +207,12 @@ export function EditComponentView({
     }
     if (
       touched.previewFile &&
-      !darkPreviewUrl &&
       !lightPreviewUrl &&
+      !darkPreviewUrl &&
+      !wireframePreviewUrl &&
+      !lightPreviewFile &&
       !darkPreviewFile &&
-      !lightPreviewFile
+      !wireframePreviewFile
     ) {
       errs.previewFile = "At least one preview screenshot is required.";
     }
@@ -197,10 +220,12 @@ export function EditComponentView({
   }, [
     name,
     figmaDataBase64,
-    darkPreviewUrl,
     lightPreviewUrl,
-    darkPreviewFile,
+    darkPreviewUrl,
+    wireframePreviewUrl,
     lightPreviewFile,
+    darkPreviewFile,
+    wireframePreviewFile,
     touched,
   ]);
 
@@ -208,11 +233,14 @@ export function EditComponentView({
     const missing: string[] = [];
     if (!name.trim()) missing.push("Component name");
     if (!figmaDataBase64.trim()) missing.push("Figma payload");
+    if (!designType) missing.push("Design type");
     if (
-      !darkPreviewUrl &&
       !lightPreviewUrl &&
+      !darkPreviewUrl &&
+      !wireframePreviewUrl &&
+      !lightPreviewFile &&
       !darkPreviewFile &&
-      !lightPreviewFile
+      !wireframePreviewFile
     ) {
       missing.push("Preview screenshot");
     }
@@ -220,10 +248,13 @@ export function EditComponentView({
   }, [
     name,
     figmaDataBase64,
-    darkPreviewUrl,
+    designType,
     lightPreviewUrl,
-    darkPreviewFile,
+    darkPreviewUrl,
+    wireframePreviewUrl,
     lightPreviewFile,
+    darkPreviewFile,
+    wireframePreviewFile,
   ]);
 
   const canPublish = missingFields.length === 0;
@@ -236,11 +267,13 @@ export function EditComponentView({
       tags,
       figmaDataBase64,
       previewFile: null,
-      previewUrl: darkPreviewUrl || lightPreviewUrl,
-      darkPreviewFile,
-      darkPreviewUrl,
+      previewUrl: lightPreviewUrl || darkPreviewUrl || wireframePreviewUrl,
       lightPreviewFile,
       lightPreviewUrl,
+      darkPreviewFile,
+      darkPreviewUrl,
+      wireframePreviewFile,
+      wireframePreviewUrl,
       designType,
       pricingType,
       platformTag,
@@ -250,10 +283,12 @@ export function EditComponentView({
       description,
       tags,
       figmaDataBase64,
-      darkPreviewFile,
-      darkPreviewUrl,
       lightPreviewFile,
       lightPreviewUrl,
+      darkPreviewFile,
+      darkPreviewUrl,
+      wireframePreviewFile,
+      wireframePreviewUrl,
       designType,
       pricingType,
       platformTag,
@@ -273,10 +308,12 @@ export function EditComponentView({
         id: "preview",
         label: "Preview screenshot",
         completed: !!(
-          darkPreviewUrl ||
           lightPreviewUrl ||
+          darkPreviewUrl ||
+          wireframePreviewUrl ||
+          lightPreviewFile ||
           darkPreviewFile ||
-          lightPreviewFile
+          wireframePreviewFile
         ),
         required: true,
       },
@@ -326,10 +363,12 @@ export function EditComponentView({
         throw new Error("Please paste your Figma component payload.");
       }
       if (
-        !darkPreviewUrl &&
         !lightPreviewUrl &&
+        !darkPreviewUrl &&
+        !wireframePreviewUrl &&
+        !lightPreviewFile &&
         !darkPreviewFile &&
-        !lightPreviewFile
+        !wireframePreviewFile
       ) {
         markTouched("previewFile");
         throw new Error("Please upload at least one preview screenshot.");
@@ -339,25 +378,32 @@ export function EditComponentView({
       const uploadPromises: [
         Promise<string | undefined>,
         Promise<string | undefined>,
+        Promise<string | undefined>,
       ] = [
-        darkPreviewFile
-          ? uploadApi.uploadImage(darkPreviewFile)
-          : Promise.resolve(undefined),
         lightPreviewFile
           ? uploadApi.uploadImage(lightPreviewFile)
           : Promise.resolve(undefined),
+        darkPreviewFile
+          ? uploadApi.uploadImage(darkPreviewFile)
+          : Promise.resolve(undefined),
+        wireframePreviewFile
+          ? uploadApi.uploadImage(wireframePreviewFile)
+          : Promise.resolve(undefined),
       ];
 
-      const [uploadedDarkUrl, uploadedLightUrl] =
+      const [uploadedLightUrl, uploadedDarkUrl, uploadedWireframeUrl] =
         await Promise.all(uploadPromises);
 
-      const finalDarkUrl =
-        uploadedDarkUrl ||
-        (darkPreviewUrl.startsWith("blob:") ? "" : darkPreviewUrl);
       const finalLightUrl =
         uploadedLightUrl ||
         (lightPreviewUrl.startsWith("blob:") ? "" : lightPreviewUrl);
-      const finalPreviewUrl = finalDarkUrl || finalLightUrl || "";
+      const finalDarkUrl =
+        uploadedDarkUrl ||
+        (darkPreviewUrl.startsWith("blob:") ? "" : darkPreviewUrl);
+      const finalWireframeUrl =
+        uploadedWireframeUrl ||
+        (wireframePreviewUrl.startsWith("blob:") ? "" : wireframePreviewUrl);
+      const finalPreviewUrl = finalLightUrl || finalDarkUrl || finalWireframeUrl || "";
 
       // 2. Combine tags with platform tag for discoverability
       const cleanTags = Array.from(
@@ -378,10 +424,11 @@ export function EditComponentView({
         description: description.trim(),
         tags: cleanTags,
         previewImageUrl: finalPreviewUrl,
-        darkPreviewImageUrl: finalDarkUrl,
         lightPreviewImageUrl: finalLightUrl,
+        darkPreviewImageUrl: finalDarkUrl,
+        wireframePreviewImageUrl: finalWireframeUrl,
         figmaDataBase64,
-        designType,
+        designType: (designType || "UI Design") as "UI Design" | "Wireframe" | "Both",
         pricingType,
       });
     },
@@ -541,10 +588,10 @@ export function EditComponentView({
         </div>
       )}
 
-      {/* Two-Column Ergonomic Layout (7/5 col split, balanced 20px gap - identical to Add Component) */}
+      {/* Two-Column Ergonomic Layout (8/4 col split, balanced 20px gap - identical to Add Component) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start pb-6">
-        {/* LEFT COLUMN: Assets & Inputs First (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
+        {/* LEFT COLUMN: Assets & Inputs First (8 cols) */}
+        <div className="lg:col-span-8 space-y-4">
           {/* 1. Figma Asset (Required) */}
           <section aria-label="Figma asset paste area">
             <FigmaPayloadZone
@@ -558,12 +605,15 @@ export function EditComponentView({
           {/* 2. Preview Screenshot (Required) */}
           <section aria-label="Preview screenshot upload area">
             <ScreenshotUploader
-              darkPreviewFile={darkPreviewFile}
-              darkPreviewUrl={darkPreviewUrl}
-              onDarkFileSelect={handleDarkFileSelect}
               lightPreviewFile={lightPreviewFile}
               lightPreviewUrl={lightPreviewUrl}
               onLightFileSelect={handleLightFileSelect}
+              darkPreviewFile={darkPreviewFile}
+              darkPreviewUrl={darkPreviewUrl}
+              onDarkFileSelect={handleDarkFileSelect}
+              wireframePreviewFile={wireframePreviewFile}
+              wireframePreviewUrl={wireframePreviewUrl}
+              onWireframeFileSelect={handleWireframeFileSelect}
               error={errors.previewFile}
               onBlur={() => markTouched("previewFile")}
             />
@@ -598,8 +648,8 @@ export function EditComponentView({
           </section>
         </div>
 
-        {/* RIGHT COLUMN: Sticky Sidebar for Live Preview, Checklist, Tips (5 cols) */}
-        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-4">
+        {/* RIGHT COLUMN: Sticky Sidebar for Live Preview, Checklist, Tips (4 cols) */}
+        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-4">
           {/* Tablet Accordion toggle for Live Preview if screen width is medium */}
           <div className="lg:hidden rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-3.5 shadow-xs">
             <button

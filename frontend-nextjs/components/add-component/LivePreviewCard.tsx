@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   Copy,
   Monitor,
@@ -12,6 +13,7 @@ import {
   Check,
   Moon,
   Sun,
+  Layers,
 } from "lucide-react";
 import type { ComponentFormValues } from "./types";
 
@@ -19,39 +21,52 @@ interface LivePreviewCardProps {
   values: ComponentFormValues;
 }
 
+const THEME_OPTIONS: Array<{
+  id: "light" | "dark" | "wireframe";
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}> = [
+  { id: "light", label: "Light", icon: Sun },
+  { id: "dark", label: "Dark", icon: Moon },
+  { id: "wireframe", label: "Wireframe", icon: Layers },
+];
+
 export function LivePreviewCard({ values }: LivePreviewCardProps) {
   const {
     name,
     previewUrl,
-    darkPreviewUrl,
     lightPreviewUrl,
+    darkPreviewUrl,
+    wireframePreviewUrl,
     tags,
     platformTag,
     pricingType,
     designType,
   } = values;
 
-  const [activeTheme, setActiveTheme] = useState<"dark" | "light">("dark");
+  const [activeTheme, setActiveTheme] = useState<"light" | "dark" | "wireframe">("light");
 
   // Auto-switch to whichever preview is available if only one is uploaded
   useEffect(() => {
-    if (darkPreviewUrl && !lightPreviewUrl) {
-      setActiveTheme("dark");
-    } else if (lightPreviewUrl && !darkPreviewUrl) {
+    if (lightPreviewUrl && !darkPreviewUrl && !wireframePreviewUrl) {
       setActiveTheme("light");
+    } else if (darkPreviewUrl && !lightPreviewUrl && !wireframePreviewUrl) {
+      setActiveTheme("dark");
+    } else if (wireframePreviewUrl && !lightPreviewUrl && !darkPreviewUrl) {
+      setActiveTheme("wireframe");
     }
-  }, [darkPreviewUrl, lightPreviewUrl]);
+  }, [lightPreviewUrl, darkPreviewUrl, wireframePreviewUrl]);
 
   const activeUrl =
-    activeTheme === "dark"
-      ? darkPreviewUrl || previewUrl || lightPreviewUrl
-      : lightPreviewUrl || previewUrl || darkPreviewUrl;
-
-  const hasBothThemes = Boolean(darkPreviewUrl && lightPreviewUrl);
+    activeTheme === "light"
+      ? lightPreviewUrl || previewUrl || darkPreviewUrl || wireframePreviewUrl
+      : activeTheme === "dark"
+        ? darkPreviewUrl || previewUrl || lightPreviewUrl || wireframePreviewUrl
+        : wireframePreviewUrl || previewUrl || lightPreviewUrl || darkPreviewUrl;
 
   return (
     <div className="rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-4 shadow-xs space-y-3 transition-colors">
-      <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-white/[0.06]">
+      <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-white/[0.06] gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
           <Eye size={13} className="text-[#F97316]" />
           <h3 className="text-xs font-semibold text-gray-900 dark:text-[#F5F5F5]">
@@ -59,34 +74,43 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
           </h3>
         </div>
 
-        {/* Theme Preview Switcher */}
-        <div className="flex items-center gap-1 rounded-md bg-gray-100 dark:bg-white/[0.06] p-0.5 border border-gray-200/60 dark:border-white/[0.08]">
-          <button
-            type="button"
-            onClick={() => setActiveTheme("dark")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
-              activeTheme === "dark"
-                ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-            }`}
-            title="Preview Dark Mode"
-          >
-            <Moon size={9.5} />
-            <span>Dark</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTheme("light")}
-            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold transition cursor-pointer ${
-              activeTheme === "light"
-                ? "bg-white dark:bg-[#222226] text-gray-900 dark:text-white shadow-2xs"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
-            }`}
-            title="Preview Light Mode"
-          >
-            <Sun size={9.5} />
-            <span>Light</span>
-          </button>
+        {/* Theme Preview Switcher with Sliding Pill Animation */}
+        <div className="relative grid grid-cols-3 rounded-md bg-gray-100 dark:bg-white/[0.06] p-0.5 border border-gray-200/60 dark:border-white/[0.08] min-w-[210px]">
+          {THEME_OPTIONS.map((theme) => {
+            const Icon = theme.icon;
+            const isActive = activeTheme === theme.id;
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                onClick={() => setActiveTheme(theme.id)}
+                className="relative flex h-6 items-center justify-center gap-1 px-2 rounded text-[10px] font-semibold transition-colors cursor-pointer select-none"
+                title={`Preview ${theme.label} Mode`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="live-preview-theme-pill"
+                    className="absolute inset-0 rounded bg-white dark:bg-[#222226] shadow-2xs"
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 32,
+                    }}
+                  />
+                )}
+                <span
+                  className={`relative z-10 flex items-center justify-center gap-1 whitespace-nowrap leading-none transition-colors duration-150 ${
+                    isActive
+                      ? "text-gray-900 dark:text-white"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400"
+                  }`}
+                >
+                  <Icon size={10} className="shrink-0" />
+                  <span>{theme.label}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -95,7 +119,11 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
         {/* Screenshot Container */}
         <div
           className={`relative aspect-[16/9] border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-center overflow-hidden transition-colors ${
-            activeTheme === "dark" ? "bg-[#0A0A0B]" : "bg-[#F8F9FA]"
+            activeTheme === "dark"
+              ? "bg-[#0A0A0B]"
+              : activeTheme === "wireframe"
+                ? "bg-[#18181B]"
+                : "bg-[#F8F9FA]"
           }`}
         >
           {activeUrl ? (
@@ -112,16 +140,27 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
                 <Eye size={15} />
               </div>
               <span className="text-[11px] font-medium">
-                Upload {activeTheme} screenshot to preview
+                Upload {activeTheme === "wireframe" ? "wireframe" : `${activeTheme} mode`} screenshot to preview
               </span>
             </div>
           )}
 
           {/* Badges Overlay */}
           <div className="absolute top-2 left-2 flex items-center gap-1">
-            <span className="rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-              {designType}
-            </span>
+            {designType === "Both" ? (
+              <>
+                <span className="rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                  UI Design
+                </span>
+                <span className="rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                  Wireframe
+                </span>
+              </>
+            ) : designType ? (
+              <span className="rounded bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                {designType}
+              </span>
+            ) : null}
           </div>
 
           <div className="absolute top-2 right-2 flex items-center gap-1">

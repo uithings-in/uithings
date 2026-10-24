@@ -23,7 +23,7 @@ import { extractFigmaBase64FromPaste } from "../lib/clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { componentsApi } from "../api/components";
 
-type DesignType = "UI Design" | "Wireframe";
+type DesignType = "UI Design" | "Wireframe" | "Both";
 type PricingType = "Free" | "Pro";
 type PlatformTag = "web" | "app";
 

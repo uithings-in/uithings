@@ -11,15 +11,19 @@ import {
   AlertCircle,
   Moon,
   Sun,
+  Layers,
 } from "lucide-react";
 
 interface ScreenshotUploaderProps {
-  darkPreviewFile?: File | null;
-  darkPreviewUrl?: string;
-  onDarkFileSelect?: (file: File | null) => void;
   lightPreviewFile?: File | null;
   lightPreviewUrl?: string;
   onLightFileSelect?: (file: File | null) => void;
+  darkPreviewFile?: File | null;
+  darkPreviewUrl?: string;
+  onDarkFileSelect?: (file: File | null) => void;
+  wireframePreviewFile?: File | null;
+  wireframePreviewUrl?: string;
+  onWireframeFileSelect?: (file: File | null) => void;
   // Legacy / generic fallbacks
   previewFile?: File | null;
   previewUrl?: string;
@@ -28,7 +32,7 @@ interface ScreenshotUploaderProps {
   onBlur?: () => void;
 }
 
-const MAX_SIZE_MB = 25;
+const MAX_SIZE_MB = 1;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 const ALLOWED_MIME_TYPES = [
   "image/png",
@@ -41,7 +45,7 @@ const ALLOWED_TYPES = ALLOWED_MIME_TYPES;
 const ACCEPT_FILE_ATTR = [...ALLOWED_MIME_TYPES, ".avif"].join(",");
 
 interface SingleDropzoneProps {
-  mode: "dark" | "light";
+  mode: "light" | "dark" | "wireframe";
   label: string;
   file: File | null;
   url: string;
@@ -62,6 +66,7 @@ function ThemeDropzone({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const isDarkMode = mode === "dark";
+  const isWireframe = mode === "wireframe";
 
   const validateAndSet = (selected: File) => {
     setError(null);
@@ -138,21 +143,31 @@ function ThemeDropzone({
         <div className="flex items-center gap-2">
           <div
             className={`flex h-6 w-6 items-center justify-center rounded-md ${
-              isDarkMode
-                ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400"
-                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              isWireframe
+                ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                : isDarkMode
+                  ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400"
+                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
             }`}
           >
-            {isDarkMode ? <Moon size={13} /> : <Sun size={13} />}
+            {isWireframe ? (
+              <Layers size={13} />
+            ) : isDarkMode ? (
+              <Moon size={13} />
+            ) : (
+              <Sun size={13} />
+            )}
           </div>
           <div>
             <span className="text-xs font-semibold text-gray-900 dark:text-[#F5F5F5] block leading-tight">
               {label}
             </span>
             <span className="text-[10px] text-gray-500 dark:text-[#A1A1AA] block">
-              {isDarkMode
-                ? "Dark background preview"
-                : "Light background preview"}
+              {/* {isWireframe
+                ? "Wireframe layout preview"
+                : isDarkMode
+                  ? "Dark background preview"
+                  : "Light background preview"} */}
             </span>
           </div>
         </div>
@@ -234,20 +249,28 @@ function ThemeDropzone({
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${
               isDragOver
                 ? "scale-105 bg-orange-500/20 text-[#F97316]"
-                : isDarkMode
-                  ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:scale-105"
-                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105"
+                : isWireframe
+                  ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 group-hover:scale-105"
+                  : isDarkMode
+                    ? "bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:scale-105"
+                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105"
             }`}
           >
             <UploadCloud size={16} />
           </div>
 
           <span className="mt-2 text-[11.5px] font-semibold text-gray-800 dark:text-[#F5F5F5] group-hover:text-[#F97316] transition-colors leading-tight">
-            Drop {mode === "dark" ? "Dark Mode" : "Light Mode"} image
+            {/* Drop */}{" "}
+            {isWireframe
+              ? "Wireframe"
+              : isDarkMode
+                ? "Dark Mode"
+                : "Light Mode"}{" "}
+            image
           </span>
 
           <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#A1A1AA]">
-            Any ratio or size • Max {MAX_SIZE_MB}MB
+            {/* Any ratio or size •  */}Max {MAX_SIZE_MB}MB
           </p>
 
           <span className="mt-2 inline-flex items-center gap-1 rounded bg-gray-200/70 dark:bg-white/[0.08] px-2 py-0.5 text-[9.5px] font-medium text-gray-700 dark:text-neutral-300 group-hover:bg-orange-500/10 group-hover:text-[#EA580C] dark:group-hover:text-[#FB923C] transition-colors">
@@ -283,29 +306,38 @@ function ThemeDropzone({
 }
 
 export function ScreenshotUploader({
-  darkPreviewFile,
-  darkPreviewUrl = "",
-  onDarkFileSelect,
   lightPreviewFile,
   lightPreviewUrl = "",
   onLightFileSelect,
+  darkPreviewFile,
+  darkPreviewUrl = "",
+  onDarkFileSelect,
+  wireframePreviewFile,
+  wireframePreviewUrl = "",
+  onWireframeFileSelect,
   previewFile,
   previewUrl = "",
   onFileSelect,
   error,
   onBlur,
 }: ScreenshotUploaderProps) {
+  const resolvedLightFile = lightPreviewFile ?? null;
+  const resolvedLightUrl = lightPreviewUrl || "";
+  const handleLightSelect = onLightFileSelect ?? (() => {});
+
   // Fallbacks for backwards compatibility if caller only provided single preview
   const resolvedDarkFile = darkPreviewFile ?? previewFile ?? null;
   const resolvedDarkUrl = darkPreviewUrl || previewUrl || "";
   const handleDarkSelect = onDarkFileSelect ?? onFileSelect ?? (() => {});
 
-  const resolvedLightFile = lightPreviewFile ?? null;
-  const resolvedLightUrl = lightPreviewUrl || "";
-  const handleLightSelect = onLightFileSelect ?? (() => {});
+  const resolvedWireframeFile = wireframePreviewFile ?? null;
+  const resolvedWireframeUrl = wireframePreviewUrl || "";
+  const handleWireframeSelect = onWireframeFileSelect ?? (() => {});
 
   const totalUploaded =
-    (resolvedDarkFile ? 1 : 0) + (resolvedLightFile ? 1 : 0);
+    (resolvedLightFile ? 1 : 0) +
+    (resolvedDarkFile ? 1 : 0) +
+    (resolvedWireframeFile ? 1 : 0);
 
   return (
     <div className="rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-4 sm:p-5 shadow-xs transition-colors">
@@ -337,7 +369,9 @@ export function ScreenshotUploader({
         {totalUploaded > 0 ? (
           <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
             <FileCheck size={11} />
-            {totalUploaded === 2 ? "2/2 ATTACHED" : "ATTACHED"}
+            {totalUploaded === 3
+              ? "3/3 ATTACHED"
+              : `${totalUploaded}/3 ATTACHED`}
           </span>
         ) : (
           <span className="inline-flex items-center rounded-md bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 text-[10px] font-semibold text-[#EA580C] dark:text-[#FB923C]">
@@ -346,25 +380,35 @@ export function ScreenshotUploader({
         )}
       </div>
 
-      {/* Two Split Boxes: Dark Mode & Light Mode */}
-      <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+      {/* Three Split Boxes: Light Mode, Dark Mode & Wireframe */}
+      <div className="mt-3.5 grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+        {/* Light Mode Box */}
+        <ThemeDropzone
+          mode="light"
+          label="Light Mode"
+          file={resolvedLightFile}
+          url={resolvedLightUrl}
+          onFileSelect={handleLightSelect}
+          onBlur={onBlur}
+        />
+
         {/* Dark Mode Box */}
         <ThemeDropzone
           mode="dark"
-          label="Dark Mode Component"
+          label="Dark Mode"
           file={resolvedDarkFile}
           url={resolvedDarkUrl}
           onFileSelect={handleDarkSelect}
           onBlur={onBlur}
         />
 
-        {/* Light Mode Box */}
+        {/* Wireframe Box */}
         <ThemeDropzone
-          mode="light"
-          label="Light Mode Component"
-          file={resolvedLightFile}
-          url={resolvedLightUrl}
-          onFileSelect={handleLightSelect}
+          mode="wireframe"
+          label="Wireframe"
+          file={resolvedWireframeFile}
+          url={resolvedWireframeUrl}
+          onFileSelect={handleWireframeSelect}
           onBlur={onBlur}
         />
       </div>

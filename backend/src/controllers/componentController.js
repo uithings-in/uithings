@@ -84,14 +84,28 @@ const listComponents = asyncHandler(async (req, res) => {
   if (tag) {
     query.tags = { $regex: `^${escapeRegex(tag)}$`, $options: "i" };
   }
-  if (designType === "Wireframe") {
-    query.designType = "Wireframe";
+  if (designType === "Both") {
+    query.$and = [
+      ...(query.$and || []),
+      { designType: "Both" },
+    ];
+  } else if (designType === "Wireframe") {
+    query.$and = [
+      ...(query.$and || []),
+      {
+        $or: [
+          { designType: "Wireframe" },
+          { designType: "Both" },
+        ],
+      },
+    ];
   } else if (designType === "UI Design") {
     query.$and = [
       ...(query.$and || []),
       {
         $or: [
           { designType: "UI Design" },
+          { designType: "Both" },
           { designType: { $exists: false } },
           { designType: null },
         ],
@@ -426,6 +440,7 @@ const createComponent = asyncHandler(async (req, res) => {
     previewImageUrl,
     lightPreviewImageUrl = "",
     darkPreviewImageUrl = "",
+    wireframePreviewImageUrl = "",
     figmaDataBase64,
     designType,
     pricingType,
@@ -433,7 +448,7 @@ const createComponent = asyncHandler(async (req, res) => {
   const userRole = req.user.role || "user";
 
   const resolvedPreviewUrl =
-    previewImageUrl || darkPreviewImageUrl || lightPreviewImageUrl;
+    previewImageUrl || lightPreviewImageUrl || darkPreviewImageUrl || wireframePreviewImageUrl;
 
   if (!name || !resolvedPreviewUrl || !figmaDataBase64) {
     res.status(400);
@@ -478,8 +493,9 @@ const createComponent = asyncHandler(async (req, res) => {
     tags: activeTags,
     tagOrder,
     previewImageUrl: resolvedPreviewUrl,
-    lightPreviewImageUrl: lightPreviewImageUrl || resolvedPreviewUrl,
-    darkPreviewImageUrl: darkPreviewImageUrl || resolvedPreviewUrl,
+    lightPreviewImageUrl: lightPreviewImageUrl || "",
+    darkPreviewImageUrl: darkPreviewImageUrl || "",
+    wireframePreviewImageUrl: wireframePreviewImageUrl || "",
     figmaDataBase64,
     designType,
     pricingType: canPostPro ? pricingType || "Free" : "Free",
@@ -748,6 +764,9 @@ const updateComponent = asyncHandler(async (req, res) => {
   }
   if (req.body.lightPreviewImageUrl !== undefined) {
     updates.lightPreviewImageUrl = req.body.lightPreviewImageUrl;
+  }
+  if (req.body.wireframePreviewImageUrl !== undefined) {
+    updates.wireframePreviewImageUrl = req.body.wireframePreviewImageUrl;
   }
 
   if (req.body.tags !== undefined) {

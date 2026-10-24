@@ -23,7 +23,8 @@ export interface ComponentItem {
   previewImageUrl: string;
   lightPreviewImageUrl?: string;
   darkPreviewImageUrl?: string;
-  designType?: "Wireframe" | "UI Design";
+  wireframePreviewImageUrl?: string;
+  designType?: "Wireframe" | "UI Design" | "Both";
   pricingType?: "Free" | "Pro";
   figmaDataBase64?: string;
   createdBy?: {
