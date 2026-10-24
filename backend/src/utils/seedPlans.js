@@ -20,7 +20,7 @@ const seedPlans = async () => {
       name: "pro_starter",
       displayName: "Basic",
       description: "Ideal for individuals who need quick access to basic features.",
-      price: 9900,
+      price: 1000,
       durationDays: 180,
       componentLimit: 100,
       features: [
