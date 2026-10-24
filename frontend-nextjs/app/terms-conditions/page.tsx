@@ -196,7 +196,7 @@ export default function TermsConditionsPage() {
       }
 
       const razorpayOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: process.env.NEXT_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Figcomponents Pro",

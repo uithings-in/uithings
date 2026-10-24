@@ -123,15 +123,25 @@ const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  const order = await razorpay.orders.create({
-    amount: plan.price,
-    currency: "INR",
-    receipt: `rcpt_${userId.toString().slice(-6)}_${Date.now().toString().slice(-8)}`,
-    notes: {
-      planId: planId.toString(),
-      userId: userId.toString(),
-    },
-  });
+  let order;
+  try {
+    order = await razorpay.orders.create({
+      amount: plan.price,
+      currency: "INR",
+      receipt: `rcpt_${userId.toString().slice(-6)}_${Date.now().toString().slice(-8)}`,
+      notes: {
+        planId: planId.toString(),
+        userId: userId.toString(),
+      },
+    });
+  } catch (rzpErr) {
+    console.error("[PAYMENT] Razorpay order creation failed:", rzpErr);
+    const errorDesc = rzpErr?.error?.description || rzpErr?.message || "Failed to create Razorpay order";
+    return res.status(502).json({
+      success: false,
+      message: `Razorpay Error: ${errorDesc}`,
+    });
+  }
 
   res.status(200).json({
     success: true,
