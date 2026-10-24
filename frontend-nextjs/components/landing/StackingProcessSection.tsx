@@ -248,7 +248,7 @@ export default function StackingProcessSection() {
                         {card.mockup}
                       </div>
 
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -283,7 +283,7 @@ export default function StackingProcessSection() {
                     }}
                   >
                     <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -326,7 +326,7 @@ export default function StackingProcessSection() {
                         {card.mockup}
                       </div>
 
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -360,7 +360,7 @@ export default function StackingProcessSection() {
                   }}
                 >
                   <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-                    <div className="flex w-full max-w-[420px] flex-col items-start text-left">
+                    <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:self-end lg:pb-6">
                       <div className="w-fit">
                         <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                           {card.pillLabel}
