@@ -661,8 +661,8 @@ export default function PrivacyPolicyPage() {
           }`}>
             <PlanCard
               title="Basic plan"
-              price={proStarter ? `₹ ${Math.floor(proStarter.price / 100)}` : "₹ 99"}
-              period={proStarter ? `${proStarter.durationDays} Days` : "180 Days"}
+              price={proStarter ? `₹ ${Math.floor(proStarter.price / 100)}` : "₹ 299"}
+              period={proStarter ? `${proStarter.durationDays} Days` : "90 Days"}
               icon={Zap}
               isSelected={selectedPlanName === "basic"}
               onClick={() => setSelectedPlanName("basic")}
@@ -676,7 +676,7 @@ export default function PrivacyPolicyPage() {
             <PlanCard
               dark
               title="Advanced plan"
-              price={proUltimate ? `₹ ${Math.floor(proUltimate.price / 100)}` : "₹ 199"}
+              price={proUltimate ? `₹ ${Math.floor(proUltimate.price / 100)}` : "₹ 499"}
               period={proUltimate ? `${proUltimate.durationDays} Days` : "180 Days"}
               icon={Crown}
               isSelected={selectedPlanName === "advanced"}

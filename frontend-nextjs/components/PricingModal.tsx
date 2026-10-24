@@ -35,8 +35,8 @@ const DEFAULT_LANDING_PLANS = [
     planKey: "pro_starter",
     name: "Basic Plan",
     pricePrefix: "₹",
-    price: "10",
-    period: "per user / 180 days",
+    price: "299",
+    period: "per user / 90 days",
     description: "Perfect for testing and light creative needs.",
     features: [
       "100 components",
@@ -52,7 +52,7 @@ const DEFAULT_LANDING_PLANS = [
     planKey: "pro_ultimate",
     name: "Advance Plan",
     pricePrefix: "₹",
-    price: "199",
+    price: "499",
     period: "per user / 180 days",
     description: "Unlock more power with advanced models and bigger limits.",
     features: [
@@ -67,9 +67,9 @@ const DEFAULT_LANDING_PLANS = [
   },
   {
     planKey: "pro_annual",
-    name: "Premium+",
+    name: "Premium",
     pricePrefix: "₹",
-    price: "499",
+    price: "599",
     period: "per user / 365 days",
     description: "Everything unlimited. For pros, teams, and power creators.",
     features: [

@@ -20,8 +20,8 @@ const seedPlans = async () => {
       name: "pro_starter",
       displayName: "Basic",
       description: "Ideal for individuals who need quick access to basic features.",
-      price: 1000,
-      durationDays: 180,
+      price: 29900,
+      durationDays: 90,
       componentLimit: 100,
       features: [
         "100 Components",
@@ -33,8 +33,8 @@ const seedPlans = async () => {
     {
       name: "pro_ultimate",
       displayName: "Advance",
-      description: "Ideal for individuals who who need advanced features and tools for client work.",
-      price: 19900,
+      description: "Ideal for individuals who need advanced features and tools for client work.",
+      price: 49900,
       durationDays: 180,
       componentLimit: 250,
       features: [
@@ -46,9 +46,9 @@ const seedPlans = async () => {
     },
     {
       name: "pro_annual",
-      displayName: "Premium+",
-      description: "Ideal for businesses who need personalized services and security for large teams.",
-      price: 49900,
+      displayName: "Premium",
+      description: "Ideal for businesses and pros who need full access and unlimited components.",
+      price: 59900,
       durationDays: 365,
       componentLimit: 999999,
       isPremiumPlus: true,
