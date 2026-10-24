@@ -94,6 +94,15 @@ export default function ContactClient() {
         className="pointer-events-none absolute left-1/2 -top-12 w-[1600px] max-w-none -translate-x-1/2 opacity-50 mix-blend-screen select-none"
       />
 
+      {/* Seamless Bridge Glow between Contact Section and Footer */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-[500px] -translate-x-1/2 w-[1700px] h-[800px] opacity-75"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 55% at 50% 45%, rgba(67, 67, 213, 0.4) 0%, rgba(50, 30, 168, 0.22) 50%, transparent 85%)",
+        }}
+      />
+
       {/* Ambient Star Field */}
       <StarField showShootingStars={false} className="opacity-80" />
 
@@ -101,7 +110,7 @@ export default function ContactClient() {
       <Navbar />
 
       {/* Main Section */}
-      <main className="relative z-10 w-full px-5 pt-[120px] pb-6 sm:px-8 sm:pt-[150px] sm:pb-8 lg:pb-10">
+      <main className="relative z-10 w-full px-5 pt-[120px] pb-4 sm:px-8 sm:pt-[150px] sm:pb-6">
         <div className="mx-auto w-full max-w-[1140px]">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
             {/* Left Column: Direct Heading & Contact Details */}
@@ -134,7 +143,7 @@ export default function ContactClient() {
               </div>
 
               {/* Phone Block */}
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <span className="text-xs font-normal text-[#8888A5] block">
                   Phone:
                 </span>
@@ -144,7 +153,7 @@ export default function ContactClient() {
                 <p className="mt-1 text-xs text-[#8888A5]">
                   Available Monday to Friday, 9 AM - 6 PM GMT
                 </p>
-              </div>
+              </div> */}
 
               {/* Live Chat Pill Button */}
               <div className="mt-8">
@@ -303,7 +312,7 @@ export default function ContactClient() {
         </div>
       </main>
 
-      <CtaAndFooterSection />
+      <CtaAndFooterSection blendTop />
     </div>
   );
 }
