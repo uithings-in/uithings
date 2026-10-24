@@ -8,7 +8,7 @@ export const componentsApi = {
     page = 1,
     limit = 20,
     filters: {
-      designType?: "Wireframe" | "UI Design";
+      designType?: "Wireframe" | "UI Design" | "Both";
       pricingType?: "Free" | "Pro";
       skip?: number;
     } = {}
@@ -90,8 +90,9 @@ export const componentsApi = {
     previewImageUrl: string;
     lightPreviewImageUrl?: string;
     darkPreviewImageUrl?: string;
+    wireframePreviewImageUrl?: string;
     figmaDataBase64: string;
-    designType?: "Wireframe" | "UI Design";
+    designType?: "Wireframe" | "UI Design" | "Both";
     pricingType?: "Free" | "Pro";
   }): Promise<ComponentItem> {
     const response = await apiClient.post("/components", input);
@@ -105,8 +106,9 @@ export const componentsApi = {
     previewImageUrl?: string;
     lightPreviewImageUrl?: string;
     darkPreviewImageUrl?: string;
+    wireframePreviewImageUrl?: string;
     figmaDataBase64?: string;
-    designType?: "Wireframe" | "UI Design";
+    designType?: "Wireframe" | "UI Design" | "Both";
     pricingType?: "Free" | "Pro";
   }): Promise<ComponentItem> {
     const response = await apiClient.patch(`/components/${id}`, input);

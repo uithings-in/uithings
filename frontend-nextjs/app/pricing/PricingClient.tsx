@@ -76,7 +76,7 @@ const DEFAULT_LANDING_PLANS = [
   },
   {
     planKey: "pro_annual",
-    name: "Premium",
+    name: "Premium Plan",
     pricePrefix: "₹",
     price: "599",
     period: "per user / 365 days",

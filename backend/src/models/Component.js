@@ -36,9 +36,13 @@ const componentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    wireframePreviewImageUrl: {
+      type: String,
+      default: "",
+    },
     designType: {
       type: String,
-      enum: ["Wireframe", "UI Design"],
+      enum: ["Wireframe", "UI Design", "Both"],
       default: "UI Design",
     },
     pricingType: {

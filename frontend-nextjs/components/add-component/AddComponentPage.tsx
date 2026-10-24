@@ -51,8 +51,9 @@ export function AddComponentView({
     setTags,
     setFigmaPayload,
     setPreviewFile,
-    setDarkPreviewFile,
     setLightPreviewFile,
+    setDarkPreviewFile,
+    setWireframePreviewFile,
     setDesignType,
     setPricingType,
     setPlatformTag,
@@ -90,35 +91,41 @@ export function AddComponentView({
         throw new Error("Please paste your Figma component payload.");
       }
       if (
-        !values.darkPreviewFile &&
         !values.lightPreviewFile &&
+        !values.darkPreviewFile &&
+        !values.wireframePreviewFile &&
         !values.previewFile
       ) {
         markTouched("previewFile");
         throw new Error(
-          "Please upload at least one preview screenshot (Dark or Light).",
+          "Please upload at least one preview screenshot (Light, Dark, or Wireframe).",
         );
       }
 
-      // 1. Upload preview images (dark & light)
+      // 1. Upload preview images (light, dark & wireframe)
       const uploadPromises: [
         Promise<string | undefined>,
         Promise<string | undefined>,
+        Promise<string | undefined>,
       ] = [
-        values.darkPreviewFile
-          ? uploadApi.uploadImage(values.darkPreviewFile)
-          : Promise.resolve(undefined),
         values.lightPreviewFile
           ? uploadApi.uploadImage(values.lightPreviewFile)
           : Promise.resolve(undefined),
+        values.darkPreviewFile
+          ? uploadApi.uploadImage(values.darkPreviewFile)
+          : Promise.resolve(undefined),
+        values.wireframePreviewFile
+          ? uploadApi.uploadImage(values.wireframePreviewFile)
+          : Promise.resolve(undefined),
       ];
 
-      const [uploadedDarkUrl, uploadedLightUrl] =
+      const [uploadedLightUrl, uploadedDarkUrl, uploadedWireframeUrl] =
         await Promise.all(uploadPromises);
 
       const resolvedPreviewUrl =
-        uploadedDarkUrl ||
         uploadedLightUrl ||
+        uploadedDarkUrl ||
+        uploadedWireframeUrl ||
         (values.previewFile
           ? await uploadApi.uploadImage(values.previewFile)
           : "");
@@ -142,10 +149,11 @@ export function AddComponentView({
         description: values.description.trim(),
         tags: cleanTags,
         previewImageUrl: resolvedPreviewUrl,
-        darkPreviewImageUrl: uploadedDarkUrl || resolvedPreviewUrl,
-        lightPreviewImageUrl: uploadedLightUrl || resolvedPreviewUrl,
+        lightPreviewImageUrl: uploadedLightUrl || "",
+        darkPreviewImageUrl: uploadedDarkUrl || "",
+        wireframePreviewImageUrl: uploadedWireframeUrl || "",
         figmaDataBase64: values.figmaDataBase64,
-        designType: values.designType,
+        designType: (values.designType || "UI Design") as "UI Design" | "Wireframe" | "Both",
         pricingType: values.pricingType,
       });
     },
@@ -261,10 +269,10 @@ export function AddComponentView({
         </div>
       )}
 
-      {/* Two-Column Ergonomic Layout (7/5 col split, balanced 20px gap) */}
+      {/* Two-Column Ergonomic Layout (8/4 col split, balanced 20px gap) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start pb-6">
-        {/* LEFT COLUMN: Assets & Inputs First (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
+        {/* LEFT COLUMN: Assets & Inputs First (8 cols) */}
+        <div className="lg:col-span-8 space-y-4">
           {/* 1. Figma Asset (Required) */}
           <section aria-label="Figma asset paste area">
             <FigmaPayloadZone
@@ -278,12 +286,15 @@ export function AddComponentView({
           {/* 2. Preview Screenshot (Required) */}
           <section aria-label="Preview screenshot upload area">
             <ScreenshotUploader
-              darkPreviewFile={values.darkPreviewFile}
-              darkPreviewUrl={values.darkPreviewUrl}
-              onDarkFileSelect={setDarkPreviewFile}
               lightPreviewFile={values.lightPreviewFile}
               lightPreviewUrl={values.lightPreviewUrl}
               onLightFileSelect={setLightPreviewFile}
+              darkPreviewFile={values.darkPreviewFile}
+              darkPreviewUrl={values.darkPreviewUrl}
+              onDarkFileSelect={setDarkPreviewFile}
+              wireframePreviewFile={values.wireframePreviewFile}
+              wireframePreviewUrl={values.wireframePreviewUrl}
+              onWireframeFileSelect={setWireframePreviewFile}
               error={errors.previewFile}
               onBlur={() => markTouched("previewFile")}
             />
@@ -318,8 +329,8 @@ export function AddComponentView({
           </section>
         </div>
 
-        {/* RIGHT COLUMN: Sticky Sidebar for Live Preview, Checklist, Tips (5 cols) */}
-        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-4">
+        {/* RIGHT COLUMN: Sticky Sidebar for Live Preview, Checklist, Tips (4 cols) */}
+        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-4">
           {/* Tablet Accordion toggle for Live Preview if screen width is medium */}
           <div className="lg:hidden rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-3.5 shadow-xs">
             <button

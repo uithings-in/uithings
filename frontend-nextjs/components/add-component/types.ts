@@ -1,4 +1,4 @@
-export type DesignType = "UI Design" | "Wireframe";
+export type DesignType = "UI Design" | "Wireframe" | "Both" | "";
 export type PricingType = "Free" | "Pro";
 export type PlatformTag = "web" | "app";
 
@@ -9,10 +9,12 @@ export interface ComponentFormValues {
   figmaDataBase64: string;
   previewFile: File | null;
   previewUrl: string;
-  darkPreviewFile: File | null;
-  darkPreviewUrl: string;
   lightPreviewFile: File | null;
   lightPreviewUrl: string;
+  darkPreviewFile: File | null;
+  darkPreviewUrl: string;
+  wireframePreviewFile: File | null;
+  wireframePreviewUrl: string;
   designType: DesignType;
   pricingType: PricingType;
   platformTag: PlatformTag;
@@ -22,8 +24,10 @@ export interface ValidationErrors {
   name?: string;
   figmaPayload?: string;
   previewFile?: string;
-  darkPreviewFile?: string;
   lightPreviewFile?: string;
+  darkPreviewFile?: string;
+  wireframePreviewFile?: string;
+  designType?: string;
 }
 
 export interface ChecklistItem {

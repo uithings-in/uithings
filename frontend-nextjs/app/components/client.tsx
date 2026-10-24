@@ -37,6 +37,7 @@ import {
   SquarePen,
   Moon,
   Sun,
+  PenTool,
   ChevronRight,
   Sparkles,
   Clock,
@@ -215,22 +216,16 @@ function PreviewModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Compute carousel slides from darkPreviewImageUrl, lightPreviewImageUrl, previewImageUrl
+  // Compute carousel slides from lightPreviewImageUrl, darkPreviewImageUrl, wireframePreviewImageUrl, previewImageUrl
   const slides = useMemo(() => {
     const list: {
       url: string;
-      mode: "dark" | "light" | "default";
+      mode: "dark" | "light" | "wireframe" | "default";
       label: string;
     }[] = [];
 
-    if (item.darkPreviewImageUrl) {
-      list.push({ url: item.darkPreviewImageUrl, mode: "dark", label: "Dark" });
-    }
-
-    if (
-      item.lightPreviewImageUrl &&
-      item.lightPreviewImageUrl !== item.darkPreviewImageUrl
-    ) {
+    // 1. Light Mode
+    if (item.lightPreviewImageUrl) {
       list.push({
         url: item.lightPreviewImageUrl,
         mode: "light",
@@ -238,28 +233,57 @@ function PreviewModal({
       });
     }
 
-    // Fallbacks if one or neither is explicitly set
-    if (list.length === 0 && item.previewImageUrl) {
-      list.push({
-        url: item.previewImageUrl,
-        mode: "default",
-        label: "Preview",
-      });
-    } else if (
-      list.length === 1 &&
-      item.previewImageUrl &&
-      !list.some((s) => s.url === item.previewImageUrl)
+    // 2. Dark Mode (only if explicitly set and not an accidental duplicate of light)
+    if (
+      item.darkPreviewImageUrl &&
+      item.darkPreviewImageUrl !== item.lightPreviewImageUrl &&
+      !list.some((s) => s.url === item.darkPreviewImageUrl)
     ) {
-      const mode = list[0].mode === "dark" ? "light" : "dark";
-      const label = mode === "dark" ? "Light" : "Dark";
-      list.push({ url: item.previewImageUrl, mode, label });
+      list.push({
+        url: item.darkPreviewImageUrl,
+        mode: "dark",
+        label: "Dark",
+      });
+    }
+
+    // 3. Wireframe Mode (only if explicitly set and not an accidental duplicate)
+    if (
+      item.wireframePreviewImageUrl &&
+      item.wireframePreviewImageUrl !== item.lightPreviewImageUrl &&
+      item.wireframePreviewImageUrl !== item.darkPreviewImageUrl &&
+      !list.some((s) => s.url === item.wireframePreviewImageUrl)
+    ) {
+      list.push({
+        url: item.wireframePreviewImageUrl,
+        mode: "wireframe",
+        label: "Wireframe",
+      });
+    }
+
+    // 4. Fallbacks if none of the above are set (legacy items)
+    if (list.length === 0 && item.previewImageUrl) {
+      if (item.designType === "Wireframe") {
+        list.push({
+          url: item.previewImageUrl,
+          mode: "wireframe",
+          label: "Wireframe",
+        });
+      } else {
+        list.push({
+          url: item.previewImageUrl,
+          mode: "light",
+          label: "Light",
+        });
+      }
     }
 
     return list;
   }, [
-    item.darkPreviewImageUrl,
     item.lightPreviewImageUrl,
+    item.darkPreviewImageUrl,
+    item.wireframePreviewImageUrl,
     item.previewImageUrl,
+    item.designType,
   ]);
 
   // Reset to first slide when item changes
@@ -421,12 +445,13 @@ function PreviewModal({
 
           {/* Actions */}
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-2.5 w-full sm:w-auto">
-            {/* Dark & Light Mode Switcher */}
-            {hasMultiple && (
+            {/* Mode Switcher (shows Light, Dark, Wireframe, or all if uploaded) */}
+            {slides.length > 0 && (
               <div className="flex items-center h-8 sm:h-9 rounded-xl bg-gray-100 p-0.5 sm:p-1 border border-gray-200/80 shrink-0">
                 {slides.map((slide, idx) => {
                   const isActive = currentIndex === idx;
                   const isDark = slide.mode === "dark";
+                  const isWireframe = slide.mode === "wireframe";
                   return (
                     <button
                       key={idx}
@@ -439,7 +464,9 @@ function PreviewModal({
                         isActive
                           ? isDark
                             ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
-                            : "bg-white text-gray-900 shadow-xs border-gray-200/60"
+                            : isWireframe
+                              ? "bg-white text-[#EA580C] shadow-xs border-orange-500/20"
+                              : "bg-white text-gray-900 shadow-xs border-gray-200/60"
                           : "text-gray-500 hover:text-gray-900 border-transparent"
                       }`}
                     >
@@ -448,6 +475,13 @@ function PreviewModal({
                           size={11}
                           className={
                             isActive ? "text-indigo-400" : "text-gray-400"
+                          }
+                        />
+                      ) : isWireframe ? (
+                        <PenTool
+                          size={11}
+                          className={
+                            isActive ? "text-[#EA580C]" : "text-gray-400"
                           }
                         />
                       ) : (
@@ -1056,12 +1090,14 @@ export default function ComponentsClient({
       out = out.filter(
         (i) =>
           i.designType === "Wireframe" ||
+          i.designType === "Both" ||
           i.tags.some((t) => /wireframe/i.test(t)),
       );
     } else if (viewMode === "ui-design") {
       out = out.filter(
         (i) =>
           i.designType === "UI Design" ||
+          i.designType === "Both" ||
           !i.designType ||
           i.tags.some((t) => /ui[\s-]*design/i.test(t)),
       );

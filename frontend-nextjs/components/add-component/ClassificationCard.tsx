@@ -33,6 +33,25 @@ export function ClassificationCard({
   onPlatformTagChange,
   onPricingTypeChange,
 }: ClassificationCardProps) {
+  const isUiSelected = designType === "UI Design" || designType === "Both";
+  const isWireSelected = designType === "Wireframe" || designType === "Both";
+
+  const handleToggleUi = () => {
+    if (isUiSelected) {
+      onDesignTypeChange(isWireSelected ? "Wireframe" : ("" as DesignType));
+    } else {
+      onDesignTypeChange(isWireSelected ? "Both" : "UI Design");
+    }
+  };
+
+  const handleToggleWireframe = () => {
+    if (isWireSelected) {
+      onDesignTypeChange(isUiSelected ? "UI Design" : ("" as DesignType));
+    } else {
+      onDesignTypeChange(isUiSelected ? "Both" : "Wireframe");
+    }
+  };
+
   return (
     <div className="rounded-xl border border-gray-200/80 dark:border-white/[0.08] bg-white dark:bg-[#111113] p-4 sm:p-5 shadow-xs space-y-3.5 transition-colors">
       {/* Header */}
@@ -52,58 +71,67 @@ export function ClassificationCard({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* 1. Design Type */}
+        {/* 1. Design Type (Checkbox Effect Buttons - Multi-select) */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700 dark:text-[#A1A1AA] block">
-            Design Type
-          </label>
-          <div className="relative grid grid-cols-2 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-gray-700 dark:text-[#A1A1AA] block">
+              Design Type
+            </label>
+            {!designType && (
+              <span className="text-[10px] text-rose-500 font-medium">
+                Select at least 1
+              </span>
+            )}
+          </div>
+          <div className="relative flex items-center gap-1 rounded-lg bg-gray-100 dark:bg-[#17171A] p-0.5 border border-gray-200/80 dark:border-white/[0.06]">
             <button
               type="button"
-              onClick={() => onDesignTypeChange("UI Design")}
-              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
+              role="checkbox"
+              aria-checked={isUiSelected}
+              onClick={handleToggleUi}
+              className={`relative flex-1 flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer select-none border ${
+                isUiSelected
+                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] font-semibold border-orange-500/30 shadow-2xs"
+                  : "border-transparent text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/[0.03]"
+              }`}
             >
-              {designType === "UI Design" && (
-                <motion.div
-                  layoutId="classification-design-type-pill"
-                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
-                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
-                />
-              )}
-              <span
-                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
-                  designType === "UI Design"
-                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
-                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
-              >
-                <Layout size={12} />
-                <span>UI Design</span>
-              </span>
+              <Layout
+                size={12}
+                className={
+                  isUiSelected
+                    ? "text-[#EA580C] dark:text-[#FB923C]"
+                    : "text-gray-500 dark:text-[#71717A]"
+                }
+              />
+              <span>UI Design</span>
             </button>
+
+            {/* Separation Bar */}
+            <div
+              className="w-px h-4 bg-gray-300 dark:bg-white/15 rounded-full shrink-0"
+              aria-hidden="true"
+            />
 
             <button
               type="button"
-              onClick={() => onDesignTypeChange("Wireframe")}
-              className="relative flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer select-none"
+              role="checkbox"
+              aria-checked={isWireSelected}
+              onClick={handleToggleWireframe}
+              className={`relative flex-1 flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer select-none border ${
+                isWireSelected
+                  ? "bg-white dark:bg-[#222226] text-[#EA580C] dark:text-[#FB923C] font-semibold border-orange-500/30 shadow-2xs"
+                  : "border-transparent text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/[0.03]"
+              }`}
             >
-              {designType === "Wireframe" && (
-                <motion.div
-                  layoutId="classification-design-type-pill"
-                  className="absolute inset-0 rounded-md bg-white dark:bg-[#222226] shadow-2xs border border-orange-500/20"
-                  transition={{ type: "spring", stiffness: 480, damping: 34 }}
-                />
-              )}
-              <span
-                className={`relative z-10 flex items-center justify-center gap-1.5 transition-colors duration-150 ${
-                  designType === "Wireframe"
-                    ? "text-[#EA580C] dark:text-[#FB923C] font-semibold"
-                    : "text-gray-600 dark:text-[#A1A1AA] hover:text-gray-900 dark:hover:text-white"
-                }`}
-              >
-                <PenTool size={12} />
-                <span>Wireframe</span>
-              </span>
+              <PenTool
+                size={12}
+                className={
+                  isWireSelected
+                    ? "text-[#EA580C] dark:text-[#FB923C]"
+                    : "text-gray-500 dark:text-[#71717A]"
+                }
+              />
+              <span>Wireframe</span>
             </button>
           </div>
         </div>
