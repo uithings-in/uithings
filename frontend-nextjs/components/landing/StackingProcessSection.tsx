@@ -237,18 +237,18 @@ export default function StackingProcessSection() {
                   }}
                 >
                   <div
-                    className="relative overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
                     style={{
                       background:
                         "radial-gradient(120% 120% at 20% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
                     }}
                   >
-                    <div className="relative z-10 flex flex-col items-center gap-10 px-6 py-10 sm:px-12 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
                       <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
                         {card.mockup}
                       </div>
 
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:pt-20">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -276,14 +276,14 @@ export default function StackingProcessSection() {
                   }}
                 >
                   <div
-                    className="relative overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
                     style={{
                       background:
                         "radial-gradient(120% 120% at 80% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
                     }}
                   >
-                    <div className="relative z-10 flex flex-col items-center gap-10 px-6 py-10 sm:px-12 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:pt-20">
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -315,18 +315,18 @@ export default function StackingProcessSection() {
                   }}
                 >
                   <div
-                    className="relative overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                    className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
                     style={{
                       background:
                         "radial-gradient(120% 120% at 20% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
                     }}
                   >
-                    <div className="relative z-10 flex flex-col items-center gap-10 px-6 py-10 sm:px-12 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
                       <div className="flex w-full flex-1 items-center justify-center max-w-[580px]">
                         {card.mockup}
                       </div>
 
-                      <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:pt-20">
+                      <div className="flex w-full max-w-[420px] flex-col items-start text-left">
                         <div className="w-fit">
                           <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                             {card.pillLabel}
@@ -353,14 +353,14 @@ export default function StackingProcessSection() {
                 }}
               >
                 <div
-                  className="relative overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
+                  className="relative flex flex-col justify-center overflow-hidden rounded-[28px] border border-white/[0.08] shadow-[0_-15px_35px_rgba(0,0,0,0.7)] md:min-h-[520px]"
                   style={{
                     background:
                       "radial-gradient(120% 120% at 80% 20%, #15163d 0%, #0d0f2b 50%, #060714 100%)",
                   }}
                 >
-                  <div className="relative z-10 flex flex-col items-center gap-10 px-6 py-10 sm:px-12 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-                    <div className="flex w-full max-w-[420px] flex-col items-start text-left lg:pt-20">
+                  <div className="relative z-10 flex w-full flex-col items-center justify-center gap-10 px-6 py-10 sm:px-12 md:min-h-[520px] lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+                    <div className="flex w-full max-w-[420px] flex-col items-start text-left">
                       <div className="w-fit">
                         <h3 className="text-3xl font-normal tracking-tight text-white sm:text-4xl font-heading">
                           {card.pillLabel}
