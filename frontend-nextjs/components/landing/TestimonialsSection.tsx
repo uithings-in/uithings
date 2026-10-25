@@ -5,71 +5,170 @@ interface TestimonialItem {
   author: string;
   role: string;
   rating: string;
+  image?: string;
 }
 
-const row1Testimonials: TestimonialItem[] = [
+const testimonials: TestimonialItem[] = [
   {
     quote:
-      "“I’m not a ‘tools person’, but Ryzo made it easy. I was up and running in 5 minutes. No tutorials. Just straight to doing.”",
-    author: "Laura T",
-    role: "Project Manager",
+      "“I’m not a fan of building everything from scratch, and uiThings makes the process so much easier. I can find components, customize them, and get straight to designing.”",
+    author: "Alex Morgan",
+    role: "UI/UX Designer",
     rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces",
   },
   {
     quote:
-      "“Using Zyro feels like working inside a sketchbook. Clean, calm, responsive. It's a workspace that breathes with you.”",
-    author: "Kevin D",
-    role: "Developer",
-    rating: "4.1",
+      "“The components are clean, modern, and easy to adapt. uiThings has become a useful resource whenever I start a new Figma project.”",
+    author: "Sophia Bennett",
+    role: "Product Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=faces",
   },
   {
     quote:
-      "“What I like most about Ryzo is that it doesn't try to be everything. Honestly, we’ve never shipped this consistently before.”",
-    author: "Chloe R",
-    role: "Developer",
-    rating: "4.1",
+      "“As a freelancer, saving time matters. Having ready-made UI components helps me spend less time on repetitive work and more time on creative decisions.”",
+    author: "Daniel Brooks",
+    role: "Freelance Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“I love how easy it is to find inspiration for website layouts. The components give me a solid foundation that I can make my own in Figma.”",
+    author: "Emily Carter",
+    role: "Web Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“uiThings makes my workflow feel much more efficient. Instead of recreating common UI patterns, I can start with a component and customize it for my project.”",
+    author: "Ryan Mitchell",
+    role: "Digital Product Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“Finding the right starting point for a new design is easier with uiThings. I can explore different components and choose what works best for my interface.”",
+    author: "Olivia Parker",
+    role: "Visual Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“I don't want every new project to feel like starting from zero. uiThings gives me reusable building blocks that help me move from idea to prototype faster.”",
+    author: "Ethan Wilson",
+    role: "UX/UI Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1504593811423-6dd665756598?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“The flexibility is what I appreciate most. I can use a component as it is or adjust its colors, spacing, and layout to match my design system.”",
+    author: "Isabella Reed",
+    role: "Interface Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“As a design student, I find ready-made components useful for understanding how professional interfaces are structured. uiThings is a handy learning resource.”",
+    author: "Noah Foster",
+    role: "Design Student",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“I like having a collection of UI resources to explore when working on a new concept. It makes experimenting with different design directions much easier.”",
+    author: "Mia Thompson",
+    role: "Product Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“Whenever I need a starting point for a landing page, uiThings helps me get moving. I can focus on the content and experience instead of repetitive setup.”",
+    author: "Lucas Bennett",
+    role: "Freelance UI Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“Good components should be easy to adapt to different projects. uiThings gives me the flexibility to create interfaces that feel consistent without looking generic.”",
+    author: "Ava Collins",
+    role: "Interaction Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“Building high-fidelity prototypes is much smoother when I have reusable elements ready to customize. uiThings gives me a helpful head start.”",
+    author: "James Cooper",
+    role: "UX Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“From website sections to smaller interface elements, uiThings gives me ideas and building blocks I can incorporate into my Figma workflow.”",
+    author: "Grace Phillips",
+    role: "Web UI Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“I appreciate having more time to focus on the details that make a design unique. Starting with reusable components makes the whole process feel more organized.”",
+    author: "Oliver Hayes",
+    role: "Design Consultant",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&crop=faces",
+  },
+  {
+    quote:
+      "“uiThings is a practical addition to my design toolkit. I can discover useful components, bring them into my Figma projects, and adapt them to my needs.”",
+    author: "Chloe Adams",
+    role: "UI/UX Designer",
+    rating: "5.0",
+    image:
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=160&h=160&fit=crop&crop=faces",
   },
 ];
 
-const row2Testimonials: TestimonialItem[] = [
-  {
-    quote:
-      "“The real-time visibility into task states is game-changing. Everyone knows what’s happening without meetings.”",
-    author: "Alex M",
-    role: "Content Lead",
-    rating: "4.1",
-  },
-  {
-    quote:
-      "“I’m not a ‘tools person’, but Ryzo made it easy. I was up and running in 5 minutes. No tutorials. Just straight to doing.”",
-    author: "Chloe R",
-    role: "Head of Ops",
-    rating: "4.5",
-  },
-  {
-    quote:
-      "“Ryzo makes our team feel like we’re working in the same room — even when we’re not. It’s simple, visual.”",
-    author: "Ethan C",
-    role: "Product Designer",
-    rating: "4.1",
-  },
-];
+const row1Testimonials = testimonials.slice(0, 8);
+const row2Testimonials = testimonials.slice(8, 16);
 
 // Duplicate items for infinite seamless scroll
 const row1Repeated = [
-  ...row1Testimonials,
-  ...row1Testimonials,
   ...row1Testimonials,
   ...row1Testimonials,
 ];
 const row2Repeated = [
   ...row2Testimonials,
   ...row2Testimonials,
-  ...row2Testimonials,
-  ...row2Testimonials,
 ];
 
-function TestimonialCard({ quote, author, role, rating }: TestimonialItem) {
+function TestimonialCard({ quote, author, role, rating, image }: TestimonialItem) {
   return (
     <div className="relative flex min-h-[215px] sm:min-h-[225px] w-[350px] sm:w-[380px] shrink-0 flex-col justify-between rounded-[16px] border border-white/10 bg-[#0e0c18] p-5 sm:p-6 transition-all duration-200 hover:border-white/20 hover:bg-[#141224] gpu-accel">
       <p
@@ -80,9 +179,22 @@ function TestimonialCard({ quote, author, role, rating }: TestimonialItem) {
 
       <div className="flex items-center justify-between pt-3 sm:pt-4">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-gradient-to-br from-[#4343D5] to-[#7C5CFF] shrink-0 flex items-center justify-center font-bold text-xs text-white">
-            {author.split(" ").map(n => n[0]).join("")}
-          </div>
+          {image ? (
+            <img
+              src={image}
+              alt={author}
+              loading="lazy"
+              decoding="async"
+              className="size-10 rounded-full object-cover shrink-0 border border-white/10"
+            />
+          ) : (
+            <div className="size-10 rounded-full bg-gradient-to-br from-[#4343D5] to-[#7C5CFF] shrink-0 flex items-center justify-center font-bold text-xs text-white">
+              {author
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </div>
+          )}
           <div className="flex flex-col">
             <span
               className="text-[14px] font-medium leading-tight text-[#F7F7FD] font-inter"
@@ -142,12 +254,12 @@ export default function TestimonialsSection() {
           }
         }
         .animate-scroll-right {
-          animation: scrollRight 28s linear infinite;
+          animation: scrollRight 35s linear infinite;
           will-change: transform;
           transform: translate3d(0, 0, 0);
         }
         .animate-scroll-left {
-          animation: scrollLeft 28s linear infinite;
+          animation: scrollLeft 35s linear infinite;
           will-change: transform;
           transform: translate3d(0, 0, 0);
         }
