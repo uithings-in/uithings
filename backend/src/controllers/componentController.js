@@ -43,6 +43,21 @@ const listComponents = asyncHandler(async (req, res) => {
       : (pageNumber - 1) * perPage;
   const shouldIncludeData = String(includeData).toLowerCase() === "true";
 
+  // Check if requester is an active Pro subscriber or admin
+  let isProSubscriber = false;
+  if (req.user) {
+    if (req.user.role === "admin") {
+      isProSubscriber = true;
+    } else {
+      const user = await User.findById(req.user.userId).populate("activeSubscription");
+      if (user?.isProUser && user?.activeSubscription?.status === "active") {
+        if (new Date(user.activeSubscription.endDate) >= new Date()) {
+          isProSubscriber = true;
+        }
+      }
+    }
+  }
+
   // ── Cache read ──────────────────────────────────────────────────────────────
   const version = await getListVersion();
   const cacheKey = await listKey(
@@ -55,6 +70,7 @@ const listComponents = asyncHandler(async (req, res) => {
     designType,
     pricingType,
     skip,
+    isProSubscriber ? 1 : 0,
   );
   const cached = await cacheGet(cacheKey);
   if (cached) {
@@ -112,31 +128,91 @@ const listComponents = asyncHandler(async (req, res) => {
       },
     ];
   }
-  if (pricingType === "Pro") {
-    query.$and = [
-      ...(query.$and || []),
-      {
-        $or: [
-          { pricingType: "Pro" },
-          { tags: { $regex: "pro", $options: "i" } },
-        ],
-      },
-    ];
-  } else if (pricingType === "Free") {
-    query.$and = [
-      ...(query.$and || []),
-      {
-        $and: [
-          {
-            $or: [
-              { pricingType: { $ne: "Pro" } },
-              { pricingType: { $exists: false } },
-            ],
-          },
-          { tags: { $not: /pro/i } },
-        ],
-      },
-    ];
+
+  // Pricing filter & Pro access control
+  if (isProSubscriber) {
+    // Pro subscribers can see everything
+    if (pricingType === "Pro") {
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $or: [
+            { pricingType: "Pro" },
+            { tags: { $regex: "pro", $options: "i" } },
+          ],
+        },
+      ];
+    } else if (pricingType === "Free") {
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $and: [
+            {
+              $or: [
+                { pricingType: { $ne: "Pro" } },
+                { pricingType: { $exists: false } },
+              ],
+            },
+            { tags: { $not: /pro/i } },
+          ],
+        },
+      ];
+    }
+  } else {
+    // Free / non-subscribed users:
+    // Only show free components, OR pro components where isVisibleWithoutSubscription is true
+    if (pricingType === "Pro") {
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $and: [
+            {
+              $or: [
+                { pricingType: "Pro" },
+                { tags: { $regex: "pro", $options: "i" } },
+              ],
+            },
+            { isVisibleWithoutSubscription: true },
+          ],
+        },
+      ];
+    } else if (pricingType === "Free") {
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $and: [
+            {
+              $or: [
+                { pricingType: { $ne: "Pro" } },
+                { pricingType: { $exists: false } },
+              ],
+            },
+            { tags: { $not: /pro/i } },
+          ],
+        },
+      ];
+    } else {
+      // Default: show Free components OR Pro components visible without subscription
+      query.$and = [
+        ...(query.$and || []),
+        {
+          $or: [
+            {
+              $and: [
+                {
+                  $or: [
+                    { pricingType: { $ne: "Pro" } },
+                    { pricingType: { $exists: false } },
+                  ],
+                },
+                { tags: { $not: /pro/i } },
+              ],
+            },
+            { isVisibleWithoutSubscription: true },
+          ],
+        },
+      ];
+    }
   }
 
   const select = shouldIncludeData ? "" : "-figmaDataBase64";
@@ -384,7 +460,16 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
     throw new Error("Admin access required");
   }
 
-  const { page = 1, limit = 50, createdBy, userId, status, q } = req.query;
+  const {
+    page = 1,
+    limit = 50,
+    createdBy,
+    userId,
+    status,
+    q,
+    pricingType,
+    isVisibleWithoutSubscription,
+  } = req.query;
   const pageNumber = Math.max(Number(page) || 1, 1);
   const perPage = Math.min(Math.max(Number(limit) || 50, 1), 100);
   const skip = (pageNumber - 1) * perPage;
@@ -396,6 +481,12 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
   }
   if (status) {
     query.status = status;
+  }
+  if (pricingType) {
+    query.pricingType = pricingType;
+  }
+  if (isVisibleWithoutSubscription !== undefined && isVisibleWithoutSubscription !== "") {
+    query.isVisibleWithoutSubscription = isVisibleWithoutSubscription === "true";
   }
   if (q && q.trim()) {
     const safeSearch = escapeRegex(q.trim());
@@ -625,7 +716,7 @@ const getComponentData = asyncHandler(async (req, res) => {
     throw new Error("Component not found");
   }
 
-  // If component is free, return the data directly
+  // Only free components can be downloaded without subscription; Pro components always require an active subscription
   if (component.pricingType !== "Pro") {
     return res.json({
       success: true,
@@ -921,6 +1012,40 @@ const getApprovedTags = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── PATCH /api/components/:id/visibility ─────────────────────────────────────
+const updateComponentVisibility = asyncHandler(async (req, res) => {
+  const userRole = req.user.role || "user";
+  if (userRole !== "admin") {
+    res.status(403);
+    throw new Error("Only admins can update component visibility");
+  }
+
+  const { isVisibleWithoutSubscription } = req.body;
+  if (typeof isVisibleWithoutSubscription !== "boolean") {
+    res.status(400);
+    throw new Error("isVisibleWithoutSubscription must be a boolean");
+  }
+
+  const component = await Component.findByIdAndUpdate(
+    req.params.id,
+    { isVisibleWithoutSubscription },
+    { returnDocument: "after" }
+  );
+
+  if (!component) {
+    res.status(404);
+    throw new Error("Component not found");
+  }
+
+  // Invalidate this component's cache + all list caches
+  await Promise.all([
+    cacheInvalidate(componentKey(req.params.id)),
+    bumpListVersion(),
+  ]);
+
+  res.json({ success: true, data: component });
+});
+
 module.exports = {
   listComponents,
   listMyComponents,
@@ -937,4 +1062,5 @@ module.exports = {
   updateComponentStatus,
   listComponentsAdmin,
   getApprovedTags,
+  updateComponentVisibility,
 };

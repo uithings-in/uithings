@@ -50,6 +50,11 @@ const componentSchema = new mongoose.Schema(
       enum: ["Free", "Pro"],
       default: "Free",
     },
+    isVisibleWithoutSubscription: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     figmaDataBase64: {
       type: String,
       required: true,

@@ -26,6 +26,7 @@ export interface ComponentItem {
   wireframePreviewImageUrl?: string;
   designType?: "Wireframe" | "UI Design" | "Both";
   pricingType?: "Free" | "Pro";
+  isVisibleWithoutSubscription?: boolean;
   figmaDataBase64?: string;
   createdBy?: {
     _id?: string;

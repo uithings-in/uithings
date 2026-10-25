@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Crown, ChevronRight, Infinity } from "lucide-react";
+import { Crown, ChevronRight } from "lucide-react";
 import {
   type SubscriptionSummary,
   type SubscriptionCardState,
@@ -226,15 +226,7 @@ export function SubscriptionCard({
             <dt className="text-[11px] font-medium text-white/55">Downloads</dt>
             <dd className="text-sm font-semibold text-white tabular-nums">
               {info.isUnlimited ? (
-                <span className="flex items-center gap-1.5">
-                  <Infinity
-                    size={15}
-                    strokeWidth={2.2}
-                    className="text-white/80 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span>Unlimited</span>
-                </span>
+                <span>Unlimited</span>
               ) : (
                 <span>
                   {info.downloadsUsed} / {info.maxComponents}

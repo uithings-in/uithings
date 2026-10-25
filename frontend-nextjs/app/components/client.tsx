@@ -203,6 +203,7 @@ function PreviewModal({
   onFavoriteToggle,
   isFavoritePending,
   onDownloadRecorded,
+  isProUser = false,
 }: {
   item: ComponentItem;
   onClose: () => void;
@@ -212,7 +213,10 @@ function PreviewModal({
   onFavoriteToggle: (item: ComponentItem) => void;
   isFavoritePending: boolean;
   onDownloadRecorded: (item: ComponentItem) => Promise<number | null>;
+  isProUser?: boolean;
 }) {
+  const isPro = isProComponent(item);
+  const showLock = isPro && !isProUser;
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -506,7 +510,9 @@ function PreviewModal({
               className={`flex-1 sm:flex-initial sm:w-[120px] h-8 sm:h-9 shrink-0 rounded-xl border text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 isSuccess
                   ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
-                  : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
+                  : showLock
+                    ? "bg-[#18181B] text-white border-[#18181B] hover:bg-black active:scale-95 cursor-pointer shadow-sm"
+                    : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
               }`}
             >
               {isSuccess ? (
@@ -548,6 +554,23 @@ function PreviewModal({
                     />
                   </svg>
                   Copying...
+                </span>
+              ) : showLock ? (
+                <span className="flex items-center gap-1.5 text-amber-400">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  Unlock
                 </span>
               ) : (
                 <>
@@ -678,8 +701,14 @@ const ComponentCard = memo(function ComponentCard({
             {item.name}
           </span>
           {isPro ? (
-            <span className="flex items-center gap-1 text-[#9FE870] text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide">
+            <span
+              className="flex items-center gap-1 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-md shrink-0 tracking-wide text-[#9FE870]"
+              title="Pro component (Subscription required)"
+            >
               <Crown size={18} color="#f19239ff" strokeWidth={2} />
+              <span className="text-[9.5px] font-bold text-[#f19239ff] uppercase tracking-wide">
+                PRO
+              </span>
             </span>
           ) : (
             <span className="text-[9.5px] font-bold text-[#F0F8FF] px-1.5 py-0.5 rounded bg-[#8F8F8F] shrink-0 uppercase tracking-wide">
@@ -767,8 +796,8 @@ const ComponentCard = memo(function ComponentCard({
 });
 
 // ── QUERY CONFIG (shared) ─────────────────────────────────────────────────────
-const STALE_TIME = 5 * 60 * 1000; // 5 minutes — cached data treated as fresh
-const GC_TIME = 10 * 60 * 1000; // 10 minutes — data kept in memory after unmount
+const STALE_TIME = 0; // Real-time sync: queries immediately re-check for freshness
+const GC_TIME = 5 * 60 * 1000; // 5 minutes — data kept in memory after unmount
 
 function getDesignType(viewMode: ViewMode): "Wireframe" | "UI Design" {
   return viewMode === "wireframe" ? "Wireframe" : "UI Design";
@@ -796,6 +825,7 @@ function buildQueryOptions(
   tag: string,
   viewMode: ViewMode,
   priceMode: PriceMode,
+  isProUser: boolean = false,
 ) {
   return {
     queryKey: [
@@ -805,6 +835,7 @@ function buildQueryOptions(
       tag,
       viewMode,
       priceMode,
+      isProUser ? "pro" : "free",
       PAGE_SIZE,
     ],
     queryFn: ({ pageParam }: { pageParam: { skip: number; limit: number } }) =>
@@ -823,6 +854,9 @@ function buildQueryOptions(
         ? { skip: totalLoaded, limit: PAGE_SIZE }
         : undefined;
     },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 10 * 1000,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
   } as const;
@@ -936,14 +970,21 @@ export default function ComponentsClient({
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    ...buildQueryOptions(debouncedSearch, activeTag, viewMode, priceMode),
+    ...buildQueryOptions(
+      debouncedSearch,
+      activeTag,
+      viewMode,
+      priceMode,
+      isProUser,
+    ),
     initialData:
-      isInitialQuery && initialPage
+      isInitialQuery && initialPage && !isProUser
         ? {
             pages: [initialPage],
             pageParams: [{ skip: 0, limit: PAGE_SIZE }],
           }
         : undefined,
+    initialDataUpdatedAt: 0,
   });
 
   const items = useMemo(
@@ -1050,7 +1091,13 @@ export default function ComponentsClient({
     (cat: string) => {
       const tag = cat === "All" ? "" : cat;
       queryClient.prefetchInfiniteQuery({
-        ...buildQueryOptions(debouncedSearch, tag, viewMode, priceMode),
+        ...buildQueryOptions(
+          debouncedSearch,
+          tag,
+          viewMode,
+          priceMode,
+          isProUser,
+        ),
         // Only prefetch if data isn't already cached / fresh
       });
     },
@@ -1070,6 +1117,12 @@ export default function ComponentsClient({
   // ── Client-side filters ────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let out = items;
+    // Non-pro users can only see free components or pro components unlocked by admin
+    if (!isProUser) {
+      out = out.filter(
+        (i) => i.pricingType !== "Pro" || i.isVisibleWithoutSubscription,
+      );
+    }
     if (activeCategory !== "All") {
       out = out.filter((i) =>
         i.tags.some((t) =>
@@ -1108,7 +1161,7 @@ export default function ComponentsClient({
       out = out.filter((i) => i.tags.some((t) => t.toLowerCase() === "app"));
     }
     return out;
-  }, [items, activeCategory, priceMode, viewMode, platformMode]);
+  }, [items, activeCategory, priceMode, viewMode, platformMode, isProUser]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -1154,8 +1207,18 @@ export default function ComponentsClient({
       await copyToFigma(payload, item.name);
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      if (
+        error?.response?.status === 403 ||
+        error?.response?.data?.code === "PRO_SUBSCRIPTION_REQUIRED"
+      ) {
+        closePreview?.();
+        setPricingModalOpen(true);
+        showToast("Upgrade to Pro to copy this component.");
+        return false;
+      }
       console.error("Copy failed:", error);
+      showToast("Failed to copy component data.");
       return false;
     } finally {
       setActiveId(null);
@@ -1688,6 +1751,7 @@ export default function ComponentsClient({
               toggleFavoriteMutation.variables === previewItem._id
             }
             onDownloadRecorded={recordDownload}
+            isProUser={isProUser}
           />
         )}
 

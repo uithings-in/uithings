@@ -2,14 +2,15 @@ import { componentsApi } from "../../api/components";
 import type { PaginatedComponentResponse } from "../../lib/types";
 import ComponentsClient from "./client";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
 
 async function fetchInitialComponents(): Promise<PaginatedComponentResponse | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/components?limit=25&designType=UI+Design`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
@@ -28,7 +29,7 @@ async function fetchInitialComponents(): Promise<PaginatedComponentResponse | nu
 async function fetchInitialTags(): Promise<string[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/components/tags`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();

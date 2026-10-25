@@ -135,6 +135,12 @@ async function cacheInvalidate(...keys) {
 async function bumpListVersion() {
   memoryListVersion += 1;
 
+  for (const k of memoryCache.keys()) {
+    if (k.startsWith("components:list:")) {
+      memoryCache.delete(k);
+    }
+  }
+
   if (isRedisActive()) {
     try {
       const redis = getRedisClient();
@@ -176,8 +182,8 @@ async function getListVersion() {
   return memoryListVersion;
 }
 
-function listKey(version, q, tag, page, limit, includeData, designType = "", pricingType = "", skip = 0) {
-  return `components:list:v${version}:q=${q}:tag=${tag}:p=${page}:l=${limit}:s=${skip}:d=${includeData}:design=${designType}:price=${pricingType}`;
+function listKey(version, q, tag, page, limit, includeData, designType = "", pricingType = "", skip = 0, isPro = 0) {
+  return `components:list:v${version}:q=${q}:tag=${tag}:p=${page}:l=${limit}:s=${skip}:d=${includeData}:design=${designType}:price=${pricingType}:pro=${isPro}`;
 }
 
 function componentKey(id) {
