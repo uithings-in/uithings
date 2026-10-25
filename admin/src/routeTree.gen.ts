@@ -29,6 +29,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedTagsIndexRouteImport } from './routes/_authenticated/tags/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedProVisibilityIndexRouteImport } from './routes/_authenticated/pro-visibility/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedComponentsIndexRouteImport } from './routes/_authenticated/components/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
@@ -142,6 +143,12 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedProVisibilityIndexRoute =
+  AuthenticatedProVisibilityIndexRouteImport.update({
+    id: '/pro-visibility/',
+    path: '/pro-visibility/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
@@ -244,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/components/': typeof AuthenticatedComponentsIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/pro-visibility/': typeof AuthenticatedProVisibilityIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tags/': typeof AuthenticatedTagsIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -275,6 +283,7 @@ export interface FileRoutesByTo {
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/components': typeof AuthenticatedComponentsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/pro-visibility': typeof AuthenticatedProVisibilityIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tags': typeof AuthenticatedTagsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -311,6 +320,7 @@ export interface FileRoutesById {
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/components/': typeof AuthenticatedComponentsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/pro-visibility/': typeof AuthenticatedProVisibilityIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tags/': typeof AuthenticatedTagsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/chats/'
     | '/components/'
     | '/help-center/'
+    | '/pro-visibility/'
     | '/settings/'
     | '/tags/'
     | '/tasks/'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/chats'
     | '/components'
     | '/help-center'
+    | '/pro-visibility'
     | '/settings'
     | '/tags'
     | '/tasks'
@@ -411,6 +423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chats/'
     | '/_authenticated/components/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/pro-visibility/'
     | '/_authenticated/settings/'
     | '/_authenticated/tags/'
     | '/_authenticated/tasks/'
@@ -574,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/pro-visibility/': {
+      id: '/_authenticated/pro-visibility/'
+      path: '/pro-visibility'
+      fullPath: '/pro-visibility/'
+      preLoaderRoute: typeof AuthenticatedProVisibilityIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/help-center/': {
       id: '/_authenticated/help-center/'
       path: '/help-center'
@@ -700,6 +720,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedComponentsIndexRoute: typeof AuthenticatedComponentsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
+  AuthenticatedProVisibilityIndexRoute: typeof AuthenticatedProVisibilityIndexRoute
   AuthenticatedTagsIndexRoute: typeof AuthenticatedTagsIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -714,6 +735,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedComponentsIndexRoute: AuthenticatedComponentsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
+  AuthenticatedProVisibilityIndexRoute: AuthenticatedProVisibilityIndexRoute,
   AuthenticatedTagsIndexRoute: AuthenticatedTagsIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

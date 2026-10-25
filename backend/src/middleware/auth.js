@@ -36,10 +36,7 @@ function optionalProtect(req, res, next) {
     req.user = payload;
     return next();
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
+    return next();
   }
 }
 

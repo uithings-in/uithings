@@ -9,6 +9,7 @@ import {
   UserCog,
   Users,
   Tag,
+  Crown,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -42,6 +43,11 @@ export const sidebarData: SidebarData = {
           title: 'Components',
           url: '/components',
           icon: Package,
+        },
+        {
+          title: 'Pro Visibility',
+          url: '/pro-visibility',
+          icon: Crown,
         },
         {
           title: 'Tags',

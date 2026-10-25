@@ -25,10 +25,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { copyToFigma } from '@/lib/clipboard'
-import { Copy, Eye, AlertTriangle, Search, X } from 'lucide-react'
+import { Copy, Eye, AlertTriangle, Search, X, Crown } from 'lucide-react'
 import { API_URL } from '@/lib/api-url'
 
 const REJECTION_PRESETS = [
@@ -193,6 +194,35 @@ export function ComponentsModeration() {
       }
     } catch (error) {
       toast.error('Failed to perform action')
+    }
+  }
+
+  const handleToggleVisibility = async (id: string, currentState?: boolean) => {
+    const nextState = !currentState
+    setComponents((prev) =>
+      prev.map((c) =>
+        c._id === id ? { ...c, isVisibleWithoutSubscription: nextState } : c
+      )
+    )
+
+    try {
+      await axios.patch(
+        `${API_URL}/components/${id}/visibility`,
+        { isVisibleWithoutSubscription: nextState },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+      toast.success(
+        nextState
+          ? 'Component is now visible without subscription'
+          : 'Component is now locked to Pro subscribers'
+      )
+    } catch (err: any) {
+      setComponents((prev) =>
+        prev.map((c) =>
+          c._id === id ? { ...c, isVisibleWithoutSubscription: !nextState } : c
+        )
+      )
+      toast.error(err.response?.data?.message || 'Failed to update visibility')
     }
   }
 
@@ -369,8 +399,39 @@ export function ComponentsModeration() {
                   
                   <div className="flex items-center gap-2 mt-3">
                     <Badge variant="secondary" className="text-xs">{comp.designType || 'UI Design'}</Badge>
-                    <Badge variant="outline" className="text-xs">{comp.pricingType}</Badge>
+                    <Badge
+                      variant={comp.pricingType === 'Pro' ? 'default' : 'outline'}
+                      className={`text-xs ${
+                        comp.pricingType === 'Pro'
+                          ? comp.isVisibleWithoutSubscription
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                            : 'bg-amber-500 hover:bg-amber-600 text-white'
+                          : ''
+                      }`}
+                    >
+                      {comp.pricingType === 'Pro' && <Crown className="w-3 h-3 mr-1 inline" />}
+                      {comp.pricingType}
+                      {comp.pricingType === 'Pro' && comp.isVisibleWithoutSubscription && ' (In Gallery)'}
+                    </Badge>
                   </div>
+
+                  {comp.pricingType === 'Pro' && (
+                    <div className="mt-3 p-2 rounded-lg bg-muted/50 border flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-1.5 text-muted-foreground font-medium text-[11px]" title="Visible to free users in components page, but subscription required to copy">
+                        <Eye className="w-3.5 h-3.5 text-blue-600" />
+                        Show to Free:
+                      </span>
+                      <Switch
+                        checked={Boolean(comp.isVisibleWithoutSubscription)}
+                        onCheckedChange={() =>
+                          handleToggleVisibility(
+                            comp._id,
+                            comp.isVisibleWithoutSubscription
+                          )
+                        }
+                      />
+                    </div>
+                  )}
 
                   <div className="mt-auto pt-6 flex flex-wrap gap-2">
                     {/* View Button */}

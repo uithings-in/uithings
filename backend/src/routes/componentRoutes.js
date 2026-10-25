@@ -17,7 +17,7 @@ const { protect, optionalProtect } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.get("/", listComponents);
+router.get("/", optionalProtect, listComponents);
 router.get("/admin", protect, require("../controllers/componentController").listComponentsAdmin);
 router.get("/my", protect, listMyComponents);
 router.get("/favorites/ids", protect, listFavoriteComponentIds);
@@ -31,6 +31,7 @@ router.post("/:id/download", recordComponentDownload);
 router.patch("/:id", protect, updateComponent);
 router.patch("/:id/favorite", protect, toggleFavoriteComponent);
 router.patch("/:id/status", protect, require("../controllers/componentController").updateComponentStatus);
+router.patch("/:id/visibility", protect, require("../controllers/componentController").updateComponentVisibility);
 router.delete("/:id", protect, deleteComponent);
 
 module.exports = router;
