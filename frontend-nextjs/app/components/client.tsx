@@ -711,7 +711,7 @@ const ComponentCard = memo(function ComponentCard({
               </span>
             </span>
           ) : (
-            <span className="text-[9.5px] font-bold text-[#F0F8FF] px-1.5 py-0.5 rounded bg-[#8F8F8F] shrink-0 uppercase tracking-wide">
+            <span className="text-[9.5px] font-bold text-[#F0F8FF] px-1.5 py-0.5 rounded border border-[#737373] bg-[#8F8F8F] shrink-0 uppercase tracking-wide">
               FREE
             </span>
           )}
