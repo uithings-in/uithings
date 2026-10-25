@@ -1074,6 +1074,18 @@ body:has(.dashboard-container) {
   color: #a1a1aa !important;
 }
 
+/* Dotted Grid Background (Wireframe theme) */
+.bg-grid-dots-gray {
+  background-image: radial-gradient(rgba(107, 114, 128, 0.4) 1.25px, transparent 1.25px);
+  background-size: 16px 16px;
+}
+
+:where(.dark, .dark *) .bg-grid-dots-gray,
+.dark .bg-grid-dots-gray {
+  background-image: radial-gradient(rgba(156, 163, 175, 0.32) 1.25px, transparent 1.25px);
+  background-size: 16px 16px;
+}
+
 
 
 

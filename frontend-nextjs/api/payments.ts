@@ -6,6 +6,7 @@ export interface CreateOrderResponse {
   currency: string;
   planId: string;
   planName: string;
+  keyId?: string;
 }
 
 export interface PaymentVerificationResponse {
