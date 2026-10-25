@@ -151,6 +151,7 @@ const createOrder = asyncHandler(async (req, res) => {
       currency: order.currency,
       planId: plan._id,
       planName: plan.displayName,
+      keyId: process.env.RAZORPAY_KEY_ID,
     },
   });
 });

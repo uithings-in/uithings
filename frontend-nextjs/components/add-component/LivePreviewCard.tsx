@@ -122,9 +122,18 @@ export function LivePreviewCard({ values }: LivePreviewCardProps) {
             activeTheme === "dark"
               ? "bg-[#0A0A0B]"
               : activeTheme === "wireframe"
-                ? "bg-[#18181B]"
+                ? "bg-[#18181B] bg-grid-dots-gray"
                 : "bg-[#F8F9FA]"
           }`}
+          style={
+            activeTheme === "wireframe"
+              ? {
+                  backgroundImage:
+                    "radial-gradient(rgba(156, 163, 175, 0.35) 1.25px, transparent 1.25px)",
+                  backgroundSize: "16px 16px",
+                }
+              : undefined
+          }
         >
           {activeUrl ? (
             <Image

@@ -16,6 +16,19 @@ export const uploadApi = {
   },
 
   async uploadImage(file: File): Promise<string> {
+    const MAX_SIZE_BYTES = 100 * 1024;
+    const isAvifExt = file.name.toLowerCase().endsWith(".avif");
+    const isAvifType = file.type === "image/avif";
+    const hasIncompatibleType = Boolean(file.type && file.type !== "image/avif");
+    const isAvif = (isAvifType || isAvifExt) && !hasIncompatibleType;
+
+    if (!isAvif) {
+      throw new Error("Only AVIF images are allowed.");
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      throw new Error("Image size must not exceed 100KB.");
+    }
+
     const params = await this.getSignedParams();
 
     const formData = new FormData();

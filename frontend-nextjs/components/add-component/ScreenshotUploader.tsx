@@ -32,17 +32,12 @@ interface ScreenshotUploaderProps {
   onBlur?: () => void;
 }
 
-const MAX_SIZE_MB = 1;
-const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-const ALLOWED_MIME_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/avif",
-];
-const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+const MAX_SIZE_KB = 100;
+const MAX_SIZE_BYTES = MAX_SIZE_KB * 1024;
+const ALLOWED_MIME_TYPES = ["image/avif"];
+const ALLOWED_EXTENSIONS = [".avif"];
 const ALLOWED_TYPES = ALLOWED_MIME_TYPES;
-const ACCEPT_FILE_ATTR = [...ALLOWED_MIME_TYPES, ".avif"].join(",");
+const ACCEPT_FILE_ATTR = ".avif,image/avif";
 
 interface SingleDropzoneProps {
   mode: "light" | "dark" | "wireframe";
@@ -70,19 +65,22 @@ function ThemeDropzone({
 
   const validateAndSet = (selected: File) => {
     setError(null);
-    const hasValidType = Boolean(
-      selected.type && ALLOWED_MIME_TYPES.includes(selected.type),
-    );
     const hasValidExt = ALLOWED_EXTENSIONS.some((ext) =>
       selected.name.toLowerCase().endsWith(ext),
     );
+    const hasValidType = selected.type === "image/avif";
+    const hasIncompatibleType = Boolean(
+      selected.type && selected.type !== "image/avif",
+    );
 
-    if (!hasValidType && !hasValidExt) {
-      setError("PNG, JPG, WebP, or AVIF only.");
+    const isAvif = (hasValidType || hasValidExt) && !hasIncompatibleType;
+
+    if (!isAvif) {
+      setError("AVIF format only.");
       return;
     }
     if (selected.size > MAX_SIZE_BYTES) {
-      setError(`Max ${MAX_SIZE_MB}MB.`);
+      setError(`Max ${MAX_SIZE_KB}KB.`);
       return;
     }
 
@@ -188,7 +186,22 @@ function ThemeDropzone({
       {url ? (
         /* Uploaded State */
         <div className="flex-1 flex flex-col justify-between">
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200 dark:border-white/[0.1] bg-black/5 dark:bg-black/60 shadow-2xs">
+          <div
+            className={`relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200 dark:border-white/[0.1] shadow-2xs ${
+              isWireframe
+                ? "bg-[#18181B] bg-grid-dots-gray"
+                : "bg-black/5 dark:bg-black/60"
+            }`}
+            style={
+              isWireframe
+                ? {
+                    backgroundImage:
+                      "radial-gradient(rgba(156, 163, 175, 0.3) 1.25px, transparent 1.25px)",
+                    backgroundSize: "14px 14px",
+                  }
+                : undefined
+            }
+          >
             <Image
               src={url}
               alt={`${label} preview`}
@@ -242,8 +255,19 @@ function ThemeDropzone({
               ? "border-[#F97316] bg-orange-500/[0.06] shadow-2xs"
               : error
                 ? "border-rose-400 bg-rose-500/[0.03]"
-                : "border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#111113] hover:border-[#F97316] hover:bg-orange-500/[0.02]"
+                : isWireframe
+                  ? "border-gray-300 dark:border-white/[0.12] bg-[#F8FAFC] dark:bg-[#141416] bg-grid-dots-gray hover:border-[#F97316]"
+                  : "border-gray-300 dark:border-white/[0.12] bg-white dark:bg-[#111113] hover:border-[#F97316] hover:bg-orange-500/[0.02]"
           }`}
+          style={
+            isWireframe
+              ? {
+                  backgroundImage:
+                    "radial-gradient(rgba(156, 163, 175, 0.3) 1.25px, transparent 1.25px)",
+                  backgroundSize: "14px 14px",
+                }
+              : undefined
+          }
         >
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-150 ${
@@ -261,16 +285,16 @@ function ThemeDropzone({
 
           <span className="mt-2 text-[11.5px] font-semibold text-gray-800 dark:text-[#F5F5F5] group-hover:text-[#F97316] transition-colors leading-tight">
             {/* Drop */}{" "}
-            {isWireframe
+            {/* {isWireframe
               ? "Wireframe"
               : isDarkMode
                 ? "Dark Mode"
                 : "Light Mode"}{" "}
-            image
+            image */}
           </span>
 
           <p className="mt-0.5 text-[10px] text-gray-500 dark:text-[#A1A1AA]">
-            {/* Any ratio or size •  */}Max {MAX_SIZE_MB}MB
+            AVIF (Max {MAX_SIZE_KB} KB)
           </p>
 
           <span className="mt-2 inline-flex items-center gap-1 rounded bg-gray-200/70 dark:bg-white/[0.08] px-2 py-0.5 text-[9.5px] font-medium text-gray-700 dark:text-neutral-300 group-hover:bg-orange-500/10 group-hover:text-[#EA580C] dark:group-hover:text-[#FB923C] transition-colors">
@@ -360,8 +384,8 @@ export function ScreenshotUploader({
               </span>
             </div>
             <p className="text-[11px] text-gray-500 dark:text-[#A1A1AA] mt-0.5">
-              Upload distinct screenshots in any ratio or size
-              (PNG/JPG/WebP/AVIF up to {MAX_SIZE_MB}MB).
+              Upload distinct screenshots in any ratio
+              (AVIF only up to {MAX_SIZE_KB}KB).
             </p>
           </div>
         </div>
