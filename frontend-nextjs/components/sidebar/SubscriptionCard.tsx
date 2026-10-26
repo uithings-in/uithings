@@ -14,6 +14,7 @@ export interface SubscriptionCardProps {
   onManage?: () => void;
   collapsed?: boolean;
   className?: string;
+  totalComponents?: number;
 }
 
 export function SubscriptionCardSkeleton({
@@ -72,12 +73,19 @@ export function SubscriptionCard({
   onManage,
   collapsed = false,
   className = "",
+  totalComponents,
 }: SubscriptionCardProps) {
   if (isLoading) {
     return <SubscriptionCardSkeleton className={className} />;
   }
 
   const info = deriveSubscriptionInfo(subscription);
+  const accessDisplay =
+    typeof totalComponents === "number" && totalComponents > 0
+      ? `${totalComponents}+`
+      : totalComponents === 0
+      ? "0"
+      : "73+";
 
   // ── Collapsed mode ───────────────────────────────────────────────────────────
   if (collapsed) {
@@ -236,9 +244,9 @@ export function SubscriptionCard({
           </div>
 
           <div className="flex flex-col gap-0.5 min-w-0">
-            <dt className="text-[11px] font-medium text-white/55">Copied</dt>
+            <dt className="text-[11px] font-medium text-white/55">Access</dt>
             <dd className="text-sm font-semibold text-white tabular-nums">
-              {info.downloadsUsed.toLocaleString()}
+              {accessDisplay}
             </dd>
           </div>
         </dl>
@@ -252,7 +260,7 @@ export function SubscriptionCard({
           <div className="flex flex-col gap-0.5 min-w-0">
             <dt className="text-[11px] font-medium text-white/55">Access</dt>
             <dd className="text-sm font-semibold text-white tabular-nums">
-              73+
+              {accessDisplay}
             </dd>
           </div>
         </dl>

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -8,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import { subscribeToComponentChanges } from "../../lib/events";
 import { componentsApi } from "../../api/components";
 import {
   paymentsApi,
@@ -856,7 +858,8 @@ function buildQueryOptions(
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: 10 * 1000,
+    refetchInterval: 4 * 1000,
+    placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
   } as const;
@@ -866,13 +869,23 @@ function buildQueryOptions(
 export default function ComponentsClient({
   initialPage,
   initialTags = [],
+  initialTotalCount = 0,
 }: {
   initialPage: PaginatedComponentResponse | null;
   initialTags?: string[];
+  initialTotalCount?: number;
 }) {
   const { user, isInitialized, setLoginModalOpen, setPricingModalOpen } =
     useAuth();
   const queryClient = useQueryClient();
+
+  const { data: entireTotalCount = initialTotalCount } = useQuery({
+    queryKey: ["components", "total-count"],
+    queryFn: () => componentsApi.getTotalCount(),
+    initialData: initialTotalCount > 0 ? initialTotalCount : undefined,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+  });
 
   const { data: tags = [] } = useQuery({
     queryKey: ["components", "tags"],
@@ -986,6 +999,15 @@ export default function ComponentsClient({
         : undefined,
     initialDataUpdatedAt: 0,
   });
+
+  useEffect(() => {
+    const unsubscribe = subscribeToComponentChanges(() => {
+      queryClient.invalidateQueries({ queryKey: ["components"] });
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+    });
+    return unsubscribe;
+  }, [queryClient, refetch]);
 
   const items = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
@@ -1372,6 +1394,7 @@ export default function ComponentsClient({
               <SubscriptionCard
                 subscription={isProUser ? activeSubscription : null}
                 onManage={() => setPricingModalOpen(true)}
+                totalComponents={entireTotalCount}
               />
             )}
           </div>

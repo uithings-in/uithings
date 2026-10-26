@@ -68,6 +68,11 @@ export const componentsApi = {
     return response.data.data;
   },
 
+  async getTotalCount(): Promise<number> {
+    const response = await apiClient.get("/components/count");
+    return response.data.data.count;
+  },
+
   async getById(id: string): Promise<ComponentItem> {
     const response = await apiClient.get(`/components/${id}`);
     return response.data.data;

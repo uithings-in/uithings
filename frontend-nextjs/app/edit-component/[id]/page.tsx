@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, LockKeyhole } from "lucide-react";
 import { componentsApi } from "../../../api/components";
 import { uploadApi } from "../../../api/upload";
+import { broadcastComponentChange } from "../../../lib/events";
 import { useAuth } from "../../../context/AuthContext";
 import {
   ComponentEditorModal,
@@ -97,6 +98,9 @@ export default function EditComponentPage({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["components"] });
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+      broadcastComponentChange();
+      router.refresh();
     },
   });
 

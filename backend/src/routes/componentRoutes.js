@@ -12,6 +12,7 @@ const {
   listFavoriteComponentIds,
   toggleFavoriteComponent,
   getApprovedTags,
+  getComponentsCount,
 } = require("../controllers/componentController");
 const { protect, optionalProtect } = require("../middleware/auth");
 
@@ -24,6 +25,7 @@ router.get("/favorites/ids", protect, listFavoriteComponentIds);
 router.get("/favorites", protect, listFavoriteComponents);
 router.get("/top-creators", require("../controllers/componentController").getTopCreators);
 router.get("/tags", getApprovedTags);
+router.get("/count", getComponentsCount);
 router.get("/:id", getComponent);
 router.get("/:id/data", optionalProtect, getComponentData);
 router.post("/", protect, createComponent);

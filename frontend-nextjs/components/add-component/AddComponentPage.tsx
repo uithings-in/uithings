@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { componentsApi } from "../../api/components";
 import { uploadApi } from "../../api/upload";
+import { broadcastComponentChange } from "../../lib/events";
 import { useAuth } from "../../context/AuthContext";
 import { useAddComponentForm } from "./useAddComponentForm";
 import { FigmaPayloadZone } from "./FigmaPayloadZone";
@@ -160,12 +161,15 @@ export function AddComponentView({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["components"] });
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+      broadcastComponentChange();
+      router.refresh();
 
       clearDraft();
       setSuccessToast(`"${values.name}" published successfully!`);
 
       if (onSuccess) {
-        setTimeout(() => onSuccess(), 1000);
+        setTimeout(() => onSuccess(), 500);
       } else {
         setTimeout(() => {
           if (user?.role === "admin") {
@@ -173,7 +177,7 @@ export function AddComponentView({
           } else {
             router.push("/dashboard?page=my-components");
           }
-        }, 1200);
+        }, 600);
       }
     },
     onError: (err: any) => {

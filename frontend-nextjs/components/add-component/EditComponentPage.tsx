@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { componentsApi } from "../../api/components";
 import { uploadApi } from "../../api/upload";
+import { broadcastComponentChange } from "../../lib/events";
 import { useAuth } from "../../context/AuthContext";
 import { FigmaPayloadZone } from "./FigmaPayloadZone";
 import { ScreenshotUploader } from "./ScreenshotUploader";
@@ -435,21 +436,24 @@ export function EditComponentView({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["components"] });
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
       queryClient.invalidateQueries({
         queryKey: ["components", "detail-edit", componentId],
       });
       queryClient.invalidateQueries({
         queryKey: ["components", "detail", componentId],
       });
+      broadcastComponentChange();
+      router.refresh();
 
       setSuccessToast(`"${name}" updated successfully!`);
 
       if (onSuccess) {
-        setTimeout(() => onSuccess(), 1000);
+        setTimeout(() => onSuccess(), 500);
       } else {
         setTimeout(() => {
           router.push("/dashboard?page=my-components");
-        }, 1200);
+        }, 600);
       }
     },
     onError: (err: any) => {

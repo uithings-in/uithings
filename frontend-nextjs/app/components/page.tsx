@@ -44,11 +44,35 @@ async function fetchInitialTags(): Promise<string[]> {
   }
 }
 
+async function fetchInitialTotalCount(): Promise<number> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/components/count`, {
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    return json.data.count;
+  } catch {
+    try {
+      return await componentsApi.getTotalCount();
+    } catch {
+      return 0;
+    }
+  }
+}
+
 export default async function ComponentsPage() {
-  const [initialPage, initialTags] = await Promise.all([
+  const [initialPage, initialTags, initialTotalCount] = await Promise.all([
     fetchInitialComponents(),
     fetchInitialTags(),
+    fetchInitialTotalCount(),
   ]);
 
-  return <ComponentsClient initialPage={initialPage} initialTags={initialTags} />;
+  return (
+    <ComponentsClient
+      initialPage={initialPage}
+      initialTags={initialTags}
+      initialTotalCount={initialTotalCount}
+    />
+  );
 }
