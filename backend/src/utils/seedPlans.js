@@ -1,4 +1,6 @@
 require("dotenv").config();
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const { connectDatabase } = require("../config/database");
 const { Plan } = require("../models/Plan");
 
@@ -19,7 +21,7 @@ const seedPlans = async () => {
     {
       name: "pro_starter",
       displayName: "Basic",
-      description: "Ideal for individuals who need quick access to basic features.",
+      description: "Simple and Affordable Plans",
       price: 29900,
       durationDays: 90,
       componentLimit: 100,
@@ -33,7 +35,7 @@ const seedPlans = async () => {
     {
       name: "pro_ultimate",
       displayName: "Advance",
-      description: "Ideal for individuals who need advanced features and tools for client work.",
+      description: "Unlock More Features and Possibilities",
       price: 49900,
       durationDays: 180,
       componentLimit: 250,
@@ -47,7 +49,7 @@ const seedPlans = async () => {
     {
       name: "pro_annual",
       displayName: "Premium",
-      description: "Ideal for businesses and pros who need full access and unlimited components.",
+      description: "Premium Benefits for Maximum Value",
       price: 59900,
       durationDays: 365,
       componentLimit: 999999,
