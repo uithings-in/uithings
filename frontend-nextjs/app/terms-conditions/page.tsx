@@ -561,7 +561,7 @@ export default function TermsConditionsPage() {
               isSelected={selectedPlanName === "basic"}
               onClick={() => setSelectedPlanName("basic")}
               features={proStarter?.features || basicFeatures}
-              description={proStarter?.description || "Simple structures, leading to a focus on user experience."}
+              description={proStarter?.description || "Simple and Affordable Plans"}
               actionText="Get Started"
               onActionClick={() => handlePlanSelect("pro_starter")}
               actionLoading={checkoutLoading && pendingPlanName === "pro_starter"}
@@ -576,7 +576,7 @@ export default function TermsConditionsPage() {
               isSelected={selectedPlanName === "advanced"}
               onClick={() => setSelectedPlanName("advanced")}
               features={proUltimate?.features || advancedFeatures}
-              description={proUltimate?.description || "Highly customized layout to help you stand out."}
+              description={proUltimate?.description || "Unlock More Features and Possibilities"}
               actionText="Try Now"
               onActionClick={() => handlePlanSelect("pro_ultimate")}
               actionLoading={checkoutLoading && pendingPlanName === "pro_ultimate"}

@@ -31,6 +31,7 @@ import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse } from "../../lib/types";
 import { AddComponentPanel } from "../../components/AddComponentPanel";
 import { EditComponentView } from "../../components/add-component/EditComponentPage";
+import { broadcastComponentChange } from "../../lib/events";
 import {
   LayoutDashboard,
   Package,
@@ -544,6 +545,10 @@ function MyComponentsPanel({
     mutationFn: (id: string) => componentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      queryClient.invalidateQueries({ queryKey: ["components"] });
+      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+      broadcastComponentChange();
+      router.refresh();
       setDeleteTarget(null);
       setSelectedIds((prev) => prev.filter((i) => i !== deleteTarget?.id));
     },

@@ -44,7 +44,7 @@ const DEFAULT_LANDING_PLANS = [
     pricePrefix: "₹",
     price: "299",
     period: "per user / 90 days",
-    description: "Perfect for testing and light creative needs.",
+    description: "Simple and Affordable Plans",
     features: [
       "100 components",
       "Figma variables",
@@ -62,7 +62,7 @@ const DEFAULT_LANDING_PLANS = [
     pricePrefix: "₹",
     price: "499",
     period: "per user / 180 days",
-    description: "Unlock more power with advanced models and bigger limits.",
+    description: "Unlock More Features and Possibilities",
     features: [
       "250 components",
       "Figma variables",
@@ -80,7 +80,7 @@ const DEFAULT_LANDING_PLANS = [
     pricePrefix: "₹",
     price: "599",
     period: "per user / 365 days",
-    description: "Everything unlimited. For pros, teams, and power creators.",
+    description: "Premium Benefits for Maximum Value",
     features: [
       "Unlimited components",
       "Figma variables",
@@ -437,7 +437,7 @@ export default function PricingClient({ initialPlans }: { initialPlans: Plan[] }
                       </div>
 
                       <p
-                        className="mt-3.5 min-h-[44px] text-[14px] sm:text-[15px] font-normal leading-[22px] tracking-[-0.16px] text-[#F4F7F5]"
+                        className="mt-3.5 min-h-[44px] flex items-center justify-center text-center text-[14px] sm:text-[15px] font-normal leading-[22px] tracking-[-0.16px] text-[#F4F7F5]"
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
                         {plan.description}

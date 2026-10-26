@@ -1012,6 +1012,22 @@ const getApprovedTags = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── GET /api/components/count ────────────────────────────────────────────────
+const getComponentsCount = asyncHandler(async (req, res) => {
+  const count = await Component.countDocuments({
+    $or: [
+      { status: "approved" },
+      { status: { $exists: false } },
+      { status: null },
+    ],
+  });
+
+  res.json({
+    success: true,
+    data: { count },
+  });
+});
+
 // ─── PATCH /api/components/:id/visibility ─────────────────────────────────────
 const updateComponentVisibility = asyncHandler(async (req, res) => {
   const userRole = req.user.role || "user";
@@ -1062,5 +1078,6 @@ module.exports = {
   updateComponentStatus,
   listComponentsAdmin,
   getApprovedTags,
+  getComponentsCount,
   updateComponentVisibility,
 };
