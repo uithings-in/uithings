@@ -350,7 +350,7 @@ function PreviewModal({
               {item.name}
             </span>
             {isProComponent(item) && (
-              <span className="flex items-center gap-1 shrink-0 ml-1.5 sm:ml-2 bg-[#9FE870]/20 text-[#2c5114] text-[0.62rem] sm:text-[0.65rem] font-bold px-1.5 sm:px-2 py-0.5 rounded-md tracking-wider">
+              <span className="flex items-center gap-1 shrink-0 ml-1.5 sm:ml-2 text-[#d66a04] text-[0.62rem] sm:text-[0.65rem] font-bold tracking-wider">
                 <Crown size={13} color="#d66a04" strokeWidth={2.5} />
                 PRO
               </span>
@@ -453,7 +453,7 @@ function PreviewModal({
           <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-2.5 w-full sm:w-auto">
             {/* Mode Switcher (shows Light, Dark, Wireframe, or all if uploaded) */}
             {slides.length > 0 && (
-              <div className="flex items-center h-8 sm:h-9 rounded-xl bg-gray-100 p-0.5 sm:p-1 border border-gray-200/80 shrink-0">
+              <div className="relative flex items-center h-8 sm:h-9 rounded-xl bg-gray-100 p-0.5 sm:p-1 border border-gray-200/80 shrink-0">
                 {slides.map((slide, idx) => {
                   const isActive = currentIndex === idx;
                   const isDark = slide.mode === "dark";
@@ -466,39 +466,60 @@ function PreviewModal({
                         e.stopPropagation();
                         setCurrentIndex(idx);
                       }}
-                      className={`flex items-center gap-1 sm:gap-1.5 h-full px-2 sm:px-3 rounded-lg text-[0.72rem] sm:text-xs font-bold transition-all cursor-pointer border ${
-                        isActive
-                          ? isDark
-                            ? "bg-[#18181B] text-white shadow-xs border-[#18181B]"
-                            : isWireframe
-                              ? "bg-white text-[#EA580C] shadow-xs border-orange-500/20"
-                              : "bg-white text-gray-900 shadow-xs border-gray-200/60"
-                          : "text-gray-500 hover:text-gray-900 border-transparent"
-                      }`}
+                      className="relative flex items-center justify-center h-full px-2.5 sm:px-3 rounded-lg text-[0.72rem] sm:text-xs font-bold transition-colors cursor-pointer select-none"
                     >
-                      {isDark ? (
-                        <Moon
-                          size={11}
-                          className={
-                            isActive ? "text-indigo-400" : "text-gray-400"
-                          }
-                        />
-                      ) : isWireframe ? (
-                        <PenTool
-                          size={11}
-                          className={
-                            isActive ? "text-[#EA580C]" : "text-gray-400"
-                          }
-                        />
-                      ) : (
-                        <Sun
-                          size={11}
-                          className={
-                            isActive ? "text-amber-500" : "text-gray-400"
-                          }
+                      {isActive && (
+                        <motion.div
+                          layoutId="preview-modal-slide-mode-pill"
+                          className={`absolute inset-0 rounded-lg shadow-xs pointer-events-none ${
+                            isDark
+                              ? "bg-[#18181B] border border-[#18181B]"
+                              : isWireframe
+                                ? "bg-white border border-orange-500/20"
+                                : "bg-white border border-gray-200/60"
+                          }`}
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 32,
+                          }}
                         />
                       )}
-                      <span>{slide.label}</span>
+                      <span
+                        className={`relative z-10 flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 ${
+                          isActive
+                            ? isDark
+                              ? "text-white"
+                              : isWireframe
+                                ? "text-[#EA580C]"
+                                : "text-gray-900"
+                            : "text-gray-500 hover:text-gray-900"
+                        }`}
+                      >
+                        {isDark ? (
+                          <Moon
+                            size={11}
+                            className={`transition-colors duration-200 ${
+                              isActive ? "text-indigo-400" : "text-gray-400"
+                            }`}
+                          />
+                        ) : isWireframe ? (
+                          <PenTool
+                            size={11}
+                            className={`transition-colors duration-200 ${
+                              isActive ? "text-[#EA580C]" : "text-gray-400"
+                            }`}
+                          />
+                        ) : (
+                          <Sun
+                            size={11}
+                            className={`transition-colors duration-200 ${
+                              isActive ? "text-amber-500" : "text-gray-400"
+                            }`}
+                          />
+                        )}
+                        <span>{slide.label}</span>
+                      </span>
                     </button>
                   );
                 })}
@@ -512,9 +533,7 @@ function PreviewModal({
               className={`flex-1 sm:flex-initial sm:w-[120px] h-8 sm:h-9 shrink-0 rounded-xl border text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 isSuccess
                   ? "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[0.98]"
-                  : showLock
-                    ? "bg-[#18181B] text-white border-[#18181B] hover:bg-black active:scale-95 cursor-pointer shadow-sm"
-                    : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
+                  : "bg-white text-black border-black hover:bg-black hover:text-white active:scale-95 cursor-pointer"
               }`}
             >
               {isSuccess ? (
@@ -558,7 +577,7 @@ function PreviewModal({
                   Copying...
                 </span>
               ) : showLock ? (
-                <span className="flex items-center gap-1.5 text-amber-400">
+                <span className="flex items-center gap-1.5">
                   <svg
                     width="14"
                     height="14"
@@ -721,12 +740,7 @@ const ComponentCard = memo(function ComponentCard({
 
         <div className="flex items-center gap-1 text-white text-[11.5px]">
           <div className="flex items-center ml-1">
-            <button
-              type="button"
-              className="hover:text-red-500 transition-colors"
-            >
-              <ArrowDownToLine size={15} strokeWidth={1.5} />
-            </button>
+            <ArrowDownToLine size={15} strokeWidth={1.5} />
             <span className="font-medium ml-0.5">
               {formatCompactCount(downloadCount)}
             </span>
