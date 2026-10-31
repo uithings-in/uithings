@@ -9,6 +9,9 @@ const TTL_MY = Number(process.env.CACHE_TTL_MY || 30);
 const memoryCache = new Map();
 let memoryListVersion = 1;
 
+// Derived metadata that depends on component content and is invalidated with it.
+const META_CACHE_KEYS = ["components:tags", "components:count"];
+
 // Periodically clean up expired entries in memory (every 60s)
 setInterval(() => {
   const now = Date.now();
@@ -136,7 +139,7 @@ async function bumpListVersion() {
   memoryListVersion += 1;
 
   for (const k of memoryCache.keys()) {
-    if (k.startsWith("components:list:")) {
+    if (k.startsWith("components:list:") || META_CACHE_KEYS.includes(k)) {
       memoryCache.delete(k);
     }
   }
@@ -147,6 +150,7 @@ async function bumpListVersion() {
       if (redis) {
         const next = await redis.incr("components:list:version");
         memoryListVersion = Number(next) || memoryListVersion;
+        await redis.del(...META_CACHE_KEYS);
         return memoryListVersion;
       }
     } catch (err) {

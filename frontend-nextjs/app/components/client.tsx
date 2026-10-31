@@ -812,7 +812,7 @@ const ComponentCard = memo(function ComponentCard({
 });
 
 // ── QUERY CONFIG (shared) ─────────────────────────────────────────────────────
-const STALE_TIME = 0; // Real-time sync: queries immediately re-check for freshness
+const STALE_TIME = 30 * 1000; // Treat SSR data as fresh; only refetch when genuinely stale
 const GC_TIME = 5 * 60 * 1000; // 5 minutes — data kept in memory after unmount
 
 function getDesignType(viewMode: ViewMode): "Wireframe" | "UI Design" {
@@ -841,8 +841,10 @@ function buildQueryOptions(
   tag: string,
   viewMode: ViewMode,
   priceMode: PriceMode,
-  isProUser: boolean = false,
 ) {
+  // Access level is intentionally not part of the key: the API resolves it from
+  // the request token, and including it caused the grid to reset whenever the
+  // subscription state finished loading.
   return {
     queryKey: [
       "components",
@@ -851,7 +853,6 @@ function buildQueryOptions(
       tag,
       viewMode,
       priceMode,
-      isProUser ? "pro" : "free",
       PAGE_SIZE,
     ],
     queryFn: ({ pageParam }: { pageParam: { skip: number; limit: number } }) =>
@@ -872,7 +873,7 @@ function buildQueryOptions(
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: 4 * 1000,
+    refetchInterval: false,
     placeholderData: keepPreviousData,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -884,10 +885,14 @@ export default function ComponentsClient({
   initialPage,
   initialTags = [],
   initialTotalCount = 0,
+  initialFetchedAt = 0,
+  initialIsProUser = false,
 }: {
   initialPage: PaginatedComponentResponse | null;
   initialTags?: string[];
   initialTotalCount?: number;
+  initialFetchedAt?: number;
+  initialIsProUser?: boolean;
 }) {
   const { user, isInitialized, setLoginModalOpen, setPricingModalOpen } =
     useAuth();
@@ -897,6 +902,7 @@ export default function ComponentsClient({
     queryKey: ["components", "total-count"],
     queryFn: () => componentsApi.getTotalCount(),
     initialData: initialTotalCount > 0 ? initialTotalCount : undefined,
+    initialDataUpdatedAt: initialFetchedAt,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
   });
@@ -904,7 +910,8 @@ export default function ComponentsClient({
   const { data: tags = [] } = useQuery({
     queryKey: ["components", "tags"],
     queryFn: () => componentsApi.getTags(),
-    initialData: initialTags,
+    initialData: initialTags.length > 0 ? initialTags : undefined,
+    initialDataUpdatedAt: initialFetchedAt,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
   });
@@ -939,7 +946,8 @@ export default function ComponentsClient({
     staleTime: 60000,
   });
 
-  const isProUser = subscriptionData?.isProUser ?? user?.isProUser ?? false;
+  const isProUser =
+    subscriptionData?.isProUser ?? user?.isProUser ?? initialIsProUser ?? false;
 
   const { data: currentSubscription, isLoading: isCurrentSubLoading } =
     useQuery({
@@ -997,22 +1005,25 @@ export default function ComponentsClient({
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    ...buildQueryOptions(
-      debouncedSearch,
-      activeTag,
-      viewMode,
-      priceMode,
-      isProUser,
-    ),
+    ...buildQueryOptions(debouncedSearch, activeTag, viewMode, priceMode),
     initialData:
-      isInitialQuery && initialPage && !isProUser
+      isInitialQuery && initialPage
         ? {
             pages: [initialPage],
             pageParams: [{ skip: 0, limit: PAGE_SIZE }],
           }
         : undefined,
-    initialDataUpdatedAt: 0,
+    initialDataUpdatedAt: initialFetchedAt,
   });
+
+  // Access level changed (login/upgrade/expiry): refresh the same cached list
+  // instead of switching query keys and blanking the grid.
+  const previousIsProUser = useRef(isProUser);
+  useEffect(() => {
+    if (previousIsProUser.current === isProUser) return;
+    previousIsProUser.current = isProUser;
+    refetch();
+  }, [isProUser, refetch]);
 
   useEffect(() => {
     const unsubscribe = subscribeToComponentChanges(() => {
@@ -1127,13 +1138,7 @@ export default function ComponentsClient({
     (cat: string) => {
       const tag = cat === "All" ? "" : cat;
       queryClient.prefetchInfiniteQuery({
-        ...buildQueryOptions(
-          debouncedSearch,
-          tag,
-          viewMode,
-          priceMode,
-          isProUser,
-        ),
+        ...buildQueryOptions(debouncedSearch, tag, viewMode, priceMode),
         // Only prefetch if data isn't already cached / fresh
       });
     },

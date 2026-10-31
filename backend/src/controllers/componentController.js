@@ -803,10 +803,9 @@ const recordComponentDownload = asyncHandler(async (req, res) => {
     throw new Error("Component not found");
   }
 
-  await Promise.all([
-    cacheInvalidate(componentKey(req.params.id)),
-    bumpListVersion(),
-  ]);
+  // A download does not change list membership, so only drop this item's cache.
+  // Invalidating every list key here made the hot list cache perpetually cold.
+  await cacheInvalidate(componentKey(req.params.id));
 
   res.json({
     success: true,
@@ -958,6 +957,13 @@ const getTopCreators = asyncHandler(async (req, res) => {
 
 // ─── GET /api/components/tags ─────────────────────────────────────────────────
 const getApprovedTags = asyncHandler(async (req, res) => {
+  const cacheKey = "components:tags";
+  const cached = await cacheGet(cacheKey);
+  if (cached) {
+    res.set("X-Cache", "HIT");
+    return res.json(cached);
+  }
+
   const tagCount = await Tag.countDocuments();
 
   if (tagCount === 0) {
@@ -1006,14 +1012,25 @@ const getApprovedTags = asyncHandler(async (req, res) => {
   const tags = await Tag.find({}).sort({ order: 1 });
   const tagNames = tags.map((t) => t.name);
 
-  res.json({
+  const responseBody = {
     success: true,
     data: tagNames,
-  });
+  };
+
+  await cacheSet(cacheKey, responseBody, TTL_LIST);
+  res.set("X-Cache", "MISS");
+  res.json(responseBody);
 });
 
 // ─── GET /api/components/count ────────────────────────────────────────────────
 const getComponentsCount = asyncHandler(async (req, res) => {
+  const cacheKey = "components:count";
+  const cached = await cacheGet(cacheKey);
+  if (cached) {
+    res.set("X-Cache", "HIT");
+    return res.json(cached);
+  }
+
   const count = await Component.countDocuments({
     $or: [
       { status: "approved" },
@@ -1022,10 +1039,14 @@ const getComponentsCount = asyncHandler(async (req, res) => {
     ],
   });
 
-  res.json({
+  const responseBody = {
     success: true,
     data: { count },
-  });
+  };
+
+  await cacheSet(cacheKey, responseBody, TTL_LIST);
+  res.set("X-Cache", "MISS");
+  res.json(responseBody);
 });
 
 // ─── PATCH /api/components/:id/visibility ─────────────────────────────────────
