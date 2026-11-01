@@ -268,9 +268,14 @@ export function ComponentsModeration() {
     }
   }
 
-  const handleCopy = async (id: string, name: string, figmaDataBase64: string) => {
+  const handleCopy = async (id: string, name: string) => {
     try {
       setCopyingId(id)
+      const response = await axios.get(`${API_URL}/components/${id}/data`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const figmaDataBase64 = response.data?.data?.figmaDataBase64
+      if (!figmaDataBase64) throw new Error('No Figma payload found.')
       await copyToFigma(figmaDataBase64, name)
       toast.success('Copied to Figma clipboard!')
     } catch (error) {
@@ -375,6 +380,8 @@ export function ComponentsModeration() {
                     <img 
                       src={comp.previewImageUrl} 
                       alt={comp.name} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-contain"
                     />
                   ) : (
@@ -459,6 +466,8 @@ export function ComponentsModeration() {
                               <img 
                                 src={comp.previewImageUrl} 
                                 alt={comp.name} 
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-contain max-h-[350px]"
                               />
                             </div>
@@ -516,7 +525,7 @@ export function ComponentsModeration() {
                       size="sm" 
                       className="flex-1"
                       disabled={copyingId === comp._id}
-                      onClick={() => handleCopy(comp._id, comp.name, comp.figmaDataBase64)}
+                      onClick={() => handleCopy(comp._id, comp.name)}
                     >
                       <Copy className="w-4 h-4 mr-1.5" />
                       {copyingId === comp._id ? 'Copying...' : 'Figma'}
