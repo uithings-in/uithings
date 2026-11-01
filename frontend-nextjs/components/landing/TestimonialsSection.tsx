@@ -300,26 +300,36 @@ export default function TestimonialsSection() {
         <img
           src="/landing/stars-3.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute bottom-[8%] left-[6%] h-[140px] w-[140px] opacity-60"
         />
         <img
           src="/landing/stars-1.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute bottom-[16%] left-[22%] h-[130px] w-[140px] opacity-75"
         />
         <img
           src="/landing/stars-4.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute bottom-[10%] left-[45%] h-[140px] w-[150px] opacity-80"
         />
         <img
           src="/landing/stars-2.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute bottom-[18%] right-[24%] h-[130px] w-[140px] opacity-75"
         />
         <img
           src="/landing/stars-5.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute bottom-[6%] right-[8%] h-[140px] w-[160px] opacity-65"
         />
       </div>
@@ -334,6 +344,8 @@ export default function TestimonialsSection() {
               <img
                 src="/landing/sparkle.svg"
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 size-full max-w-none"
               />
             </span>

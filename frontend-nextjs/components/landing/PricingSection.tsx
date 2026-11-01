@@ -261,6 +261,8 @@ export default function PricingSection() {
         <img
           src="/assets/tube-light.svg"
           alt=""
+          loading="lazy"
+          decoding="async"
           width={1050}
           height={486}
           className="pointer-events-none h-[486px] w-[1050px] max-w-none select-none mix-blend-screen opacity-95"
@@ -276,6 +278,8 @@ export default function PricingSection() {
               <img
                 src="/landing/sparkle.svg"
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 size-full max-w-none"
               />
             </span>
@@ -387,6 +391,8 @@ export default function PricingSection() {
                           <img
                             src={plan.check}
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                             className="absolute inset-0 size-full max-w-none"
                           />
                         </span>
