@@ -362,13 +362,20 @@ export function UserProfile() {
   }
 
   const handleCopyFigma = async (comp: any) => {
-    if (!comp.figmaDataBase64) {
-      toast.error('No Figma data found for this component')
-      return
-    }
     try {
       setCopyingCompId(comp._id)
-      await copyToFigma(comp.figmaDataBase64, comp.name)
+      let dataToCopy = comp.figmaDataBase64
+      if (!dataToCopy) {
+        const res = await axios.get(`${API_URL}/components/${comp._id}/data`, {
+          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        })
+        dataToCopy = res.data?.data?.figmaDataBase64
+      }
+      if (!dataToCopy) {
+        toast.error('No Figma data found for this component')
+        return
+      }
+      await copyToFigma(dataToCopy, comp.name)
       toast.success(`Copied "${comp.name}" to Figma clipboard!`)
     } catch (err: any) {
       toast.error(err.message || 'Failed to copy to clipboard')

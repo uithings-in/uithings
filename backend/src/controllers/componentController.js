@@ -503,6 +503,7 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(perPage)
+      .select("-figmaDataBase64")
       .populate({ path: "createdBy", select: "name email profilePicture" })
       .lean(),
     Component.countDocuments(query),
@@ -714,6 +715,16 @@ const getComponentData = asyncHandler(async (req, res) => {
   if (!component) {
     res.status(404);
     throw new Error("Component not found");
+  }
+
+  // Admins can fetch any component payload without consuming a subscription.
+  if (req.user?.role === "admin") {
+    return res.json({
+      success: true,
+      data: {
+        figmaDataBase64: component.figmaDataBase64,
+      },
+    });
   }
 
   // Only free components can be downloaded without subscription; Pro components always require an active subscription

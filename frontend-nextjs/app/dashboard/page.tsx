@@ -9,6 +9,7 @@ import {
   type FormEvent,
 } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
@@ -29,9 +30,20 @@ import { uploadApi } from "../../api/upload";
 import { contactApi, type ContactInput } from "../../api/contact";
 import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse } from "../../lib/types";
-import { AddComponentPanel } from "../../components/AddComponentPanel";
-import { EditComponentView } from "../../components/add-component/EditComponentPage";
 import { broadcastComponentChange } from "../../lib/events";
+
+const AddComponentPanel = dynamic(
+  () =>
+    import("../../components/AddComponentPanel").then((m) => m.AddComponentPanel),
+  { ssr: false },
+);
+const EditComponentView = dynamic(
+  () =>
+    import("../../components/add-component/EditComponentPage").then(
+      (m) => m.EditComponentView,
+    ),
+  { ssr: false },
+);
 import {
   LayoutDashboard,
   Package,
@@ -501,9 +513,9 @@ function MyComponentsPanel({
         : undefined;
     },
     enabled: !!user,
-    staleTime: 0,
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
 
@@ -747,15 +759,19 @@ function MyComponentsPanel({
                 className="group relative overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
               >
                 <div
-                  className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
-                  style={
-                    item.previewImageUrl
-                      ? { backgroundImage: `url(${item.previewImageUrl})` }
-                      : {}
-                  }
+                  className="relative h-[150px] bg-[#F8F9FA] border-b border-gray-100"
                   aria-label={item.name}
                 >
-                  {!item.previewImageUrl && (
+                  {item.previewImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.previewImageUrl}
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
                     <div className="flex h-full items-center justify-center text-xs font-semibold text-gray-300">
                       No preview
                     </div>
@@ -897,6 +913,8 @@ function MyComponentsPanel({
                             <img
                               src={item.previewImageUrl}
                               alt={item.name}
+                              loading="lazy"
+                              decoding="async"
                               className="h-full w-full object-cover"
                             />
                           ) : (
@@ -1178,15 +1196,19 @@ function FavoriteComponentsPanel() {
               className="overflow-hidden rounded-xl border border-gray-200/90 bg-white shadow-sm transition hover:shadow-md hover:border-gray-300 flex flex-col"
             >
               <div
-                className="relative h-[150px] bg-[#F8F9FA] bg-cover bg-center bg-no-repeat border-b border-gray-100"
-                style={
-                  item.previewImageUrl
-                    ? { backgroundImage: `url(${item.previewImageUrl})` }
-                    : {}
-                }
+                className="relative h-[150px] bg-[#F8F9FA] border-b border-gray-100"
                 aria-label={item.name}
               >
-                {!item.previewImageUrl && (
+                {item.previewImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.previewImageUrl}
+                    alt={item.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
                   <div className="flex h-full items-center justify-center text-xs font-semibold text-gray-300">
                     No preview
                   </div>
@@ -2282,9 +2304,9 @@ function DashboardContent() {
     queryKey: ["my-components", "status-notifications"],
     queryFn: () => componentsApi.listMine("", 1, 50),
     enabled: !!user,
-    staleTime: 0,
-    refetchInterval: 3000, // Poll every 3 seconds for instant real-time verification updates
-    refetchIntervalInBackground: true,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
   });
 
