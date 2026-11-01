@@ -9,11 +9,22 @@ import {
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import dynamic from "next/dynamic";
 import { authApi } from "../api/auth";
 import type { User } from "../lib/types";
-import { LoginModal } from "../components/LoginModal";
-import { RegisterModal } from "../components/RegisterModal";
-import { PricingModal } from "../components/PricingModal";
+
+const LoginModal = dynamic(
+  () => import("../components/LoginModal").then((m) => m.LoginModal),
+  { ssr: false },
+);
+const RegisterModal = dynamic(
+  () => import("../components/RegisterModal").then((m) => m.RegisterModal),
+  { ssr: false },
+);
+const PricingModal = dynamic(
+  () => import("../components/PricingModal").then((m) => m.PricingModal),
+  { ssr: false },
+);
 
 interface AuthContextValue {
   user: User | null;

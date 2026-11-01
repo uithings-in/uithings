@@ -53,6 +53,8 @@ export default function CtaAndFooterSection({
       <img
         src="/landing/cta-flare.svg"
         alt=""
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none absolute left-1/2 top-4 w-[1600px] max-w-none -translate-x-1/2 opacity-60 mix-blend-screen"
       />
 
@@ -63,6 +65,8 @@ export default function CtaAndFooterSection({
       <img
         src="/landing/star-line-l.svg"
         alt=""
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none absolute left-[12%] sm:left-[16%] md:left-[18%] top-[240px] sm:top-[280px] hidden h-[155px] w-[89px] opacity-90 sm:block"
       />
 
@@ -70,6 +74,8 @@ export default function CtaAndFooterSection({
       <img
         src="/landing/star-line-r.svg"
         alt=""
+        loading="lazy"
+        decoding="async"
         className="pointer-events-none absolute right-[12%] sm:right-[16%] md:right-[18%] top-[190px] sm:top-[230px] hidden h-[181px] w-[99px] -scale-x-100 opacity-90 sm:block"
       />
 
@@ -78,7 +84,7 @@ export default function CtaAndFooterSection({
         {/* Start Pill Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(247,247,253,0.12)] bg-[rgba(255,255,255,0.06)] px-3.5 py-1.5 backdrop-blur-[6px]">
           <span className="relative size-3.5 overflow-hidden">
-            <img src="/landing/sparkle.svg" alt="" className="size-full" />
+            <img src="/landing/sparkle.svg" alt="" loading="lazy" decoding="async" className="size-full" />
           </span>
           <span
             className="text-xs font-medium leading-none text-[#DFD5F6]"
@@ -124,12 +130,16 @@ export default function CtaAndFooterSection({
           <img
             src="/landing/earth-glow-3.svg"
             alt=""
+            loading="lazy"
+            decoding="async"
             className="absolute -top-8 left-1/2 h-[540px] w-[1600px] -translate-x-1/2 opacity-70"
           />
           {/* Multi-layered Glowing Planet Horizon Ball */}
           <img
             src="/landing/earth-ball.svg"
             alt=""
+            loading="lazy"
+            decoding="async"
             className="absolute top-0 left-1/2 h-[750px] w-[1720px] -translate-x-1/2"
           />
         </div>
@@ -247,7 +257,7 @@ export default function CtaAndFooterSection({
                 className="flex size-7 sm:size-8 items-center justify-center rounded-full bg-[#4343D5] hover:bg-[#525BE0] text-white transition-all shadow-sm"
                 aria-label="Facebook"
               >
-                <img src="/landing/icon-fb.svg" alt="" className="size-3.5" />
+                <img src="/landing/icon-fb.svg" alt="" loading="lazy" decoding="async" className="size-3.5" />
               </a>
               {[
                 { href: "https://instagram.com", src: "/landing/icon-ig.svg", label: "Instagram" },
@@ -262,7 +272,7 @@ export default function CtaAndFooterSection({
                   aria-label={social.label}
                   className="flex size-7 sm:size-8 items-center justify-center rounded-full border border-[rgba(247,247,253,0.12)] bg-[rgba(248,246,253,0.08)] backdrop-blur-[6px] text-white/80 hover:bg-[rgba(248,246,253,0.18)] hover:border-[rgba(247,247,253,0.25)] hover:text-white transition-all"
                 >
-                  <img src={social.src} alt="" className="size-3.5" />
+                  <img src={social.src} alt="" loading="lazy" decoding="async" className="size-3.5" />
                 </a>
               ))}
             </div>
@@ -277,6 +287,8 @@ export default function CtaAndFooterSection({
               <img
                 src="/landing/angle-up.svg"
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="size-3.5 group-hover:-translate-y-0.5 transition-transform"
               />
             </button>

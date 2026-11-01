@@ -1,11 +1,13 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import StackingProcessSection from "@/components/landing/StackingProcessSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import FaqSection from "@/components/landing/FaqSection";
-import PricingSection from "@/components/landing/PricingSection";
-import CtaAndFooterSection from "@/components/landing/CtaAndFooterSection";
+
+const FaqSection = dynamic(() => import("@/components/landing/FaqSection"));
+const PricingSection = dynamic(() => import("@/components/landing/PricingSection"));
+const CtaAndFooterSection = dynamic(() => import("@/components/landing/CtaAndFooterSection"));
 
 export default function Home() {
   return (

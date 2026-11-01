@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-const loginBg = "/loginbg.png";;
+const loginBg = "/loginimage.webp";
 
 export function RegisterModal() {
   const navigate = useRouter();

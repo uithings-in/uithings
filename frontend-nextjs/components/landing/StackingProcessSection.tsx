@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import TypographyMockup from "./TypographyMockup";
 import WireframeMockup from "./WireframeMockup";
@@ -186,6 +184,8 @@ export default function StackingProcessSection() {
                       <img
                         src={step.icon}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="size-9 object-contain opacity-90 transition-opacity duration-200 group-hover:opacity-100"
                       />
                     </span>

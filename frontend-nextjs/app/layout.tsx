@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans, Josefin_Sans, Inter, Maven_Pro } from "next/font/google";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans, Inter, Maven_Pro } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
-import type { User } from "../lib/types";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -14,12 +12,6 @@ const bricolageGrotesque = Bricolage_Grotesque({
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-plus-jakarta",
-  display: "swap",
-});
-
-const josefinSans = Josefin_Sans({
-  subsets: ["latin"],
-  variable: "--font-josefin",
   display: "swap",
 });
 
@@ -45,25 +37,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const authUserCookie = cookieStore.get("authUser")?.value;
-  let initialUser: User | null = null;
-  if (authUserCookie) {
-    try {
-      initialUser = JSON.parse(decodeURIComponent(authUserCookie));
-    } catch {}
-  }
-
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${josefinSans.variable} ${inter.variable} ${mavenPro.variable}`}
+      className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable} ${inter.variable} ${mavenPro.variable}`}
     >
       <head>
         <script
@@ -87,9 +70,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-[#FAFAFB] dark:bg-black text-slate-900 dark:text-white selection:bg-[#4343D5] selection:text-white">
-        <Providers initialUser={initialUser}>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
