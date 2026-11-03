@@ -206,6 +206,7 @@ function PreviewModal({
   isFavoritePending,
   onDownloadRecorded,
   isProUser = false,
+  viewMode = "ui-design",
 }: {
   item: ComponentItem;
   onClose: () => void;
@@ -216,11 +217,11 @@ function PreviewModal({
   isFavoritePending: boolean;
   onDownloadRecorded: (item: ComponentItem) => Promise<number | null>;
   isProUser?: boolean;
+  viewMode?: ViewMode;
 }) {
   const isPro = isProComponent(item);
   const showLock = isPro && !isProUser;
   const [isSuccess, setIsSuccess] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Compute carousel slides from lightPreviewImageUrl, darkPreviewImageUrl, wireframePreviewImageUrl, previewImageUrl
   const slides = useMemo(() => {
@@ -292,10 +293,16 @@ function PreviewModal({
     item.designType,
   ]);
 
-  // Reset to first slide when item changes
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [item._id]);
+  // Open on the slide matching the active browse mode (Wireframe/UI Design)
+  const preferredIndex = useMemo(() => {
+    if (viewMode === "wireframe") {
+      const wireframeIndex = slides.findIndex((s) => s.mode === "wireframe");
+      if (wireframeIndex >= 0) return wireframeIndex;
+    }
+    return 0;
+  }, [slides, viewMode]);
+
+  const [currentIndex, setCurrentIndex] = useState(preferredIndex);
 
   const hasMultiple = slides.length > 1;
   const currentSlide = slides[currentIndex] || slides[0];
@@ -626,6 +633,7 @@ const ComponentCard = memo(function ComponentCard({
   isFavoritePending,
   isProUser = false,
   priority = false,
+  viewMode = "ui-design",
 }: {
   item: ComponentItem;
   isCopying: boolean;
@@ -637,9 +645,14 @@ const ComponentCard = memo(function ComponentCard({
   isFavoritePending: boolean;
   isProUser?: boolean;
   priority?: boolean;
+  viewMode?: ViewMode;
 }) {
   const isPro = isProComponent(item);
   const showLock = isPro && !isProUser;
+  const cardImageUrl =
+    viewMode === "wireframe"
+      ? item.wireframePreviewImageUrl || item.previewImageUrl
+      : item.previewImageUrl;
   const [isSuccess, setIsSuccess] = useState(false);
   const [downloadCountOverride, setDownloadCountOverride] = useState<
     number | null
@@ -675,10 +688,10 @@ const ComponentCard = memo(function ComponentCard({
         title="Click to preview"
       >
         <div className="relative w-full h-full overflow-hidden rounded-[4px] bg-[#92A7B3]">
-          {item.previewImageUrl ? (
+          {cardImageUrl ? (
             <Image
               loader={cloudinaryLoader}
-              src={item.previewImageUrl}
+              src={cardImageUrl}
               alt={item.name}
               fill
               priority={priority}
@@ -1754,6 +1767,7 @@ export default function ComponentsClient({
                       toggleFavoriteMutation.variables === item._id
                     }
                     isProUser={isProUser}
+                    viewMode={viewMode}
                   />
                 ))}
 
@@ -1782,6 +1796,7 @@ export default function ComponentsClient({
         {/* Preview Modal */}
         {previewItem && (
           <PreviewModal
+            key={`${previewItem._id}-${viewMode}`}
             item={previewItem}
             onClose={() => setPreviewItem(null)}
             onCopy={onCopy}
@@ -1794,6 +1809,7 @@ export default function ComponentsClient({
             }
             onDownloadRecorded={recordDownload}
             isProUser={isProUser}
+            viewMode={viewMode}
           />
         )}
 
