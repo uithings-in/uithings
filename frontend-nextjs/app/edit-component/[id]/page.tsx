@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, LockKeyhole } from "lucide-react";
 import { componentsApi } from "../../../api/components";
-import { uploadApi } from "../../../api/upload";
+import { uploadPreviewFile } from "../../../lib/previewUpload";
 import { broadcastComponentChange } from "../../../lib/events";
 import { useAuth } from "../../../context/AuthContext";
 import {
@@ -82,7 +82,7 @@ export default function EditComponentPage({
     mutationFn: async (input: ComponentEditorValues) => {
       let previewImageUrl: string | undefined;
       if (input.previewFile) {
-        previewImageUrl = await uploadApi.uploadImage(input.previewFile);
+        previewImageUrl = await uploadPreviewFile(input.previewFile);
       }
 
       return componentsApi.update(id, {
@@ -90,7 +90,9 @@ export default function EditComponentPage({
         description: input.description,
         tags: input.tags,
         ...(previewImageUrl ? { previewImageUrl } : {}),
-        figmaDataBase64: input.figmaDataBase64,
+        ...(input.figmaDataBase64 !== (componentData?.figmaDataBase64 || "")
+          ? { figmaDataBase64: input.figmaDataBase64 }
+          : {}),
         designType: input.designType,
         pricingType: input.pricingType,
       });

@@ -547,37 +547,41 @@ const createComponent = asyncHandler(async (req, res) => {
     throw new Error("name, previewImageUrl, and figmaDataBase64 are required");
   }
 
-  // Check Pro upload permissions: admin or users granted canUploadPro
+  // Fetch the user once: permissions + author details for the notification.
   const currentUser = await User.findById(req.user.userId).select(
-    "role canUploadPro",
+    "role canUploadPro name email",
   );
+  const resolvedRole = currentUser?.role || userRole;
   const canPostPro =
-    currentUser?.role === "admin" || !!currentUser?.canUploadPro;
+    resolvedRole === "admin" || !!currentUser?.canUploadPro;
 
   if (pricingType === "Pro" && !canPostPro) {
     res.status(403);
     throw new Error("Only admins or authorized users can post Pro components");
   }
 
+  const activeTags = Array.isArray(tags) ? tags : [];
+
+  // Run independent lookups together to keep the publish path short.
+  const [userComponentCount, matchedTags] = await Promise.all([
+    resolvedRole === "admin"
+      ? Promise.resolve(0)
+      : Component.countDocuments({ createdBy: req.user.userId }),
+    activeTags.length > 0
+      ? Tag.find({ name: { $in: activeTags } })
+      : Promise.resolve([]),
+  ]);
+
   // Logic: normal people can post atmost 20 components.
-  if (userRole !== "admin") {
-    const userComponentCount = await Component.countDocuments({
-      createdBy: req.user.userId,
-    });
-    if (userComponentCount >= 20) {
-      res.status(403);
-      throw new Error("You have reached the limit of 20 components");
-    }
+  if (resolvedRole !== "admin" && userComponentCount >= 20) {
+    res.status(403);
+    throw new Error("You have reached the limit of 20 components");
   }
 
-  let tagOrder = 999999;
-  const activeTags = Array.isArray(tags) ? tags : [];
-  if (activeTags.length > 0) {
-    const matchedTags = await Tag.find({ name: { $in: activeTags } });
-    if (matchedTags.length > 0) {
-      tagOrder = Math.min(...matchedTags.map((t) => t.order));
-    }
-  }
+  const tagOrder =
+    matchedTags.length > 0
+      ? Math.min(...matchedTags.map((t) => t.order))
+      : 999999;
 
   const component = await Component.create({
     name,
@@ -592,39 +596,40 @@ const createComponent = asyncHandler(async (req, res) => {
     designType,
     pricingType: canPostPro ? pricingType || "Free" : "Free",
     createdBy: req.user.userId,
-    status: userRole === "admin" ? "approved" : "pending",
+    status: resolvedRole === "admin" ? "approved" : "pending",
   });
 
-  // Create admin notification for new component upload
-  try {
-    const author = await User.findById(req.user.userId).select("name email");
-    await Notification.create({
-      type: "component_uploaded",
-      title: "New Component Uploaded",
-      message: `${author?.name || "A user"} uploaded "${name}" (${component.status})`,
-      data: {
-        componentId: component._id,
-        userId: req.user.userId,
-        componentName: name,
-        previewImageUrl,
-        status: component.status,
-        pricingType: component.pricingType,
-        authorName: author?.name || "Anonymous",
-        authorEmail: author?.email || "",
-      },
-      read: false,
-      recipientRole: "admin",
-    });
-  } catch (notifErr) {
+  // Create admin notification without blocking the publish response.
+  Notification.create({
+    type: "component_uploaded",
+    title: "New Component Uploaded",
+    message: `${currentUser?.name || "A user"} uploaded "${name}" (${component.status})`,
+    data: {
+      componentId: component._id,
+      userId: req.user.userId,
+      componentName: name,
+      previewImageUrl,
+      status: component.status,
+      pricingType: component.pricingType,
+      authorName: currentUser?.name || "Anonymous",
+      authorEmail: currentUser?.email || "",
+    },
+    read: false,
+    recipientRole: "admin",
+  }).catch((notifErr) => {
     console.error("Failed to create upload notification:", notifErr);
-  }
+  });
 
   // Invalidate all list caches (bump version)
   await bumpListVersion();
 
+  // The client never needs the (potentially multi-MB) Figma payload back.
+  const componentData = component.toObject();
+  delete componentData.figmaDataBase64;
+
   res.status(201).json({
     success: true,
-    data: component,
+    data: componentData,
   });
 });
 
@@ -855,10 +860,14 @@ const updateComponent = asyncHandler(async (req, res) => {
     name: req.body.name ?? component.name,
     description: req.body.description ?? component.description,
     previewImageUrl: req.body.previewImageUrl ?? component.previewImageUrl,
-    figmaDataBase64: req.body.figmaDataBase64 ?? component.figmaDataBase64,
     designType: req.body.designType ?? component.designType,
     pricingType: req.body.pricingType ?? component.pricingType,
   };
+
+  // Only rewrite the (potentially multi-MB) Figma payload when it changed.
+  if (req.body.figmaDataBase64 !== undefined) {
+    updates.figmaDataBase64 = req.body.figmaDataBase64;
+  }
 
   if (req.body.darkPreviewImageUrl !== undefined) {
     updates.darkPreviewImageUrl = req.body.darkPreviewImageUrl;
@@ -881,7 +890,7 @@ const updateComponent = asyncHandler(async (req, res) => {
 
   const updated = await Component.findByIdAndUpdate(req.params.id, updates, {
     returnDocument: "after",
-  });
+  }).select("-figmaDataBase64");
 
   // Invalidate this component's cache + all list caches
   await Promise.all([

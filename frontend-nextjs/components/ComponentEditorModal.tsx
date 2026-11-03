@@ -20,6 +20,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { extractFigmaBase64FromPaste } from "../lib/clipboard";
+import { prefetchPreviewUploads } from "../lib/previewUpload";
 import { useQuery } from "@tanstack/react-query";
 import { componentsApi } from "../api/components";
 
@@ -727,9 +728,11 @@ export function ComponentEditorModal({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(event) =>
-                      setPreviewFile(event.target.files?.[0] || null)
-                    }
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] || null;
+                      setPreviewFile(file);
+                      if (file) prefetchPreviewUploads([file]);
+                    }}
                     className="sr-only"
                   />
                 </label>
