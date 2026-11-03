@@ -13,7 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { componentsApi } from "../../api/components";
-import { uploadApi } from "../../api/upload";
+import { prefetchPreviewUploads, uploadPreviewFile } from "../../lib/previewUpload";
 import { broadcastComponentChange } from "../../lib/events";
 import { useAuth } from "../../context/AuthContext";
 import { useAddComponentForm } from "./useAddComponentForm";
@@ -79,6 +79,22 @@ export function AddComponentView({
     queryFn: componentsApi.getTags,
   });
 
+  // Start uploading preview images as soon as they are selected so the
+  // publish action only has to wait for the component metadata request.
+  useEffect(() => {
+    prefetchPreviewUploads([
+      values.lightPreviewFile,
+      values.darkPreviewFile,
+      values.wireframePreviewFile,
+      values.previewFile,
+    ]);
+  }, [
+    values.lightPreviewFile,
+    values.darkPreviewFile,
+    values.wireframePreviewFile,
+    values.previewFile,
+  ]);
+
   const publishMutation = useMutation({
     mutationFn: async () => {
       setSubmitError(null);
@@ -110,13 +126,13 @@ export function AddComponentView({
         Promise<string | undefined>,
       ] = [
         values.lightPreviewFile
-          ? uploadApi.uploadImage(values.lightPreviewFile)
+          ? uploadPreviewFile(values.lightPreviewFile)
           : Promise.resolve(undefined),
         values.darkPreviewFile
-          ? uploadApi.uploadImage(values.darkPreviewFile)
+          ? uploadPreviewFile(values.darkPreviewFile)
           : Promise.resolve(undefined),
         values.wireframePreviewFile
-          ? uploadApi.uploadImage(values.wireframePreviewFile)
+          ? uploadPreviewFile(values.wireframePreviewFile)
           : Promise.resolve(undefined),
       ];
 
@@ -128,7 +144,7 @@ export function AddComponentView({
         uploadedDarkUrl ||
         uploadedWireframeUrl ||
         (values.previewFile
-          ? await uploadApi.uploadImage(values.previewFile)
+          ? await uploadPreviewFile(values.previewFile)
           : "");
 
       // 2. Combine tags with platform tag for discoverability
@@ -158,27 +174,24 @@ export function AddComponentView({
         pricingType: values.pricingType,
       });
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["components"] });
-      queryClient.invalidateQueries({ queryKey: ["my-components"] });
-      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+    onSuccess: () => {
+      // Refresh caches in the background; do not block navigation on them.
+      void queryClient.invalidateQueries({ queryKey: ["components"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      void queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
       broadcastComponentChange();
-      router.refresh();
 
       clearDraft();
       setSuccessToast(`"${values.name}" published successfully!`);
 
       if (onSuccess) {
-        setTimeout(() => onSuccess(), 500);
+        onSuccess();
+      } else if (user?.role === "admin") {
+        router.push("/components");
       } else {
-        setTimeout(() => {
-          if (user?.role === "admin") {
-            router.push("/components");
-          } else {
-            router.push("/dashboard?page=my-components");
-          }
-        }, 600);
+        router.push("/dashboard?page=my-components");
       }
+      router.refresh();
     },
     onError: (err: any) => {
       const message =

@@ -15,7 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { componentsApi } from "../../api/components";
-import { uploadApi } from "../../api/upload";
+import { prefetchPreviewUploads, uploadPreviewFile } from "../../lib/previewUpload";
 import { broadcastComponentChange } from "../../lib/events";
 import { useAuth } from "../../context/AuthContext";
 import { FigmaPayloadZone } from "./FigmaPayloadZone";
@@ -171,6 +171,15 @@ export function EditComponentView({
       return () => URL.revokeObjectURL(url);
     }
   }, [wireframePreviewFile]);
+
+  // Upload replacement screenshots in the background as soon as they are picked.
+  useEffect(() => {
+    prefetchPreviewUploads([
+      lightPreviewFile,
+      darkPreviewFile,
+      wireframePreviewFile,
+    ]);
+  }, [lightPreviewFile, darkPreviewFile, wireframePreviewFile]);
 
   const handleLightFileSelect = (file: File | null) => {
     setLightPreviewFile(file);
@@ -382,13 +391,13 @@ export function EditComponentView({
         Promise<string | undefined>,
       ] = [
         lightPreviewFile
-          ? uploadApi.uploadImage(lightPreviewFile)
+          ? uploadPreviewFile(lightPreviewFile)
           : Promise.resolve(undefined),
         darkPreviewFile
-          ? uploadApi.uploadImage(darkPreviewFile)
+          ? uploadPreviewFile(darkPreviewFile)
           : Promise.resolve(undefined),
         wireframePreviewFile
-          ? uploadApi.uploadImage(wireframePreviewFile)
+          ? uploadPreviewFile(wireframePreviewFile)
           : Promise.resolve(undefined),
       ];
 
@@ -428,33 +437,34 @@ export function EditComponentView({
         lightPreviewImageUrl: finalLightUrl,
         darkPreviewImageUrl: finalDarkUrl,
         wireframePreviewImageUrl: finalWireframeUrl,
-        figmaDataBase64,
+        ...(figmaDataBase64 !== (component?.figmaDataBase64 || "")
+          ? { figmaDataBase64 }
+          : {}),
         designType: (designType || "UI Design") as "UI Design" | "Wireframe" | "Both",
         pricingType,
       });
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["components"] });
-      queryClient.invalidateQueries({ queryKey: ["my-components"] });
-      queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      // Refresh caches in the background; do not block navigation on them.
+      void queryClient.invalidateQueries({ queryKey: ["components"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-components"] });
+      void queryClient.invalidateQueries({ queryKey: ["components", "tags"] });
+      void queryClient.invalidateQueries({
         queryKey: ["components", "detail-edit", componentId],
       });
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["components", "detail", componentId],
       });
       broadcastComponentChange();
-      router.refresh();
 
       setSuccessToast(`"${name}" updated successfully!`);
 
       if (onSuccess) {
-        setTimeout(() => onSuccess(), 500);
+        onSuccess();
       } else {
-        setTimeout(() => {
-          router.push("/dashboard?page=my-components");
-        }, 600);
+        router.push("/dashboard?page=my-components");
       }
+      router.refresh();
     },
     onError: (err: any) => {
       const message =
