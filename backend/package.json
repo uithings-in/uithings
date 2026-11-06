@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "seed": "node src/utils/seedPlans.js"
+    "seed": "node src/utils/seedPlans.js",
+    "graph:token": "node scripts/get-graph-refresh-token.js",
+    "mail:test": "node scripts/send-test-email.js"
   },
   "keywords": [],
   "author": "",

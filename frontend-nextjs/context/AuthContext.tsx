@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import dynamic from "next/dynamic";
 import { authApi } from "../api/auth";
+import type { RegisterOtpInfo } from "../api/auth";
 import type { User } from "../lib/types";
 
 const LoginModal = dynamic(
@@ -32,11 +33,16 @@ interface AuthContextValue {
   isInitialized: boolean;
   refetchUser: () => Promise<any>;
   login: (input: { email: string; password: string }) => Promise<void>;
-  register: (input: {
+  requestRegisterOtp: (input: {
     name: string;
     email: string;
     password: string;
+  }) => Promise<RegisterOtpInfo>;
+  verifyRegisterOtp: (input: {
+    email: string;
+    otp: string;
   }) => Promise<void>;
+  resendRegisterOtp: (email: string) => Promise<RegisterOtpInfo>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
   registerModalOpen: boolean;
@@ -211,9 +217,16 @@ export function AuthProvider({
     [queryClient],
   );
 
-  const register = useCallback(
+  const requestRegisterOtp = useCallback(
     async (input: { name: string; email: string; password: string }) => {
-      const payload = await authApi.register(input);
+      return authApi.requestRegisterOtp(input);
+    },
+    [],
+  );
+
+  const verifyRegisterOtp = useCallback(
+    async (input: { email: string; otp: string }) => {
+      const payload = await authApi.verifyRegisterOtp(input);
       const normalized = normalizeUser(payload.user);
       localStorage.setItem("accessToken", payload.token);
       localStorage.setItem("authUser", JSON.stringify(normalized));
@@ -221,6 +234,11 @@ export function AuthProvider({
       queryClient.setQueryData(["auth", "me"], normalized);
     },
     [queryClient],
+  );
+
+  const resendRegisterOtp = useCallback(
+    async (email: string) => authApi.resendRegisterOtp(email),
+    [],
   );
 
   const loginWithGoogle = useCallback(
@@ -251,7 +269,9 @@ export function AuthProvider({
       isInitialized,
       refetchUser,
       login,
-      register,
+      requestRegisterOtp,
+      verifyRegisterOtp,
+      resendRegisterOtp,
       loginWithGoogle,
       logout,
       registerModalOpen,
@@ -267,7 +287,9 @@ export function AuthProvider({
       isInitialized,
       refetchUser,
       login,
-      register,
+      requestRegisterOtp,
+      verifyRegisterOtp,
+      resendRegisterOtp,
       loginWithGoogle,
       logout,
       registerModalOpen,
