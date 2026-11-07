@@ -103,7 +103,11 @@ app.use(async (req, res, next) => {
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "Server is running" });
+  res.json({
+    success: true,
+    message: "Server is running",
+    build: "otp-2026-11-07",
+  });
 });
 
 app.get("/api/debug/razorpay", (req, res) => {
