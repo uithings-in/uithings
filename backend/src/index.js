@@ -107,7 +107,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     success: true,
     message: "Server is running",
-    build: "otp-2026-11-07",
+    build: "otp-mongo-2026-11-07",
     redis: getRedisType(),
     mail: getMailProvider(),
   });

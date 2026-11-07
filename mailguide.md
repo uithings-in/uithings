@@ -263,7 +263,7 @@ Resend only allows sending to your own account email from `onboarding@resend.dev
 
 - Add `MAIL_PROVIDER`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`, and `OTP_SECRET` to the production environment (Vercel or your backend host).
 - Keep the same verified domain in production.
-- Configure Upstash Redis for OTP state if the backend runs serverless or on multiple instances.
+- OTP state is stored in MongoDB, so it works across serverless instances. Upstash Redis is optional and only used for caching and Microsoft Graph token caching.
 - Add IP-based rate limiting to the OTP request/resend endpoints to protect your Resend quota.
 - Redeploy or restart after adding env vars.
 - Check the Resend dashboard for delivery logs after the first production OTP.

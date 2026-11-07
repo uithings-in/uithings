@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { getRedisClient } = require("../config/redis");
+const PendingRegistration = require("../models/PendingRegistration");
 
 const OTP_LENGTH = 6;
 const OTP_TTL_SECONDS = Math.max(
@@ -14,17 +14,6 @@ const OTP_RESEND_COOLDOWN_SECONDS = Math.max(
   Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60),
   0,
 );
-
-const PENDING_PREFIX = "otp:register:pending:";
-const COOLDOWN_PREFIX = "otp:register:cooldown:";
-
-function pendingKey(email) {
-  return `${PENDING_PREFIX}${email}`;
-}
-
-function cooldownKey(email) {
-  return `${COOLDOWN_PREFIX}${email}`;
-}
 
 function generateOtp() {
   const max = 10 ** OTP_LENGTH;
@@ -51,20 +40,9 @@ function otpMatches(plainOtp, storedHash) {
   return crypto.timingSafeEqual(candidate, expected);
 }
 
-function parseJsonValue(value) {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "object") return value;
-  try {
-    const parsed = JSON.parse(String(value));
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
 async function savePendingRegistration({ email, name, passwordHash, otpHash }) {
-  const redis = getRedisClient();
   const now = Date.now();
+  const expiresAt = now + OTP_TTL_SECONDS * 1000;
   const pending = {
     email,
     name,
@@ -72,59 +50,72 @@ async function savePendingRegistration({ email, name, passwordHash, otpHash }) {
     otpHash,
     attempts: 0,
     createdAt: now,
-    expiresAt: now + OTP_TTL_SECONDS * 1000,
+    expiresAt,
+    cooldownUntil: 0,
+    expireAt: new Date(expiresAt),
   };
 
-  await redis.set(pendingKey(email), JSON.stringify(pending), {
-    ex: OTP_TTL_SECONDS,
-  });
+  try {
+    await PendingRegistration.findOneAndUpdate(
+      { email },
+      { $set: pending },
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true },
+    );
+  } catch (error) {
+    if (error && error.code === 11000) {
+      await PendingRegistration.updateOne({ email }, { $set: pending });
+    } else {
+      throw error;
+    }
+  }
 
   return pending;
 }
 
 async function getPendingRegistration(email) {
-  const redis = getRedisClient();
-  const raw = await redis.get(pendingKey(email));
-  return parseJsonValue(raw);
+  return PendingRegistration.findOne({ email }).lean();
 }
 
 async function updatePendingRegistration(email, pending) {
-  const redis = getRedisClient();
-  const remaining = Math.max(
-    Math.ceil((pending.expiresAt - Date.now()) / 1000),
-    1,
+  const expiresAt =
+    Number(pending.expiresAt) || Date.now() + OTP_TTL_SECONDS * 1000;
+
+  await PendingRegistration.updateOne(
+    { email },
+    {
+      $set: {
+        name: pending.name,
+        passwordHash: pending.passwordHash,
+        otpHash: pending.otpHash,
+        attempts: Number(pending.attempts || 0),
+        expiresAt,
+        expireAt: new Date(expiresAt),
+      },
+    },
   );
-  await redis.set(pendingKey(email), JSON.stringify(pending), {
-    ex: remaining,
-  });
-  return pending;
+
+  return { ...pending, expiresAt };
 }
 
 async function clearPendingRegistration(email) {
-  const redis = getRedisClient();
-  await redis.del(pendingKey(email));
+  await PendingRegistration.deleteOne({ email });
 }
 
 async function setRegistrationCooldown(email) {
   if (OTP_RESEND_COOLDOWN_SECONDS <= 0) return;
-  const redis = getRedisClient();
-  await redis.set(cooldownKey(email), String(Date.now()), {
-    ex: OTP_RESEND_COOLDOWN_SECONDS,
-  });
+  const cooldownUntil = Date.now() + OTP_RESEND_COOLDOWN_SECONDS * 1000;
+  await PendingRegistration.updateOne({ email }, { $set: { cooldownUntil } });
 }
 
 async function getRegistrationCooldownSeconds(email) {
   if (OTP_RESEND_COOLDOWN_SECONDS <= 0) return 0;
 
-  const redis = getRedisClient();
-  const raw = await redis.get(cooldownKey(email));
-  if (raw === null || raw === undefined) return 0;
+  const pending = await PendingRegistration.findOne({ email })
+    .select({ cooldownUntil: 1 })
+    .lean();
+  const cooldownUntil = Number(pending && pending.cooldownUntil) || 0;
 
-  const sentAt = Number(typeof raw === "object" ? raw.sentAt : raw);
-  if (!sentAt || Number.isNaN(sentAt)) return 0;
-
-  const elapsed = Math.floor((Date.now() - sentAt) / 1000);
-  return Math.max(OTP_RESEND_COOLDOWN_SECONDS - elapsed, 0);
+  return Math.max(Math.ceil((cooldownUntil - Date.now()) / 1000), 0);
 }
 
 module.exports = {

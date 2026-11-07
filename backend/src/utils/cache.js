@@ -1,4 +1,4 @@
-const { getRedisClient, isRedisActive, markRedisInactive } = require("../config/redis");
+const { getRedisClient, isRedisActive } = require("../config/redis");
 
 // Cache TTLs in seconds (configurable via environment variables)
 const TTL_LIST = Number(process.env.CACHE_TTL_LIST || 60);
