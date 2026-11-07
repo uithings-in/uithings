@@ -19,7 +19,7 @@ if (!process.env.VERCEL) {
 }
 
 const { connectDatabase } = require("./config/database");
-const { getRedisClient, verifyRedisConnection } = require("./config/redis");
+const { getRedisType, verifyRedisConnection } = require("./config/redis");
 const authRoutes = require("./routes/authRoutes");
 const componentRoutes = require("./routes/componentRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
@@ -103,10 +103,13 @@ app.use(async (req, res, next) => {
 });
 
 app.get("/api/health", (req, res) => {
+  const { getMailProvider } = require("./utils/mailer");
   res.json({
     success: true,
     message: "Server is running",
     build: "otp-2026-11-07",
+    redis: getRedisType(),
+    mail: getMailProvider(),
   });
 });
 

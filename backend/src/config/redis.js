@@ -69,6 +69,77 @@ class LocalRedisClient {
   }
 }
 
+function isNetworkError(error) {
+  if (!error) return false;
+  const message = String(error.message || error).toLowerCase();
+  const cause = error.cause
+    ? String(error.cause.code || error.cause.message || error.cause).toLowerCase()
+    : "";
+  return (
+    message.includes("fetch failed") ||
+    message.includes("network") ||
+    message.includes("econnrefused") ||
+    message.includes("enotfound") ||
+    message.includes("etimedout") ||
+    message.includes("eai_again") ||
+    cause.includes("econnrefused") ||
+    cause.includes("enotfound") ||
+    cause.includes("etimedout") ||
+    cause.includes("eai_again")
+  );
+}
+
+class ResilientRedisClient {
+  constructor(cloudClient) {
+    this.cloud = cloudClient;
+    this.local = new LocalRedisClient();
+    this.cloudDisabled = false;
+  }
+
+  async run(method, args) {
+    if (this.cloudDisabled) {
+      return this.local[method](...args);
+    }
+
+    try {
+      return await this.cloud[method](...args);
+    } catch (error) {
+      if (!isNetworkError(error)) throw error;
+
+      this.cloudDisabled = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Upstash Redis unavailable (${error.message}); using in-memory fallback`,
+      );
+      return this.local[method](...args);
+    }
+  }
+
+  get(...args) {
+    return this.run("get", args);
+  }
+
+  set(...args) {
+    return this.run("set", args);
+  }
+
+  del(...args) {
+    return this.run("del", args);
+  }
+
+  incr(...args) {
+    return this.run("incr", args);
+  }
+
+  ping(...args) {
+    return this.run("ping", args);
+  }
+
+  flushdb(...args) {
+    return this.run("flushdb", args);
+  }
+}
+
 let activeRedisClient = null;
 let redisType = "local"; // "cloud" | "local"
 
@@ -84,14 +155,16 @@ function getRedisClient() {
         ? url
         : `https://${url}`;
 
-      activeRedisClient = new Redis({
-        url: formattedUrl,
-        token,
-        retry: {
-          retries: 1,
-          backoff: () => 100,
-        },
-      });
+      activeRedisClient = new ResilientRedisClient(
+        new Redis({
+          url: formattedUrl,
+          token,
+          retry: {
+            retries: 1,
+            backoff: () => 100,
+          },
+        }),
+      );
       redisType = "cloud";
       return activeRedisClient;
     } catch {
@@ -115,6 +188,12 @@ async function verifyRedisConnection() {
         setTimeout(() => reject(new Error("Timeout")), 2000)
       );
       await Promise.race([pingPromise, timeoutPromise]);
+
+      if (client.cloudDisabled) {
+        redisType = "local";
+        return { connected: true, type: "local" };
+      }
+
       return { connected: true, type: "cloud" };
     } catch {
       // Cloud ping failed, switch seamlessly to local in-memory Redis engine
@@ -131,9 +210,15 @@ function isRedisActive() {
   return true;
 }
 
+function getRedisType() {
+  if (activeRedisClient && activeRedisClient.cloudDisabled) return "local";
+  return redisType;
+}
+
 module.exports = {
   getRedisClient,
   verifyRedisConnection,
   isRedisActive,
+  getRedisType,
   LocalRedisClient,
 };

@@ -165,7 +165,11 @@ const requestRegistrationOtp = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     console.error("Failed to send registration OTP:", error.message);
-    await clearPendingRegistration(validated.email);
+    try {
+      await clearPendingRegistration(validated.email);
+    } catch (cleanupError) {
+      console.error("Failed to clear pending registration:", cleanupError.message);
+    }
     res.status(502);
     throw new Error("Unable to send the verification email. Please try again.");
   }
