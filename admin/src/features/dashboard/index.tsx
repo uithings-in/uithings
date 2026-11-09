@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { lazy, Suspense, useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import {
   Download,
@@ -29,10 +29,44 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { useAuthStore } from '@/stores/auth-store'
 import { API_URL } from '@/lib/api-url'
 import { Badge } from '@/components/ui/badge'
-import { Analytics } from './components/analytics'
-import { Overview } from './components/overview'
 import { RecentSales, type RecentSaleItem } from './components/recent-sales'
-import { DashboardNotifications } from './components/dashboard-notifications'
+
+const Overview = lazy(() =>
+  import('./components/overview').then((m) => ({ default: m.Overview }))
+)
+const Analytics = lazy(() =>
+  import('./components/analytics').then((m) => ({ default: m.Analytics }))
+)
+const DashboardNotifications = lazy(() =>
+  import('./components/dashboard-notifications').then((m) => ({
+    default: m.DashboardNotifications,
+  }))
+)
+
+function ChartFallback() {
+  return <Skeleton className='h-[350px] w-full' />
+}
+
+function AnalyticsFallback() {
+  return (
+    <div className='space-y-4'>
+      <Skeleton className='h-[420px] w-full' />
+      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className='h-[120px] w-full' />
+        ))}
+      </div>
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
+        <Skeleton className='col-span-1 h-[260px] w-full lg:col-span-4' />
+        <Skeleton className='col-span-1 h-[260px] w-full lg:col-span-3' />
+      </div>
+    </div>
+  )
+}
+
+function NotificationsFallback() {
+  return <Skeleton className='h-[420px] w-full' />
+}
 
 interface DashboardData {
   metrics: {
@@ -405,7 +439,12 @@ export function Dashboard() {
                         <Skeleton className='h-[320px] w-full' />
                       </div>
                     ) : (
-                      <Overview data={data?.monthlyOverview} currencySymbol='₹' />
+                      <Suspense fallback={<ChartFallback />}>
+                        <Overview
+                          data={data?.monthlyOverview}
+                          currencySymbol='₹'
+                        />
+                      </Suspense>
                     )}
                   </CardContent>
                 </Card>
@@ -442,11 +481,17 @@ export function Dashboard() {
             </TabsContent>
 
             <TabsContent value='analytics' className='space-y-4'>
-              <Analytics stats={data || undefined} />
+              <Suspense fallback={<AnalyticsFallback />}>
+                <Analytics stats={data || undefined} />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value='notifications' className='space-y-4'>
-              <DashboardNotifications onUnreadCountChange={setUnreadNotifsCount} />
+              <Suspense fallback={<NotificationsFallback />}>
+                <DashboardNotifications
+                  onUnreadCountChange={setUnreadNotifsCount}
+                />
+              </Suspense>
             </TabsContent>
           </Tabs>
         )}

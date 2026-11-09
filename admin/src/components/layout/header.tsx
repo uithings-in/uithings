@@ -9,19 +9,31 @@ type HeaderProps = React.HTMLAttributes<HTMLElement> & {
 }
 
 export function Header({ className, fixed, children, ...props }: HeaderProps) {
-  const [offset, setOffset] = useState(0)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
+    if (!fixed) return
+
+    let frame = 0
     const onScroll = () => {
-      setOffset(document.body.scrollTop || document.documentElement.scrollTop)
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        const offset =
+          document.body.scrollTop || document.documentElement.scrollTop
+        setScrolled(offset > 10)
+        frame = 0
+      })
     }
 
     // Add scroll listener to the body
     document.addEventListener('scroll', onScroll, { passive: true })
 
     // Clean up the event listener on unmount
-    return () => document.removeEventListener('scroll', onScroll)
-  }, [])
+    return () => {
+      document.removeEventListener('scroll', onScroll)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [fixed])
 
   return (
     <header
@@ -29,7 +41,7 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
         'z-50 h-16',
         fixed &&
           'header-fixed peer/header sticky top-0 w-[inherit] bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 border-b border-border/40',
-        offset > 10 && fixed ? 'shadow-sm' : 'shadow-none',
+        scrolled && fixed ? 'shadow-sm' : 'shadow-none',
         className
       )}
       {...props}

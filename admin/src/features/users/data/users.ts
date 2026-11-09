@@ -1,31 +1,51 @@
-import { faker } from '@faker-js/faker'
 import { type User } from './schema'
 
-// Set a fixed seed for consistent data generation
-faker.seed(67890)
+const firstNames = [
+  'Aarav',
+  'Ishita',
+  'Rohan',
+  'Meera',
+  'Kabir',
+  'Ananya',
+  'Vihaan',
+  'Diya',
+  'Arjun',
+  'Sara',
+]
+const lastNames = [
+  'Sharma',
+  'Patel',
+  'Iyer',
+  'Nair',
+  'Bose',
+  'Gupta',
+  'Reddy',
+  'Kapoor',
+  'Mehta',
+  'Singh',
+]
+const statuses = ['active', 'inactive', 'invited', 'suspended'] as const
+const roles = ['admin', 'user'] as const
 
-export const users: User[] = Array.from({ length: 20 }, () => {
-  const firstName = faker.person.firstName()
-  const lastName = faker.person.lastName()
-  const authProvider = faker.helpers.arrayElement(['google', 'local'] as const)
+export const users: User[] = Array.from({ length: 20 }, (_, i) => {
+  const firstName = firstNames[i % firstNames.length]
+  const lastName = lastNames[i % lastNames.length]
+  const authProvider = i % 3 === 0 ? 'local' : 'google'
+  const createdAt = new Date(2025, 0, i + 1)
 
   return {
-    id: faker.string.uuid(),
+    id: `user-${String(i + 1).padStart(3, '0')}`,
     name: `${firstName} ${lastName}`,
-    email: faker.internet.email({ firstName }).toLocaleLowerCase(),
-    status: faker.helpers.arrayElement([
-      'active',
-      'inactive',
-      'invited',
-      'suspended',
-    ] as const),
+    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+    status: statuses[i % statuses.length],
     authProvider,
-    profilePicture: authProvider === 'google' ? faker.image.avatar() : '',
-    role: faker.helpers.arrayElement(['admin', 'user'] as const),
-    isProUser: faker.datatype.boolean(),
-    canUploadPro: faker.datatype.boolean(),
-    uploadedComponentsCount: faker.number.int({ min: 0, max: 25 }),
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.recent(),
+    profilePicture:
+      authProvider === 'google' ? `https://i.pravatar.cc/150?u=${i + 1}` : '',
+    role: roles[i % roles.length],
+    isProUser: i % 4 === 0,
+    canUploadPro: i % 5 === 0,
+    uploadedComponentsCount: (i * 3) % 26,
+    createdAt,
+    updatedAt: createdAt,
   }
 })

@@ -4,15 +4,15 @@ import LoadingBar, { type LoadingBarRef } from 'react-top-loading-bar'
 
 export function NavigationProgress() {
   const ref = useRef<LoadingBarRef>(null)
-  const state = useRouterState()
+  const status = useRouterState({ select: (state) => state.status })
 
   useEffect(() => {
-    if (state.status === 'pending') {
+    if (status === 'pending') {
       ref.current?.continuousStart()
     } else {
       ref.current?.complete()
     }
-  }, [state.status])
+  }, [status])
 
   return (
     <LoadingBar
