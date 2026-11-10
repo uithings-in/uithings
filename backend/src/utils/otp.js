@@ -14,6 +14,10 @@ const OTP_RESEND_COOLDOWN_SECONDS = Math.max(
   Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60),
   0,
 );
+const REGISTRATION_COMPLETION_TTL_SECONDS = Math.max(
+  Number(process.env.REGISTRATION_COMPLETION_TTL_MINUTES || 15) * 60,
+  60,
+);
 
 function generateOtp() {
   const max = 10 ** OTP_LENGTH;
@@ -40,18 +44,19 @@ function otpMatches(plainOtp, storedHash) {
   return crypto.timingSafeEqual(candidate, expected);
 }
 
-async function savePendingRegistration({ email, name, passwordHash, otpHash }) {
+async function savePendingRegistration({ email, name, otpHash }) {
   const now = Date.now();
   const expiresAt = now + OTP_TTL_SECONDS * 1000;
   const pending = {
     email,
     name,
-    passwordHash,
     otpHash,
     attempts: 0,
     createdAt: now,
     expiresAt,
     cooldownUntil: 0,
+    verified: false,
+    verifiedAt: 0,
     expireAt: new Date(expiresAt),
   };
 
@@ -85,16 +90,39 @@ async function updatePendingRegistration(email, pending) {
     {
       $set: {
         name: pending.name,
-        passwordHash: pending.passwordHash,
         otpHash: pending.otpHash,
         attempts: Number(pending.attempts || 0),
+        expiresAt,
+        expireAt: new Date(expiresAt),
+        verified: Boolean(pending.verified),
+        verifiedAt: Number(pending.verifiedAt || 0),
+      },
+    },
+  );
+
+  return { ...pending, expiresAt };
+}
+
+async function markPendingRegistrationVerified(email) {
+  const now = Date.now();
+  const expiresAt = now + REGISTRATION_COMPLETION_TTL_SECONDS * 1000;
+
+  await PendingRegistration.updateOne(
+    { email },
+    {
+      $set: {
+        verified: true,
+        verifiedAt: now,
         expiresAt,
         expireAt: new Date(expiresAt),
       },
     },
   );
 
-  return { ...pending, expiresAt };
+  return {
+    expiresAt,
+    expiresIn: REGISTRATION_COMPLETION_TTL_SECONDS,
+  };
 }
 
 async function clearPendingRegistration(email) {
@@ -123,12 +151,14 @@ module.exports = {
   OTP_TTL_SECONDS,
   OTP_MAX_ATTEMPTS,
   OTP_RESEND_COOLDOWN_SECONDS,
+  REGISTRATION_COMPLETION_TTL_SECONDS,
   generateOtp,
   hashOtp,
   otpMatches,
   savePendingRegistration,
   getPendingRegistration,
   updatePendingRegistration,
+  markPendingRegistrationVerified,
   clearPendingRegistration,
   setRegistrationCooldown,
   getRegistrationCooldownSeconds,

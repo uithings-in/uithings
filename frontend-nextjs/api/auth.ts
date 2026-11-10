@@ -8,11 +8,17 @@ export interface RegisterOtpInfo {
   attemptsAllowed?: number;
 }
 
+export interface RegisterVerification {
+  email: string;
+  name: string;
+  registrationToken: string;
+  expiresIn: number;
+}
+
 export const authApi = {
   async requestRegisterOtp(input: {
     name: string;
     email: string;
-    password: string;
   }): Promise<RegisterOtpInfo> {
     const response = await apiClient.post("/auth/register/request-otp", input);
     return response.data.data;
@@ -21,8 +27,16 @@ export const authApi = {
   async verifyRegisterOtp(input: {
     email: string;
     otp: string;
-  }): Promise<AuthPayload> {
+  }): Promise<RegisterVerification> {
     const response = await apiClient.post("/auth/register/verify-otp", input);
+    return response.data.data;
+  },
+
+  async completeRegister(input: {
+    registrationToken: string;
+    password: string;
+  }): Promise<AuthPayload> {
+    const response = await apiClient.post("/auth/register/complete", input);
     return response.data.data;
   },
 

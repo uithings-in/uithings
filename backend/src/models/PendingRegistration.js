@@ -14,15 +14,19 @@ const pendingRegistrationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    passwordHash: {
-      type: String,
-      required: true,
-    },
     otpHash: {
       type: String,
       required: true,
     },
     attempts: {
+      type: Number,
+      default: 0,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    verifiedAt: {
       type: Number,
       default: 0,
     },

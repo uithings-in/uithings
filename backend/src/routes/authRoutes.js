@@ -3,6 +3,7 @@ const {
   requestRegistrationOtp,
   verifyRegistrationOtp,
   resendRegistrationOtp,
+  completeRegistration,
   login,
   me,
   googleAuth,
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/register/request-otp", requestRegistrationOtp);
 router.post("/register/verify-otp", verifyRegistrationOtp);
 router.post("/register/resend-otp", resendRegistrationOtp);
+router.post("/register/complete", completeRegistration);
 router.post("/login", login);
 router.post("/google", googleAuth);
 router.get("/me", protect, me);

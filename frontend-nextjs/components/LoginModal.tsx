@@ -8,7 +8,7 @@ const loginBg = "/loginimage.webp";;
 
 export function LoginModal() {
   const navigate = useRouter();
-  const { login, loginWithGoogle, setLoginModalOpen, setRegisterModalOpen } = useAuth();
+  const { login, loginWithGoogle, setLoginModalOpen, switchAuthModal } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -60,19 +60,9 @@ export function LoginModal() {
     }
   };
 
-  // Close modal when clicking the backdrop
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto"
-      onClick={handleBackdropClick}
-    >
-      <div className="relative w-full max-w-[850px] min-h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="relative w-full max-w-[850px] min-h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
         {/* Close Button */}
         <button
@@ -183,10 +173,10 @@ export function LoginModal() {
             </div>
 
             <p className="text-center text-gray-500 text-[0.8rem] mt-6 pb-2">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
-                onClick={() => { setLoginModalOpen(false); setRegisterModalOpen(true); }}
+                onClick={() => switchAuthModal("register")}
                 className="text-[#8A2BE2] hover:text-[#7b22cc] font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"
               >
                 Create one

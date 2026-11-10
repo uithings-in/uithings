@@ -6,21 +6,46 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import dynamic from "next/dynamic";
 import { authApi } from "../api/auth";
-import type { RegisterOtpInfo } from "../api/auth";
+import type { RegisterOtpInfo, RegisterVerification } from "../api/auth";
 import type { User } from "../lib/types";
+
+function AuthModalLoading({ withBackdrop = true }: { withBackdrop?: boolean }) {
+  return (
+    <div
+      className={`fixed inset-0 z-[230] flex items-center justify-center p-4 overflow-y-auto ${
+        withBackdrop ? "bg-black/40 backdrop-blur-sm" : ""
+      }`}
+    >
+      <div className="flex w-full max-w-[850px] min-h-[550px] overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div
+          className="hidden md:block w-1/2 border-r border-[#E5E7EB] bg-cover bg-center"
+          style={{ backgroundImage: "url('/loginimage.webp')" }}
+        />
+        <div
+          role="status"
+          className="flex flex-1 flex-col items-center justify-center gap-3"
+        >
+          <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#8A2BE2]/20 border-t-[#8A2BE2]" />
+          <p className="text-sm font-semibold text-gray-600">Loading...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const LoginModal = dynamic(
   () => import("../components/LoginModal").then((m) => m.LoginModal),
-  { ssr: false },
+  { ssr: false, loading: () => <AuthModalLoading /> },
 );
 const RegisterModal = dynamic(
   () => import("../components/RegisterModal").then((m) => m.RegisterModal),
-  { ssr: false },
+  { ssr: false, loading: () => <AuthModalLoading /> },
 );
 const PricingModal = dynamic(
   () => import("../components/PricingModal").then((m) => m.PricingModal),
@@ -36,11 +61,14 @@ interface AuthContextValue {
   requestRegisterOtp: (input: {
     name: string;
     email: string;
-    password: string;
   }) => Promise<RegisterOtpInfo>;
   verifyRegisterOtp: (input: {
     email: string;
     otp: string;
+  }) => Promise<RegisterVerification>;
+  completeRegister: (input: {
+    registrationToken: string;
+    password: string;
   }) => Promise<void>;
   resendRegisterOtp: (email: string) => Promise<RegisterOtpInfo>;
   loginWithGoogle: (idToken: string) => Promise<void>;
@@ -49,6 +77,8 @@ interface AuthContextValue {
   setRegisterModalOpen: (open: boolean) => void;
   loginModalOpen: boolean;
   setLoginModalOpen: (open: boolean) => void;
+  switchAuthModal: (target: "login" | "register") => void;
+  authModalTransitioning: boolean;
   pricingModalOpen: boolean;
   setPricingModalOpen: (open: boolean) => void;
 }
@@ -111,6 +141,30 @@ export function AuthProvider({
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [pricingModalOpen, setPricingModalOpen] = useState(false);
+  const [authModalTransitioning, setAuthModalTransitioning] = useState(false);
+  const authModalTransitionTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const switchAuthModal = useCallback((target: "login" | "register") => {
+    if (authModalTransitionTimer.current) return;
+    setAuthModalTransitioning(true);
+    authModalTransitionTimer.current = setTimeout(() => {
+      setLoginModalOpen(target === "login");
+      setRegisterModalOpen(target === "register");
+      setAuthModalTransitioning(false);
+      authModalTransitionTimer.current = null;
+    }, 400);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (authModalTransitionTimer.current) {
+        clearTimeout(authModalTransitionTimer.current);
+        authModalTransitionTimer.current = null;
+      }
+    };
+  }, []);
 
   const [isMounted, setIsMounted] = useState(false);
 
@@ -218,7 +272,7 @@ export function AuthProvider({
   );
 
   const requestRegisterOtp = useCallback(
-    async (input: { name: string; email: string; password: string }) => {
+    async (input: { name: string; email: string }) => {
       return authApi.requestRegisterOtp(input);
     },
     [],
@@ -226,7 +280,14 @@ export function AuthProvider({
 
   const verifyRegisterOtp = useCallback(
     async (input: { email: string; otp: string }) => {
-      const payload = await authApi.verifyRegisterOtp(input);
+      return authApi.verifyRegisterOtp(input);
+    },
+    [],
+  );
+
+  const completeRegister = useCallback(
+    async (input: { registrationToken: string; password: string }) => {
+      const payload = await authApi.completeRegister(input);
       const normalized = normalizeUser(payload.user);
       localStorage.setItem("accessToken", payload.token);
       localStorage.setItem("authUser", JSON.stringify(normalized));
@@ -271,6 +332,7 @@ export function AuthProvider({
       login,
       requestRegisterOtp,
       verifyRegisterOtp,
+      completeRegister,
       resendRegisterOtp,
       loginWithGoogle,
       logout,
@@ -278,6 +340,8 @@ export function AuthProvider({
       setRegisterModalOpen,
       loginModalOpen,
       setLoginModalOpen,
+      switchAuthModal,
+      authModalTransitioning,
       pricingModalOpen,
       setPricingModalOpen,
     }),
@@ -289,6 +353,7 @@ export function AuthProvider({
       login,
       requestRegisterOtp,
       verifyRegisterOtp,
+      completeRegister,
       resendRegisterOtp,
       loginWithGoogle,
       logout,
@@ -296,6 +361,8 @@ export function AuthProvider({
       setRegisterModalOpen,
       loginModalOpen,
       setLoginModalOpen,
+      switchAuthModal,
+      authModalTransitioning,
       pricingModalOpen,
       setPricingModalOpen,
     ],
@@ -304,8 +371,19 @@ export function AuthProvider({
   return (
     <AuthContext.Provider value={value}>
       {children}
-      {loginModalOpen && <LoginModal />}
-      {registerModalOpen && <RegisterModal />}
+      {loginModalOpen || registerModalOpen ? (
+        <>
+          <div className={loginModalOpen ? undefined : "invisible"}>
+            <LoginModal />
+          </div>
+          <div className={registerModalOpen ? undefined : "invisible"}>
+            <RegisterModal />
+          </div>
+        </>
+      ) : null}
+      {authModalTransitioning ? (
+        <AuthModalLoading withBackdrop={false} />
+      ) : null}
       {pricingModalOpen && (
         <PricingModal
           isOpen={pricingModalOpen}

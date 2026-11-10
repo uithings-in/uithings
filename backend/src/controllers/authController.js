@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { asyncHandler } = require("../utils/asyncHandler");
-const { createAccessToken } = require("../utils/token");
+const { createAccessToken, createRegistrationToken, verifyRegistrationToken } = require("../utils/token");
 const { User } = require("../models/User");
 const { Subscription } = require("../models/Subscription");
 const { OAuth2Client } = require("google-auth-library");
@@ -16,6 +16,7 @@ const {
   savePendingRegistration,
   getPendingRegistration,
   updatePendingRegistration,
+  markPendingRegistrationVerified,
   clearPendingRegistration,
   setRegistrationCooldown,
   getRegistrationCooldownSeconds,
@@ -41,12 +42,12 @@ function normalizeEmail(email) {
   return String(email || "").toLowerCase().trim();
 }
 
-function validateRegistrationInput({ name, email, password }) {
+function validateRegistrationIdentity({ name, email }) {
   const trimmedName = String(name || "").trim();
   const normalizedEmail = normalizeEmail(email);
 
-  if (!trimmedName || !normalizedEmail || !password) {
-    return { error: "Name, email, and password are required" };
+  if (!trimmedName || !normalizedEmail) {
+    return { error: "Name and email are required" };
   }
 
   if (trimmedName.length < 2 || trimmedName.length > 80) {
@@ -57,6 +58,10 @@ function validateRegistrationInput({ name, email, password }) {
     return { error: "Please provide a valid email address" };
   }
 
+  return { name: trimmedName, email: normalizedEmail };
+}
+
+function validatePassword(password) {
   if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
     return {
       error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
@@ -67,7 +72,7 @@ function validateRegistrationInput({ name, email, password }) {
     return { error: "Password is too long" };
   }
 
-  return { name: trimmedName, email: normalizedEmail, password };
+  return { password };
 }
 
 function buildAuthPayload(user) {
@@ -93,8 +98,8 @@ function buildAuthPayload(user) {
 }
 
 const requestRegistrationOtp = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const validated = validateRegistrationInput({ name, email, password });
+  const { name, email } = req.body;
+  const validated = validateRegistrationIdentity({ name, email });
 
   if (validated.error) {
     res.status(400);
@@ -110,12 +115,8 @@ const requestRegistrationOtp = asyncHandler(async (req, res) => {
   const cooldown = await getRegistrationCooldownSeconds(validated.email);
   if (cooldown > 0) {
     const pending = await getPendingRegistration(validated.email);
-    const isSameRegistration =
-      pending &&
-      pending.passwordHash &&
-      (await bcrypt.compare(validated.password, pending.passwordHash));
 
-    if (isSameRegistration) {
+    if (pending) {
       if (pending.name !== validated.name) {
         pending.name = validated.name;
         await updatePendingRegistration(validated.email, pending);
@@ -146,13 +147,11 @@ const requestRegistrationOtp = asyncHandler(async (req, res) => {
     );
   }
 
-  const passwordHash = await bcrypt.hash(validated.password, 10);
   const otp = generateOtp();
 
   await savePendingRegistration({
     email: validated.email,
     name: validated.name,
-    passwordHash,
     otpHash: hashOtp(otp),
   });
 
@@ -252,12 +251,85 @@ const verifyRegistrationOtp = asyncHandler(async (req, res) => {
     throw new Error("Email already in use");
   }
 
+  const { expiresIn } = await markPendingRegistrationVerified(normalizedEmail);
+  const registrationToken = createRegistrationToken({
+    email: normalizedEmail,
+    name: pending.name,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Email verified successfully",
+    data: {
+      email: normalizedEmail,
+      name: pending.name,
+      registrationToken,
+      expiresIn,
+    },
+  });
+});
+
+const completeRegistration = asyncHandler(async (req, res) => {
+  const { registrationToken, password } = req.body || {};
+
+  if (!registrationToken || !password) {
+    res.status(400);
+    throw new Error("Verification token and password are required");
+  }
+
+  let payload;
+  try {
+    payload = verifyRegistrationToken(registrationToken);
+  } catch {
+    res.status(400);
+    throw new Error(
+      "Email verification expired. Please verify your email again.",
+    );
+  }
+
+  const normalizedEmail = normalizeEmail(payload.email);
+  if (!normalizedEmail) {
+    res.status(400);
+    throw new Error("Invalid verification token");
+  }
+
+  const passwordValidation = validatePassword(password);
+  if (passwordValidation.error) {
+    res.status(400);
+    throw new Error(passwordValidation.error);
+  }
+
+  const pending = await getPendingRegistration(normalizedEmail);
+  if (!pending || !pending.verified) {
+    res.status(400);
+    throw new Error(
+      "Email verification not found. Please verify your email again.",
+    );
+  }
+
+  if (Date.now() > Number(pending.expiresAt)) {
+    await clearPendingRegistration(normalizedEmail);
+    res.status(400);
+    throw new Error(
+      "Email verification expired. Please verify your email again.",
+    );
+  }
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
+  if (existingUser) {
+    await clearPendingRegistration(normalizedEmail);
+    res.status(409);
+    throw new Error("Email already in use");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
   let user;
   try {
     user = await User.create({
-      name: pending.name,
+      name: pending.name || payload.name,
       email: normalizedEmail,
-      password: pending.passwordHash,
+      password: passwordHash,
       role: isAdminEmail(normalizedEmail) ? "admin" : "user",
     });
   } catch (error) {
@@ -273,7 +345,7 @@ const verifyRegistrationOtp = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: "Email verified successfully",
+    message: "Account created successfully",
     data: buildAuthPayload(user),
   });
 });
@@ -321,6 +393,8 @@ const resendRegistrationOtp = asyncHandler(async (req, res) => {
     otpHash: hashOtp(otp),
     attempts: 0,
     expiresAt: Date.now() + OTP_TTL_SECONDS * 1000,
+    verified: false,
+    verifiedAt: 0,
   };
 
   await updatePendingRegistration(normalizedEmail, updatedPending);
@@ -657,6 +731,7 @@ module.exports = {
   requestRegistrationOtp,
   verifyRegistrationOtp,
   resendRegistrationOtp,
+  completeRegistration,
   login,
   me,
   googleAuth,
