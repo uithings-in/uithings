@@ -562,21 +562,10 @@ const createComponent = asyncHandler(async (req, res) => {
 
   const activeTags = Array.isArray(tags) ? tags : [];
 
-  // Run independent lookups together to keep the publish path short.
-  const [userComponentCount, matchedTags] = await Promise.all([
-    resolvedRole === "admin"
-      ? Promise.resolve(0)
-      : Component.countDocuments({ createdBy: req.user.userId }),
+  const matchedTags =
     activeTags.length > 0
-      ? Tag.find({ name: { $in: activeTags } })
-      : Promise.resolve([]),
-  ]);
-
-  // Logic: normal people can post atmost 20 components.
-  if (resolvedRole !== "admin" && userComponentCount >= 20) {
-    res.status(403);
-    throw new Error("You have reached the limit of 20 components");
-  }
+      ? await Tag.find({ name: { $in: activeTags } })
+      : [];
 
   const tagOrder =
     matchedTags.length > 0

@@ -1,5 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -64,12 +69,13 @@ export interface AdminProComponent {
   updatedAt: string
 }
 
+interface ProComponentsPage {
+  items: AdminProComponent[]
+  page: number
+  totalPages: number
+}
+
 export function ProVisibilityControl() {
-  const [components, setComponents] = useState<AdminProComponent[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'unlocked' | 'locked'>('all')
@@ -78,6 +84,14 @@ export function ProVisibilityControl() {
   const [copyingId, setCopyingId] = useState<string | null>(null)
 
   const { accessToken } = useAuthStore.getState().auth
+  const queryClient = useQueryClient()
+  const queryKey = [
+    'admin-pro-components',
+    debouncedSearch,
+    statusFilter,
+    visibilityFilter,
+    accessToken,
+  ] as const
 
   // Debounce search term
   useEffect(() => {
@@ -87,67 +101,78 @@ export function ProVisibilityControl() {
     return () => clearTimeout(handler)
   }, [searchTerm])
 
-  const fetchProComponents = useCallback(
-    async (
-      pageNum = 1,
-      searchQuery = debouncedSearch,
-      status = statusFilter,
-      vis = visibilityFilter
-    ) => {
-      try {
-        if (pageNum === 1) setLoading(true)
-        else setLoadingMore(true)
-
-        let url = `${API_URL}/components/admin?page=${pageNum}&limit=50&pricingType=Pro`
-        if (searchQuery.trim()) {
-          url += `&q=${encodeURIComponent(searchQuery.trim())}`
-        }
-        if (status !== 'all') {
-          url += `&status=${status}`
-        }
-        if (vis === 'unlocked') {
-          url += `&isVisibleWithoutSubscription=true`
-        } else if (vis === 'locked') {
-          url += `&isVisibleWithoutSubscription=false`
-        }
-
-        const response = await axios.get(url, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-
-        const fetchedItems: AdminProComponent[] = response.data.data.items || []
-        if (pageNum === 1) {
-          setComponents(fetchedItems)
-        } else {
-          setComponents((prev) => [...prev, ...fetchedItems])
-        }
-        setTotalPages(response.data.data.pagination.totalPages || 1)
-        setPage(pageNum)
-      } catch (error) {
-        toast.error('Failed to load Pro components')
-      } finally {
-        setLoading(false)
-        setLoadingMore(false)
+  const {
+    data,
+    isLoading: loading,
+    isFetchingNextPage: loadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      let url = `${API_URL}/components/admin?page=${pageParam}&limit=50&pricingType=Pro`
+      if (debouncedSearch.trim()) {
+        url += `&q=${encodeURIComponent(debouncedSearch.trim())}`
       }
+      if (statusFilter !== 'all') {
+        url += `&status=${statusFilter}`
+      }
+      if (visibilityFilter === 'unlocked') {
+        url += `&isVisibleWithoutSubscription=true`
+      } else if (visibilityFilter === 'locked') {
+        url += `&isVisibleWithoutSubscription=false`
+      }
+
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+
+      return {
+        items: (response.data.data.items || []) as AdminProComponent[],
+        page: pageParam,
+        totalPages: response.data.data.pagination.totalPages || 1,
+      } satisfies ProComponentsPage
     },
-    [accessToken, debouncedSearch, statusFilter, visibilityFilter]
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+    staleTime: 60 * 1000,
+  })
+
+  const components = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data]
   )
 
-  useEffect(() => {
-    fetchProComponents(1, debouncedSearch, statusFilter, visibilityFilter)
-  }, [debouncedSearch, statusFilter, visibilityFilter, fetchProComponents])
+  const updateComponentsCache = (
+    updater: (items: AdminProComponent[]) => AdminProComponent[]
+  ) => {
+    queryClient.setQueryData<InfiniteData<ProComponentsPage>>(
+      queryKey,
+      (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: updater(page.items),
+          })),
+        }
+      }
+    )
+  }
 
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-        if (!loading && !loadingMore && page < totalPages) {
-          fetchProComponents(page + 1, debouncedSearch, statusFilter, visibilityFilter)
+        if (!loading && !loadingMore && hasNextPage) {
+          fetchNextPage()
         }
       }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [page, totalPages, loading, loadingMore, debouncedSearch, statusFilter, visibilityFilter, fetchProComponents])
+  }, [loading, loadingMore, hasNextPage, fetchNextPage])
 
   // Toggle visibility without subscription
   const handleToggleVisibility = async (component: AdminProComponent) => {
@@ -155,8 +180,8 @@ export function ProVisibilityControl() {
     setTogglingId(component._id)
 
     // Optimistic UI update
-    setComponents((prev) =>
-      prev.map((c) =>
+    updateComponentsCache((items) =>
+      items.map((c) =>
         c._id === component._id
           ? { ...c, isVisibleWithoutSubscription: nextState }
           : c
@@ -179,8 +204,8 @@ export function ProVisibilityControl() {
       }
     } catch (error: any) {
       // Revert optimistic update
-      setComponents((prev) =>
-        prev.map((c) =>
+      updateComponentsCache((items) =>
+        items.map((c) =>
           c._id === component._id
             ? { ...c, isVisibleWithoutSubscription: !nextState }
             : c
@@ -200,10 +225,16 @@ export function ProVisibilityControl() {
       setCopyingId(id)
       let dataToCopy = figmaData
       if (!dataToCopy) {
-        const res = await axios.get(`${API_URL}/components/${id}/data`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        dataToCopy = await queryClient.fetchQuery({
+          queryKey: ['component-data', id, accessToken],
+          queryFn: async () => {
+            const res = await axios.get(`${API_URL}/components/${id}/data`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            })
+            return res.data?.data?.figmaDataBase64 as string | undefined
+          },
+          staleTime: 5 * 60 * 1000,
         })
-        dataToCopy = res.data.data.figmaDataBase64
       }
 
       if (!dataToCopy) {

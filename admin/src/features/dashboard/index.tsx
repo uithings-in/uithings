@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect, useState, useCallback } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import axios from 'axios'
+import { useQuery } from '@tanstack/react-query'
 import {
   Download,
   RefreshCw,
@@ -119,45 +120,38 @@ interface DashboardData {
 
 export function Dashboard() {
   const { auth } = useAuthStore()
-  const [data, setData] = useState<DashboardData | null>(null)
   const [unreadNotifsCount, setUnreadNotifsCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const fetchStats = useCallback(
-    async (isManual = false) => {
-      try {
-        if (isManual) setRefreshing(true)
-        else setLoading(true)
-        setError(null)
+  const {
+    data,
+    isLoading: loading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery<DashboardData>({
+    queryKey: ['dashboard', 'stats', auth.accessToken],
+    queryFn: async () => {
+      const res = await axios.get(`${API_URL}/dashboard/stats`, {
+        headers: {
+          Authorization: `Bearer ${auth.accessToken}`,
+        },
+      })
 
-        const res = await axios.get(`${API_URL}/dashboard/stats`, {
-          headers: {
-            Authorization: `Bearer ${auth.accessToken}`,
-          },
-        })
-
-        if (res.data?.success && res.data?.data) {
-          setData(res.data.data)
-        }
-      } catch (err: any) {
-        console.error('Failed to fetch live dashboard stats:', err)
-        setError(
-          err.response?.data?.message ||
-            'Unable to connect to live database metrics'
-        )
-      } finally {
-        setLoading(false)
-        setRefreshing(false)
+      if (!res.data?.success || !res.data?.data) {
+        throw new Error('Unable to connect to live database metrics')
       }
-    },
-    [auth.accessToken]
-  )
 
-  useEffect(() => {
-    fetchStats()
-  }, [fetchStats])
+      return res.data.data
+    },
+    staleTime: 60 * 1000,
+  })
+
+  const refreshing = isFetching && !loading
+  const errorMessage = error
+    ? (error as any).response?.data?.message ||
+      (error as Error).message ||
+      'Unable to connect to live database metrics'
+    : null
 
   const handleDownloadReport = () => {
     if (!data) return
@@ -233,8 +227,8 @@ export function Dashboard() {
             <Button
               variant='outline'
               size='sm'
-              onClick={() => fetchStats(true)}
-              disabled={loading || refreshing}
+              onClick={() => refetch()}
+              disabled={isFetching}
               className='gap-1.5'
             >
               <RefreshCw
@@ -254,10 +248,10 @@ export function Dashboard() {
           </div>
         </div>
 
-        {error && !data ? (
+        {errorMessage && !data ? (
           <div className='my-6 flex flex-col items-center justify-center rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center'>
-            <p className='font-semibold text-destructive mb-2'>{error}</p>
-            <Button variant='outline' size='sm' onClick={() => fetchStats()}>
+            <p className='font-semibold text-destructive mb-2'>{errorMessage}</p>
+            <Button variant='outline' size='sm' onClick={() => refetch()}>
               Retry Connecting
             </Button>
           </div>
@@ -302,7 +296,7 @@ export function Dashboard() {
                     ) : (
                       <>
                         <div className='text-2xl font-bold'>
-                          ₹{(metrics?.totalRevenue || 0).toLocaleString()}
+                          {`₹${(metrics?.totalRevenue ?? 0).toLocaleString('en-IN')}`}
                         </div>
                         <p className='flex items-center gap-1 text-xs text-muted-foreground'>
                           {metrics && metrics.revenueGrowth >= 0 ? (
@@ -338,7 +332,7 @@ export function Dashboard() {
                     ) : (
                       <>
                         <div className='text-2xl font-bold'>
-                          +{metrics?.activeSubscriptions || 0}
+                          {metrics?.activeSubscriptions ?? 0}
                         </div>
                         <p className='flex items-center gap-1 text-xs text-muted-foreground'>
                           {metrics && metrics.subsGrowth >= 0 ? (
@@ -374,7 +368,7 @@ export function Dashboard() {
                     ) : (
                       <>
                         <div className='text-2xl font-bold'>
-                          +{metrics?.totalSales || 0}
+                          {metrics?.totalSales ?? 0}
                         </div>
                         <p className='flex items-center gap-1 text-xs text-muted-foreground'>
                           {metrics && metrics.salesGrowth >= 0 ? (
@@ -410,13 +404,13 @@ export function Dashboard() {
                     ) : (
                       <>
                         <div className='text-2xl font-bold'>
-                          +{metrics?.activeUsers || metrics?.totalUsers || 0}
+                          {metrics?.activeUsers ?? 0}
                         </div>
                         <p className='text-xs text-muted-foreground'>
                           <span className='text-emerald-500 font-medium'>
-                            +{metrics?.recent24hUsers || 0}
+                            +{metrics?.recent24hUsers ?? 0}
                           </span>{' '}
-                          joined in last 24h ({metrics?.totalUsers || 0} total)
+                          joined in last 24h ({metrics?.totalUsers ?? 0} total)
                         </p>
                       </>
                     )}

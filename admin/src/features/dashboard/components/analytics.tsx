@@ -44,21 +44,8 @@ export function Analytics({ stats }: AnalyticsProps) {
   const totalClicksThisWeek = past7DaysData.reduce((acc, d) => acc + d.clicks, 0)
   const totalUniquesThisWeek = past7DaysData.reduce((acc, d) => acc + d.uniques, 0)
 
-  const topTags =
-    stats?.analytics?.topTags && stats.analytics.topTags.length > 0
-      ? stats.analytics.topTags
-      : [
-          { name: 'Navbar', value: 12 },
-          { name: 'Hero Section', value: 10 },
-          { name: 'Card', value: 8 },
-          { name: 'Button', value: 7 },
-          { name: 'Footer', value: 5 },
-        ]
-
-  const userTiers = stats?.analytics?.userTierDistribution || [
-    { name: 'Free Users', value: 85, count: 0 },
-    { name: 'Pro Subscribers', value: 15, count: 0 },
-  ]
+  const topTags = stats?.analytics?.topTags ?? []
+  const userTiers = stats?.analytics?.userTierDistribution ?? []
 
   return (
     <div className='space-y-4'>
@@ -181,6 +168,14 @@ function SimpleBarList({
   valueFormatter: (n: number) => string
   barClass: string
 }) {
+  if (items.length === 0) {
+    return (
+      <p className='py-6 text-center text-sm text-muted-foreground'>
+        No data available yet.
+      </p>
+    )
+  }
+
   const max = Math.max(...items.map((i) => i.value), 1)
   return (
     <ul className='space-y-4'>

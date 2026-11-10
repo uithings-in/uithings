@@ -4,8 +4,9 @@ const { Component } = require("../models/Component");
 const { Subscription } = require("../models/Subscription");
 const { Transaction } = require("../models/Transaction");
 
-const countOf = (facet) => facet?.[0]?.count || 0;
-const valueOf = (facet, field) => facet?.[0]?.[field] || 0;
+const countOf = (facet) => facet?.[0]?.count ?? 0;
+const valueOf = (facet, field) => facet?.[0]?.[field] ?? 0;
+const toRupees = (paise) => Number(((Number(paise) || 0) / 100).toFixed(2));
 
 const growthOf = (current, previous) => {
   if (previous > 0) {
@@ -79,6 +80,11 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     Transaction.aggregate([
       { $match: { status: "captured" } },
       {
+        $addFields: {
+          revenueDate: { $ifNull: ["$paymentDate", "$createdAt"] },
+        },
+      },
+      {
         $facet: {
           totals: [
             {
@@ -90,7 +96,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             },
           ],
           thisMonth: [
-            { $match: { createdAt: { $gte: startOfThisMonth } } },
+            { $match: { revenueDate: { $gte: startOfThisMonth } } },
             {
               $group: {
                 _id: null,
@@ -102,7 +108,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
           lastMonth: [
             {
               $match: {
-                createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+                revenueDate: { $gte: startOfLastMonth, $lte: endOfLastMonth },
               },
             },
             {
@@ -116,7 +122,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
           monthly: [
             {
               $match: {
-                createdAt: {
+                revenueDate: {
                   $gte: new Date(currentYear, 0, 1),
                   $lt: new Date(currentYear + 1, 0, 1),
                 },
@@ -124,7 +130,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             },
             {
               $group: {
-                _id: { $month: { date: "$createdAt", timezone } },
+                _id: { $month: { date: "$revenueDate", timezone } },
                 revenue: { $sum: "$amount" },
               },
             },
@@ -136,7 +142,25 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       {
         $facet: {
           total: [{ $count: "count" }],
-          active: [{ $match: { status: "active" } }, { $count: "count" }],
+          active: [
+            {
+              $match: {
+                status: "active",
+                endDate: { $gt: now },
+              },
+            },
+            { $count: "count" },
+          ],
+          activeUsers: [
+            {
+              $match: {
+                status: "active",
+                endDate: { $gt: now },
+              },
+            },
+            { $group: { _id: "$userId" } },
+            { $count: "count" },
+          ],
           thisMonth: [
             { $match: { createdAt: { $gte: startOfThisMonth } } },
             { $count: "count" },
@@ -206,7 +230,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       { $limit: 5 },
     ]),
     Transaction.find({ status: "captured" })
-      .sort({ createdAt: -1 })
+      .sort({ paymentDate: -1, createdAt: -1 })
       .limit(10)
       .populate("userId", "name email profilePicture")
       .populate("planId", "name displayName price")
@@ -220,11 +244,11 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   ]);
 
   const txFacets = transactionFacets[0] || {};
-  const totalRevenue = valueOf(txFacets.totals, "revenue");
+  const totalRevenue = toRupees(valueOf(txFacets.totals, "revenue"));
   const totalSales = countOf(txFacets.totals);
-  const thisMonthRevenue = valueOf(txFacets.thisMonth, "revenue");
+  const thisMonthRevenue = toRupees(valueOf(txFacets.thisMonth, "revenue"));
   const thisMonthSales = countOf(txFacets.thisMonth);
-  const lastMonthRevenue = valueOf(txFacets.lastMonth, "revenue");
+  const lastMonthRevenue = toRupees(valueOf(txFacets.lastMonth, "revenue"));
   const lastMonthSales = countOf(txFacets.lastMonth);
   const revenueGrowth = growthOf(thisMonthRevenue, lastMonthRevenue);
   const salesGrowth = growthOf(thisMonthSales, lastMonthSales);
@@ -235,7 +259,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   });
   const monthlyOverview = monthNames.map((name, index) => ({
     name,
-    total: monthlyRevenueByIndex[index + 1] || 0,
+    total: toRupees(monthlyRevenueByIndex[index + 1] || 0),
   }));
 
   const subFacets = subscriptionFacets[0] || {};
@@ -248,7 +272,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   const userFacetsData = userFacets[0] || {};
   const totalUsers = countOf(userFacetsData.total);
   const activeUsers = countOf(userFacetsData.active);
-  const proUsers = countOf(userFacetsData.pro);
+  const proUsers = countOf(subFacets.activeUsers);
   const recent24hUsers = countOf(userFacetsData.recent24h);
   const thisMonthUsers = countOf(userFacetsData.thisMonth);
   const lastMonthUsers = countOf(userFacetsData.lastMonth);
@@ -269,10 +293,10 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       name: t.userId?.name || "Anonymous User",
       email: t.userId?.email || "customer@example.com",
       profilePicture: t.userId?.profilePicture || "",
-      amount: t.amount,
+      amount: toRupees(t.amount),
       currency: t.currency || "INR",
       planName: t.planId?.displayName || t.planId?.name || "Pro Plan",
-      date: t.createdAt,
+      date: t.paymentDate || t.createdAt,
     }));
   } else {
     // If no transactions yet, show the latest registered users as recent activity
@@ -287,9 +311,9 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       name: u.name || "New User",
       email: u.email,
       profilePicture: u.profilePicture || "",
-      amount: u.isProUser ? 499 : 0,
+      amount: 0,
       currency: "INR",
-      planName: u.isProUser ? "Pro Plan" : "Free Tier",
+      planName: u.isProUser ? "Pro Member" : "Free Tier",
       date: u.createdAt,
     }));
   }

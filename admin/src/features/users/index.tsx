@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { Loader2 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
@@ -24,33 +24,30 @@ export function Users() {
   const navigate = route.useNavigate()
   const { auth } = useAuthStore()
 
-  const [usersList, setUsersList] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchUsers = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
+  const {
+    data: usersList = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery<User[]>({
+    queryKey: ['users', auth.accessToken],
+    queryFn: async () => {
       const res = await axios.get(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
-      if (res.data && res.data.data) {
-        setUsersList(res.data.data)
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load users from database')
-    } finally {
-      setLoading(false)
-    }
-  }, [auth.accessToken])
+      return res.data?.data ?? []
+    },
+    staleTime: 60 * 1000,
+  })
 
-  useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+  const errorMessage = error
+    ? (error as any).response?.data?.message ||
+      (error as Error).message ||
+      'Failed to load users from database'
+    : null
 
   return (
-    <UsersProvider onRefresh={fetchUsers}>
+    <UsersProvider onRefresh={refetch}>
       <Header fixed>
         <Search className='me-auto' />
         <ThemeSwitch />
@@ -71,10 +68,10 @@ export function Users() {
         </div>
 
         {/* Content Table or Error */}
-        {error ? (
+        {errorMessage ? (
           <div className='flex flex-col items-center justify-center rounded-lg border border-destructive/30 bg-destructive/5 p-8 text-center'>
-            <p className='font-semibold text-destructive mb-2'>{error}</p>
-            <Button variant='outline' size='sm' onClick={fetchUsers}>
+            <p className='font-semibold text-destructive mb-2'>{errorMessage}</p>
+            <Button variant='outline' size='sm' onClick={() => refetch()}>
               Retry Loading Users
             </Button>
           </div>
@@ -90,7 +87,7 @@ export function Users() {
             data={usersList}
             search={search}
             navigate={navigate}
-            onRefresh={fetchUsers}
+            onRefresh={refetch}
           />
         )}
       </Main>

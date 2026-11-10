@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -89,11 +90,11 @@ function SortableTagItem({
 }
 
 export function Tags() {
-  const [tags, setTags] = useState<Tag[]>([])
-  const [loading, setLoading] = useState(true)
   const [newTagName, setNewTagName] = useState('')
   const [adding, setAdding] = useState(false)
   const { auth } = useAuthStore()
+  const queryClient = useQueryClient()
+  const queryKey = ['tags'] as const
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -102,20 +103,18 @@ export function Tags() {
     })
   )
 
-  const fetchTags = async () => {
-    try {
+  const {
+    data: tags = [],
+    isLoading: loading,
+    refetch,
+  } = useQuery<Tag[]>({
+    queryKey,
+    queryFn: async () => {
       const res = await axios.get(`${API_URL}/tags`)
-      setTags(res.data.data)
-    } catch (err) {
-      toast.error('Failed to load tags')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTags()
-  }, [])
+      return res.data?.data ?? []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
 
   const handleAddTag = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -128,7 +127,10 @@ export function Tags() {
         { name: newTagName },
         { headers: { Authorization: `Bearer ${auth.accessToken}` } }
       )
-      setTags([...tags, res.data.data])
+      queryClient.setQueryData<Tag[]>(queryKey, (prev = []) => [
+        ...prev,
+        res.data.data,
+      ])
       setNewTagName('')
       toast.success('Tag added successfully')
     } catch (err: any) {
@@ -145,7 +147,9 @@ export function Tags() {
       await axios.delete(`${API_URL}/tags/${id}`, {
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
-      setTags(tags.filter((t) => t._id !== id))
+      queryClient.setQueryData<Tag[]>(queryKey, (prev = []) =>
+        prev.filter((t) => t._id !== id)
+      )
       toast.success('Tag deleted')
     } catch (err) {
       toast.error('Failed to delete tag')
@@ -160,7 +164,7 @@ export function Tags() {
       const newIndex = tags.findIndex((t) => t._id === over.id)
 
       const newTags = arrayMove(tags, oldIndex, newIndex)
-      setTags(newTags)
+      queryClient.setQueryData<Tag[]>(queryKey, newTags)
 
       try {
         await axios.put(
@@ -170,7 +174,7 @@ export function Tags() {
         )
       } catch (err) {
         toast.error('Failed to save order')
-        fetchTags() // revert
+        refetch()
       }
     }
   }

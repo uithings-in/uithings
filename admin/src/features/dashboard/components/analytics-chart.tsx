@@ -12,22 +12,17 @@ interface AnalyticsChartProps {
 }
 
 export function AnalyticsChart({ data = [] }: AnalyticsChartProps) {
-  const chartData =
-    data.length > 0
-      ? data
-      : [
-          { name: 'Mon', clicks: 120, uniques: 85 },
-          { name: 'Tue', clicks: 150, uniques: 102 },
-          { name: 'Wed', clicks: 190, uniques: 130 },
-          { name: 'Thu', clicks: 170, uniques: 115 },
-          { name: 'Fri', clicks: 220, uniques: 160 },
-          { name: 'Sat', clicks: 260, uniques: 195 },
-          { name: 'Sun', clicks: 240, uniques: 180 },
-        ]
+  if (data.length === 0) {
+    return (
+      <div className='flex h-[300px] items-center justify-center text-sm text-muted-foreground'>
+        No activity data available yet.
+      </div>
+    )
+  }
 
   return (
     <ResponsiveContainer width='100%' height={300}>
-      <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
         <XAxis
           dataKey='name'
           stroke='#888888'

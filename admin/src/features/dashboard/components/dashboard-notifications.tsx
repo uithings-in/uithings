@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import {
   Bell,
@@ -51,36 +52,42 @@ interface DashboardNotificationsProps {
 export function DashboardNotifications({ onUnreadCountChange }: DashboardNotificationsProps) {
   const { auth } = useAuthStore()
   const navigate = useNavigate()
-  const [notifications, setNotifications] = useState<DashboardNotification[]>([])
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const queryClient = useQueryClient()
+  const queryKey = ['notifications', auth.accessToken] as const
   const [filter, setFilter] = useState<'all' | 'unread' | 'pending'>('all')
 
-  const fetchNotifications = useCallback(async (isManual = false) => {
-    try {
-      if (isManual) setRefreshing(true)
-      else setLoading(true)
-
+  const {
+    data: notifications = [],
+    isLoading: loading,
+    isFetching,
+    refetch,
+  } = useQuery<DashboardNotification[]>({
+    queryKey,
+    queryFn: async () => {
       const res = await axios.get(`${API_URL}/notifications`, {
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
 
-      if (res.data?.success && Array.isArray(res.data.data)) {
-        setNotifications(res.data.data)
-        const unread = res.data.data.filter((n: DashboardNotification) => !n.read).length
-        onUnreadCountChange?.(unread)
-      }
-    } catch (err) {
-      console.error('Failed to load notifications:', err)
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }, [auth.accessToken, onUnreadCountChange])
+      return res.data?.success && Array.isArray(res.data.data)
+        ? res.data.data
+        : []
+    },
+    staleTime: 30 * 1000,
+  })
+
+  const refreshing = isFetching && !loading
 
   useEffect(() => {
-    fetchNotifications()
-  }, [fetchNotifications])
+    onUnreadCountChange?.(notifications.filter((n) => !n.read).length)
+  }, [notifications, onUnreadCountChange])
+
+  const setNotifications = (
+    updater: (prev: DashboardNotification[]) => DashboardNotification[]
+  ) => {
+    queryClient.setQueryData<DashboardNotification[]>(queryKey, (prev = []) =>
+      updater(prev)
+    )
+  }
 
   const markAsRead = async (id: string) => {
     try {
@@ -92,8 +99,6 @@ export function DashboardNotifications({ onUnreadCountChange }: DashboardNotific
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, read: true } : n))
       )
-      const unread = notifications.filter((n) => n._id !== id && !n.read).length
-      onUnreadCountChange?.(unread)
     } catch (err) {
       console.error('Failed to mark notification as read:', err)
     }
@@ -107,7 +112,6 @@ export function DashboardNotifications({ onUnreadCountChange }: DashboardNotific
         { headers: { Authorization: `Bearer ${auth.accessToken}` } }
       )
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-      onUnreadCountChange?.(0)
     } catch (err) {
       console.error('Failed to mark all as read:', err)
     }
@@ -118,8 +122,7 @@ export function DashboardNotifications({ onUnreadCountChange }: DashboardNotific
       await axios.delete(`${API_URL}/notifications/clear-all`, {
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
-      setNotifications([])
-      onUnreadCountChange?.(0)
+      setNotifications(() => [])
     } catch (err) {
       console.error('Failed to clear notifications:', err)
     }
@@ -131,8 +134,6 @@ export function DashboardNotifications({ onUnreadCountChange }: DashboardNotific
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
       setNotifications((prev) => prev.filter((n) => n._id !== id))
-      const unread = notifications.filter((n) => n._id !== id && !n.read).length
-      onUnreadCountChange?.(unread)
     } catch (err) {
       console.error('Failed to delete notification:', err)
     }
@@ -182,8 +183,8 @@ export function DashboardNotifications({ onUnreadCountChange }: DashboardNotific
           <Button
             variant='outline'
             size='sm'
-            onClick={() => fetchNotifications(true)}
-            disabled={loading || refreshing}
+            onClick={() => refetch()}
+            disabled={loading || isFetching}
             className='h-8 gap-1 text-xs'
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin text-primary' : ''}`} />

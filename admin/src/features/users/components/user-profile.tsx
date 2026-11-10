@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import axios from 'axios'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Link, useParams, useNavigate } from '@tanstack/react-router'
 import {
@@ -135,16 +136,24 @@ export function UserProfile() {
   const { userId } = useParams({ strict: false }) as { userId: string }
   const navigate = useNavigate()
   const { auth } = useAuthStore()
+  const queryClient = useQueryClient()
 
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const userQueryKey = ['user', userId, auth.accessToken] as const
+  const userComponentsQueryKey = [
+    'user-components',
+    userId,
+    auth.accessToken,
+  ] as const
+  const userSubscriptionsQueryKey = [
+    'user-subscriptions',
+    userId,
+    auth.accessToken,
+  ] as const
+
   const [copied, setCopied] = useState(false)
   const [openEditDialog, setOpenEditDialog] = useState(false)
 
   // User uploaded components state
-  const [userComponents, setUserComponents] = useState<any[]>([])
-  const [componentsLoading, setComponentsLoading] = useState(false)
   const [componentsFilter, setComponentsFilter] = useState<
     'all' | 'approved' | 'pending' | 'rejected'
   >('all')
@@ -167,12 +176,6 @@ export function UserProfile() {
   })
 
   // Subscription plans & history state
-  const [plans, setPlans] = useState<PlanItem[]>([])
-  const [plansLoading, setPlansLoading] = useState(false)
-  const [subscriptionHistory, setSubscriptionHistory] = useState<
-    SubscriptionRecord[]
-  >([])
-  const [historyLoading, setHistoryLoading] = useState(false)
   const [activatingPlan, setActivatingPlan] = useState<PlanItem | null>(null)
   const [customDurationDays, setCustomDurationDays] = useState<number>(0)
   const [customComponentLimit, setCustomComponentLimit] = useState<number>(0)
@@ -186,6 +189,82 @@ export function UserProfile() {
   const [revokingSubmit, setRevokingSubmit] = useState(false)
   const [showSwitchPlans, setShowSwitchPlans] = useState(false)
 
+  const {
+    data: user,
+    isLoading: loading,
+    error: userError,
+  } = useQuery<User>({
+    queryKey: userQueryKey,
+    queryFn: async () => {
+      const res = await axios.get(`${API_URL}/users/${userId}`, {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      })
+      if (!res.data?.data) {
+        throw new Error('Failed to fetch user profile')
+      }
+      return res.data.data
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
+  })
+
+  const {
+    data: userComponents = [],
+    isLoading: componentsLoading,
+  } = useQuery<any[]>({
+    queryKey: userComponentsQueryKey,
+    queryFn: async () => {
+      const res = await axios.get(
+        `${API_URL}/components/admin?userId=${userId}&limit=100`,
+        {
+          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        }
+      )
+      return res.data?.data?.items ?? []
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
+  })
+
+  const { data: plans = [], isLoading: plansLoading } = useQuery<PlanItem[]>({
+    queryKey: ['plans'],
+    queryFn: async () => {
+      const res = await axios.get(`${API_URL}/plans`)
+      return res.data?.data ?? []
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const {
+    data: subscriptionHistory = [],
+    isLoading: historyLoading,
+    refetch: refetchSubscriptionHistory,
+  } = useQuery<SubscriptionRecord[]>({
+    queryKey: userSubscriptionsQueryKey,
+    queryFn: async () => {
+      const res = await axios.get(`${API_URL}/users/${userId}/subscriptions`, {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      })
+      return res.data?.data ?? []
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
+  })
+
+  const refreshUserData = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: userQueryKey }),
+      queryClient.invalidateQueries({ queryKey: userSubscriptionsQueryKey }),
+      queryClient.invalidateQueries({ queryKey: ['users'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] }),
+    ])
+  }
+
+  const refreshUserDetails = () => {
+    queryClient.invalidateQueries({ queryKey: userQueryKey })
+    queryClient.invalidateQueries({ queryKey: ['users'] })
+  }
+
   const openActivateModal = (plan: PlanItem, promoMode = false) => {
     setActivatingPlan(plan)
     setIsPromotion(promoMode)
@@ -196,87 +275,6 @@ export function UserProfile() {
     setPaymentDate(format(new Date(), 'yyyy-MM-dd'))
     setAmount(promoMode ? 0 : Math.floor(plan.price / 100))
   }
-
-  const fetchUserDetails = useCallback(async () => {
-    if (!userId) return
-    try {
-      setLoading(true)
-      setError(null)
-      const res = await axios.get(`${API_URL}/users/${userId}`, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` },
-      })
-      if (res.data && res.data.data) {
-        setUser(res.data.data)
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch user profile')
-    } finally {
-      setLoading(false)
-    }
-  }, [userId, auth.accessToken])
-
-  const fetchUserComponents = useCallback(async () => {
-    if (!userId) return
-    try {
-      setComponentsLoading(true)
-      const res = await axios.get(
-        `${API_URL}/components/admin?userId=${userId}&limit=100`,
-        {
-          headers: { Authorization: `Bearer ${auth.accessToken}` },
-        }
-      )
-      if (res.data && res.data.data && Array.isArray(res.data.data.items)) {
-        setUserComponents(res.data.data.items)
-      }
-    } catch (err: any) {
-      console.error('Failed to fetch user components', err)
-    } finally {
-      setComponentsLoading(false)
-    }
-  }, [userId, auth.accessToken])
-
-  const fetchPlans = useCallback(async () => {
-    try {
-      setPlansLoading(true)
-      const res = await axios.get(`${API_URL}/plans`)
-      if (res.data && Array.isArray(res.data.data)) {
-        setPlans(res.data.data)
-      }
-    } catch (err: any) {
-      console.error('Failed to fetch plans', err)
-    } finally {
-      setPlansLoading(false)
-    }
-  }, [])
-
-  const fetchSubscriptionHistory = useCallback(async () => {
-    if (!userId) return
-    try {
-      setHistoryLoading(true)
-      const res = await axios.get(`${API_URL}/users/${userId}/subscriptions`, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` },
-      })
-      if (res.data && Array.isArray(res.data.data)) {
-        setSubscriptionHistory(res.data.data)
-      }
-    } catch (err: any) {
-      console.error('Failed to fetch subscription history', err)
-    } finally {
-      setHistoryLoading(false)
-    }
-  }, [userId, auth.accessToken])
-
-  useEffect(() => {
-    fetchUserDetails()
-    fetchUserComponents()
-    fetchPlans()
-    fetchSubscriptionHistory()
-  }, [
-    fetchUserDetails,
-    fetchUserComponents,
-    fetchPlans,
-    fetchSubscriptionHistory,
-  ])
 
   const handleActivatePlan = async (overridePromo?: boolean) => {
     if (!activatingPlan || !userId) return
@@ -329,8 +327,7 @@ export function UserProfile() {
       )
       setActivatingPlan(null)
       setShowSwitchPlans(false)
-      await fetchUserDetails()
-      await fetchSubscriptionHistory()
+      await refreshUserData()
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to activate plan')
     } finally {
@@ -350,8 +347,7 @@ export function UserProfile() {
       toast.success(res.data?.message || 'Subscription cancelled successfully')
       setOpenRevokeDialog(false)
       setShowSwitchPlans(false)
-      await fetchUserDetails()
-      await fetchSubscriptionHistory()
+      await refreshUserData()
     } catch (err: any) {
       toast.error(
         err.response?.data?.message || 'Failed to revoke subscription'
@@ -366,10 +362,17 @@ export function UserProfile() {
       setCopyingCompId(comp._id)
       let dataToCopy = comp.figmaDataBase64
       if (!dataToCopy) {
-        const res = await axios.get(`${API_URL}/components/${comp._id}/data`, {
-          headers: { Authorization: `Bearer ${auth.accessToken}` },
+        dataToCopy = await queryClient.fetchQuery({
+          queryKey: ['component-data', comp._id, auth.accessToken],
+          queryFn: async () => {
+            const res = await axios.get(
+              `${API_URL}/components/${comp._id}/data`,
+              { headers: { Authorization: `Bearer ${auth.accessToken}` } }
+            )
+            return res.data?.data?.figmaDataBase64 as string | undefined
+          },
+          staleTime: 5 * 60 * 1000,
         })
-        dataToCopy = res.data?.data?.figmaDataBase64
       }
       if (!dataToCopy) {
         toast.error('No Figma data found for this component')
@@ -395,7 +398,7 @@ export function UserProfile() {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${auth.accessToken}` } }
       )
-      setUserComponents((prev) =>
+      queryClient.setQueryData<any[]>(userComponentsQueryKey, (prev = []) =>
         prev.map((c) => (c._id === compId ? { ...c, status: newStatus } : c))
       )
       toast.success(`Component marked as ${newStatus}`)
@@ -420,7 +423,7 @@ export function UserProfile() {
         },
         { headers: { Authorization: `Bearer ${auth.accessToken}` } }
       )
-      setUserComponents((prev) =>
+      queryClient.setQueryData<any[]>(userComponentsQueryKey, (prev = []) =>
         prev.map((c) =>
           c._id === rejectDialog.compId
             ? {
@@ -453,8 +456,10 @@ export function UserProfile() {
       await axios.delete(`${API_URL}/components/${compId}`, {
         headers: { Authorization: `Bearer ${auth.accessToken}` },
       })
-      setUserComponents((prev) => prev.filter((c) => c._id !== compId))
-      setUser((prev) =>
+      queryClient.setQueryData<any[]>(userComponentsQueryKey, (prev = []) =>
+        prev.filter((c) => c._id !== compId)
+      )
+      queryClient.setQueryData<User | null>(userQueryKey, (prev) =>
         prev
           ? {
               ...prev,
@@ -532,6 +537,12 @@ export function UserProfile() {
     }
   }
 
+  const userErrorMessage = userError
+    ? (userError as any).response?.data?.message ||
+      (userError as Error).message ||
+      'User not found'
+    : 'User not found'
+
   if (loading) {
     return (
       <div className='flex h-[60vh] flex-col items-center justify-center gap-3'>
@@ -541,11 +552,11 @@ export function UserProfile() {
     )
   }
 
-  if (error || !user) {
+  if (userError || !user) {
     return (
       <div className='flex h-[60vh] flex-col items-center justify-center p-8 text-center'>
         <p className='mb-2 text-lg font-semibold text-destructive'>
-          {error || 'User not found'}
+          {userErrorMessage}
         </p>
         <Button onClick={() => navigate({ to: '/users' })}>
           <ArrowLeft className='mr-2 h-4 w-4' /> Back to User List
@@ -1264,7 +1275,7 @@ export function UserProfile() {
                       size='sm'
                       variant='ghost'
                       className='h-7 w-7 p-0 text-muted-foreground'
-                      onClick={fetchSubscriptionHistory}
+                      onClick={() => refetchSubscriptionHistory()}
                       title='Refresh history'
                     >
                       <RefreshCw
@@ -2048,7 +2059,7 @@ export function UserProfile() {
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         currentRow={user}
-        onSuccess={fetchUserDetails}
+        onSuccess={refreshUserDetails}
       />
 
       {/* Component Rejection Reason Modal */}

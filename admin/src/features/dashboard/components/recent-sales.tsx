@@ -63,10 +63,16 @@ export function RecentSales({ sales = [], currencySymbol = '₹' }: RecentSalesP
                 </p>
               </div>
               <div className='text-right'>
-                <div className='text-sm font-semibold text-emerald-500'>
-                  +{symbol}
-                  {Number(sale.amount).toLocaleString()}
-                </div>
+                {Number(sale.amount) > 0 ? (
+                  <div className='text-sm font-semibold text-emerald-500'>
+                    +{symbol}
+                    {Number(sale.amount).toLocaleString('en-IN')}
+                  </div>
+                ) : (
+                  <div className='text-xs font-medium text-muted-foreground'>
+                    Signup
+                  </div>
+                )}
                 {sale.date && (
                   <p className='text-[10px] text-muted-foreground'>
                     {new Date(sale.date).toLocaleDateString(undefined, {

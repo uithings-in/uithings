@@ -1,5 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -58,12 +63,13 @@ const REJECTION_PRESETS = [
   },
 ]
 
+interface ComponentsPage {
+  items: any[]
+  page: number
+  totalPages: number
+}
+
 export function ComponentsModeration() {
-  const [components, setComponents] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [copyingId, setCopyingId] = useState<string | null>(null)
   const [actions, setActions] = useState<Record<string, string>>({})
   const [searchTerm, setSearchTerm] = useState('')
@@ -87,6 +93,13 @@ export function ComponentsModeration() {
     submitting: false,
   })
   const { accessToken } = useAuthStore.getState().auth
+  const queryClient = useQueryClient()
+  const queryKey = [
+    'admin-components',
+    debouncedSearch,
+    statusFilter,
+    accessToken,
+  ] as const
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -95,55 +108,73 @@ export function ComponentsModeration() {
     return () => clearTimeout(handler)
   }, [searchTerm])
 
-  const fetchComponents = useCallback(async (pageNum = 1, searchQuery = debouncedSearch, status = statusFilter) => {
-    try {
-      if (pageNum === 1) setLoading(true)
-      else setLoadingMore(true)
-      
-      let url = `${API_URL}/components/admin?page=${pageNum}&limit=20`
-      if (searchQuery.trim()) {
-        url += `&q=${encodeURIComponent(searchQuery.trim())}`
+  const {
+    data,
+    isLoading: loading,
+    isFetchingNextPage: loadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      let url = `${API_URL}/components/admin?page=${pageParam}&limit=20`
+      if (debouncedSearch.trim()) {
+        url += `&q=${encodeURIComponent(debouncedSearch.trim())}`
       }
-      if (status !== 'all') {
-        url += `&status=${status}`
+      if (statusFilter !== 'all') {
+        url += `&status=${statusFilter}`
       }
 
       const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
-      
-      const fetchedItems = response.data.data.items || []
-      if (pageNum === 1) {
-        setComponents(fetchedItems)
-      } else {
-        setComponents(prev => [...prev, ...fetchedItems])
-      }
-      setTotalPages(response.data.data.pagination.totalPages || 1)
-      setPage(pageNum)
-    } catch (error) {
-      toast.error('Failed to fetch components')
-    } finally {
-      setLoading(false)
-      setLoadingMore(false)
-    }
-  }, [accessToken, debouncedSearch, statusFilter])
 
-  useEffect(() => {
-    fetchComponents(1, debouncedSearch, statusFilter)
-  }, [debouncedSearch, statusFilter, fetchComponents])
+      return {
+        items: response.data.data.items || [],
+        page: pageParam,
+        totalPages: response.data.data.pagination.totalPages || 1,
+      } satisfies ComponentsPage
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+    staleTime: 60 * 1000,
+  })
+
+  const components = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data]
+  )
+
+  const updateComponentsCache = (
+    updater: (items: any[]) => any[]
+  ) => {
+    queryClient.setQueryData<InfiniteData<ComponentsPage>>(
+      queryKey,
+      (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: updater(page.items),
+          })),
+        }
+      }
+    )
+  }
 
   useEffect(() => {
     const handleScroll = () => {
-      // Check if user scrolled near the bottom
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
-        if (!loading && !loadingMore && page < totalPages) {
-          fetchComponents(page + 1, debouncedSearch, statusFilter)
+        if (!loading && !loadingMore && hasNextPage) {
+          fetchNextPage()
         }
       }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [page, totalPages, loading, loadingMore, debouncedSearch, statusFilter, fetchComponents])
+  }, [loading, loadingMore, hasNextPage, fetchNextPage])
 
   const handleSaveAction = async (id: string) => {
     const action = actions[id]
@@ -183,13 +214,15 @@ export function ComponentsModeration() {
         await axios.delete(`${API_URL}/components/${id}`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         })
-        setComponents(prev => prev.filter(c => c._id !== id))
+        updateComponentsCache((items) => items.filter((c) => c._id !== id))
         toast.success('Component deleted')
       } else {
         await axios.patch(`${API_URL}/components/${id}/status`, { status: action }, {
           headers: { Authorization: `Bearer ${accessToken}` }
         })
-        setComponents(prev => prev.map(c => c._id === id ? { ...c, status: action } : c))
+        updateComponentsCache((items) =>
+          items.map((c) => (c._id === id ? { ...c, status: action } : c))
+        )
         toast.success(`Component ${action}`)
       }
     } catch (error) {
@@ -199,8 +232,8 @@ export function ComponentsModeration() {
 
   const handleToggleVisibility = async (id: string, currentState?: boolean) => {
     const nextState = !currentState
-    setComponents((prev) =>
-      prev.map((c) =>
+    updateComponentsCache((items) =>
+      items.map((c) =>
         c._id === id ? { ...c, isVisibleWithoutSubscription: nextState } : c
       )
     )
@@ -217,8 +250,8 @@ export function ComponentsModeration() {
           : 'Component is now locked to Pro subscribers'
       )
     } catch (err: any) {
-      setComponents((prev) =>
-        prev.map((c) =>
+      updateComponentsCache((items) =>
+        items.map((c) =>
           c._id === id ? { ...c, isVisibleWithoutSubscription: !nextState } : c
         )
       )
@@ -245,8 +278,8 @@ export function ComponentsModeration() {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       )
-      setComponents(prev =>
-        prev.map(c =>
+      updateComponentsCache((items) =>
+        items.map((c) =>
           c._id === rejectDialog.compId
             ? { ...c, status: 'rejected', rejectionReason: finalReason }
             : c
@@ -271,10 +304,17 @@ export function ComponentsModeration() {
   const handleCopy = async (id: string, name: string) => {
     try {
       setCopyingId(id)
-      const response = await axios.get(`${API_URL}/components/${id}/data`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+      const figmaDataBase64 = await queryClient.fetchQuery({
+        queryKey: ['component-data', id, accessToken],
+        queryFn: async () => {
+          const response = await axios.get(
+            `${API_URL}/components/${id}/data`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          )
+          return response.data?.data?.figmaDataBase64 as string | undefined
+        },
+        staleTime: 5 * 60 * 1000,
       })
-      const figmaDataBase64 = response.data?.data?.figmaDataBase64
       if (!figmaDataBase64) throw new Error('No Figma payload found.')
       await copyToFigma(figmaDataBase64, name)
       toast.success('Copied to Figma clipboard!')
