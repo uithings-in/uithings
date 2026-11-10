@@ -10,6 +10,7 @@ import {
   Users,
   Tag,
   Crown,
+  MessageSquare,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -53,6 +54,11 @@ export const sidebarData: SidebarData = {
           title: 'Tags',
           url: '/tags',
           icon: Tag,
+        },
+        {
+          title: 'Contact Messages',
+          url: '/contact-messages',
+          icon: MessageSquare,
         },
       ],
     },

@@ -31,6 +31,7 @@ import { Route as AuthenticatedTagsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedProVisibilityIndexRouteImport } from './routes/_authenticated/pro-visibility/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedContactMessagesIndexRouteImport } from './routes/_authenticated/contact-messages/index'
 import { Route as AuthenticatedComponentsIndexRouteImport } from './routes/_authenticated/components/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
@@ -155,6 +156,12 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedContactMessagesIndexRoute =
+  AuthenticatedContactMessagesIndexRouteImport.update({
+    id: '/contact-messages/',
+    path: '/contact-messages/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedComponentsIndexRoute =
   AuthenticatedComponentsIndexRouteImport.update({
     id: '/components/',
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/apps/': typeof AuthenticatedAppsIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/components/': typeof AuthenticatedComponentsIndexRoute
+  '/contact-messages/': typeof AuthenticatedContactMessagesIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/pro-visibility/': typeof AuthenticatedProVisibilityIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -282,6 +290,7 @@ export interface FileRoutesByTo {
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/components': typeof AuthenticatedComponentsIndexRoute
+  '/contact-messages': typeof AuthenticatedContactMessagesIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/pro-visibility': typeof AuthenticatedProVisibilityIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -319,6 +328,7 @@ export interface FileRoutesById {
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/components/': typeof AuthenticatedComponentsIndexRoute
+  '/_authenticated/contact-messages/': typeof AuthenticatedContactMessagesIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/pro-visibility/': typeof AuthenticatedProVisibilityIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/apps/'
     | '/chats/'
     | '/components/'
+    | '/contact-messages/'
     | '/help-center/'
     | '/pro-visibility/'
     | '/settings/'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/chats'
     | '/components'
+    | '/contact-messages'
     | '/help-center'
     | '/pro-visibility'
     | '/settings'
@@ -422,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
     | '/_authenticated/components/'
+    | '/_authenticated/contact-messages/'
     | '/_authenticated/help-center/'
     | '/_authenticated/pro-visibility/'
     | '/_authenticated/settings/'
@@ -601,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/contact-messages/': {
+      id: '/_authenticated/contact-messages/'
+      path: '/contact-messages'
+      fullPath: '/contact-messages/'
+      preLoaderRoute: typeof AuthenticatedContactMessagesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/components/': {
       id: '/_authenticated/components/'
       path: '/components'
@@ -719,6 +739,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedComponentsIndexRoute: typeof AuthenticatedComponentsIndexRoute
+  AuthenticatedContactMessagesIndexRoute: typeof AuthenticatedContactMessagesIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedProVisibilityIndexRoute: typeof AuthenticatedProVisibilityIndexRoute
   AuthenticatedTagsIndexRoute: typeof AuthenticatedTagsIndexRoute
@@ -734,6 +755,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedComponentsIndexRoute: AuthenticatedComponentsIndexRoute,
+  AuthenticatedContactMessagesIndexRoute:
+    AuthenticatedContactMessagesIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedProVisibilityIndexRoute: AuthenticatedProVisibilityIndexRoute,
   AuthenticatedTagsIndexRoute: AuthenticatedTagsIndexRoute,
