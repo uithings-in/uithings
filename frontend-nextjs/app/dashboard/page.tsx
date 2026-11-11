@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type FormEvent,
 } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -27,7 +26,7 @@ import {
 } from "../../api/payments";
 import { componentsApi } from "../../api/components";
 import { uploadApi } from "../../api/upload";
-import { contactApi, type ContactInput } from "../../api/contact";
+import { contactApi } from "../../api/contact";
 import { copyToFigma } from "../../lib/clipboard";
 import type { PaginatedComponentResponse } from "../../lib/types";
 import { broadcastComponentChange } from "../../lib/events";
@@ -41,6 +40,13 @@ const EditComponentView = dynamic(
   () =>
     import("../../components/add-component/EditComponentPage").then(
       (m) => m.EditComponentView,
+    ),
+  { ssr: false },
+);
+const ContactMailbox = dynamic(
+  () =>
+    import("../../components/dashboard/ContactMailbox").then(
+      (m) => m.ContactMailbox,
     ),
   { ssr: false },
 );
@@ -1586,208 +1592,6 @@ function BillingPanel() {
   );
 }
 
-// ==========================================
-// CONTACT US PANEL
-// ==========================================
-function ContactPanel() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [statusMessage, setStatusMessage] = useState("");
-  const [form, setForm] = useState<ContactInput>(() => ({
-    name: user?.name || "",
-    email: user?.email || "",
-    company: "",
-    country: "Indonesia",
-    message: "",
-  }));
-
-  const { data: history, isLoading: historyLoading } = useQuery({
-    queryKey: ["contact-history"],
-    queryFn: () => contactApi.listMine(),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (payload: ContactInput) => contactApi.create(payload),
-    onSuccess: () => {
-      setStatusMessage("Thanks! Your message has been sent.");
-      setForm((prev) => ({
-        ...prev,
-        company: "",
-        message: "",
-      }));
-      queryClient.invalidateQueries({ queryKey: ["contact-history"] });
-    },
-    onError: (error) => {
-      setStatusMessage(
-        error instanceof Error ? error.message : "Could not send your message.",
-      );
-    },
-  });
-
-  function handleChange<K extends keyof ContactInput>(
-    key: K,
-    value: ContactInput[K],
-  ) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setStatusMessage("");
-
-    if (!form.name || !form.email || !form.country || !form.message) {
-      setStatusMessage("Please complete all required fields.");
-      return;
-    }
-
-    createMutation.mutate({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      company: form.company?.trim() || "",
-      country: form.country.trim(),
-      message: form.message.trim(),
-    });
-  }
-
-  const countries = [
-    "Indonesia",
-    "India",
-    "United States",
-    "United Kingdom",
-    "Australia",
-    "Canada",
-    "Germany",
-    "Singapore",
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="max-w-xl">
-          <h2 className="text-lg font-extrabold text-gray-900">
-            Get in touch with support
-          </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Have questions about custom component licenses, enterprise team
-            access, or bugs? We respond within 24h.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="mt-6 grid gap-4 max-w-2xl">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="text-xs font-semibold text-gray-700">
-              Full Name <span className="text-rose-500">*</span>
-              <input
-                className="mt-1 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
-                placeholder="Julia William"
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-              />
-            </label>
-            <label className="text-xs font-semibold text-gray-700">
-              Work Email <span className="text-rose-500">*</span>
-              <input
-                type="email"
-                className="mt-1 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-              />
-            </label>
-            <label className="text-xs font-semibold text-gray-700">
-              Company
-              <input
-                className="mt-1 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
-                placeholder="Company Ltd."
-                value={form.company || ""}
-                onChange={(e) => handleChange("company", e.target.value)}
-              />
-            </label>
-            <label className="text-xs font-semibold text-gray-700">
-              Country <span className="text-rose-500">*</span>
-              <select
-                className="mt-1 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
-                value={form.country}
-                onChange={(e) => handleChange("country", e.target.value)}
-              >
-                {countries.map((country) => (
-                  <option key={country} value={country}>
-                    {country}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <label className="text-xs font-semibold text-gray-700">
-            Message <span className="text-rose-500">*</span>
-            <textarea
-              className="mt-1 min-h-[120px] w-full resize-none rounded-lg border border-gray-200 bg-white p-3 text-xs text-gray-800 outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316]"
-              placeholder="Describe what you need..."
-              value={form.message}
-              onChange={(e) => handleChange("message", e.target.value)}
-            />
-          </label>
-
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="h-9 rounded-lg bg-[#F97316] px-5 text-xs font-semibold text-white shadow-sm hover:bg-[#EA580C] disabled:opacity-60 cursor-pointer"
-            >
-              {createMutation.isPending ? "Sending..." : "Send Message"}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Floating Bottom-Right Toast Popup */}
-      <ToastPopup
-        message={statusMessage}
-        onClose={() => setStatusMessage("")}
-      />
-
-      {/* Ticket History */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-100 bg-[#F8F9FA]">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-            Submitted Inquiries
-          </h3>
-        </div>
-        {historyLoading ? (
-          <div className="py-10 text-center text-xs text-gray-400">
-            Loading history...
-          </div>
-        ) : !history || history.length === 0 ? (
-          <div className="py-10 text-center text-xs text-gray-400">
-            No previous messages found.
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-100 text-xs">
-            {history.map((h) => (
-              <div
-                key={h._id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-              >
-                <div>
-                  <p className="font-semibold text-gray-800">{h.message}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
-                    {new Date(h.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-gray-100 text-gray-600 w-fit">
-                  {h.status || "Received"}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
 // OVERVIEW CRM DASHBOARD (CONCEPTZILLA EXACT)
 // ==========================================
 // OVERVIEW PANEL (ACTIVE PLAN, STATS, CHART, CRM)
@@ -2253,9 +2057,28 @@ function DashboardContent() {
     { label: "Favorites", icon: Heart },
   ];
 
+  // Unread support replies (Gmail-style inbox badge)
+  const { data: contactThreads } = useQuery({
+    queryKey: ["contact-history"],
+    queryFn: () => contactApi.listMine(),
+    enabled: !!user,
+    staleTime: 20 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
+  const unreadContactCount = (contactThreads ?? []).filter((thread) =>
+    (thread.replies ?? []).some(
+      (reply) => reply.author === "admin" && !reply.readByUser,
+    ),
+  ).length;
+
   const secondaryNavItems = [
     { label: "Plans & Billing", icon: CreditCard },
-    { label: "Contact Us", icon: Mail, badge: "1" },
+    {
+      label: "Contact Us",
+      icon: Mail,
+      badge: unreadContactCount > 0 ? String(unreadContactCount) : undefined,
+    },
   ];
 
   // Page Header Title + Count
@@ -3262,7 +3085,7 @@ function DashboardContent() {
           ) : activeTab === "Plans & Billing" ? (
             <BillingPanel />
           ) : activeTab === "Contact Us" ? (
-            <ContactPanel />
+            <ContactMailbox />
           ) : (
             <OverviewPanel
               user={user}

@@ -19,6 +19,7 @@ export default function ContactClient() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -61,11 +62,13 @@ export default function ContactClient() {
         name: fullName,
         email: email.trim(),
         country: "Global",
+        subject: subject.trim(),
         message: message.trim(),
       });
 
       setSuccess(true);
       setMessage("");
+      setSubject("");
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
@@ -260,6 +263,23 @@ export default function ContactClient() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email address..."
+                      className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-white/25 backdrop-blur-md transition-all focus:border-[#7C5CFF] focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-[#7C5CFF]"
+                    />
+                  </div>
+
+                  {/* Subject */}
+                  <div>
+                    <label
+                      htmlFor="subject"
+                      className="block text-xs font-medium text-[#AEB2EA] mb-2"
+                    >
+                      Subject
+                    </label>
+                    <input
+                      id="subject"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="What do you need help with?"
                       className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-white/25 backdrop-blur-md transition-all focus:border-[#7C5CFF] focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-[#7C5CFF]"
                     />
                   </div>

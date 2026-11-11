@@ -429,6 +429,94 @@ async function sendContactEmail({ to, replyTo, subject, html, text }) {
   await sendEmail({ to, replyTo, subject, html, text });
 }
 
+async function sendNewContactRequestEmail({
+  to,
+  replyTo,
+  name,
+  email,
+  company,
+  country,
+  subject,
+  message,
+}) {
+  if (!to) return;
+  const safeName = escapeHtml(name || "there");
+  const safeEmail = escapeHtml(email || "");
+  const safeCompany = escapeHtml(company || "-");
+  const safeCountry = escapeHtml(country || "-");
+  const safeSubject = escapeHtml(subject || "(no subject)");
+  const safeMessage = escapeHtml(message || "");
+
+  const mailSubject = `New support request: ${subject || "(no subject)"}`;
+  const text = [
+    "A new support request was submitted from the UI Things dashboard.",
+    "",
+    `Name: ${name || "-"}`,
+    `Email: ${email || "-"}`,
+    `Company: ${company || "-"}`,
+    `Country: ${country || "-"}`,
+    `Subject: ${subject || "(no subject)"}`,
+    "",
+    "Message:",
+    message || "",
+    "",
+    "— UI Things",
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #10131A;">
+      <h2 style="margin: 0 0 16px; font-size: 20px;">New support request</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #4B5563;">
+        <tr><td style="padding: 4px 8px 4px 0; color: #6B7280;">Name</td><td style="padding: 4px 0;">${safeName}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 0; color: #6B7280;">Email</td><td style="padding: 4px 0;">${safeEmail}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 0; color: #6B7280;">Company</td><td style="padding: 4px 0;">${safeCompany}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 0; color: #6B7280;">Country</td><td style="padding: 4px 0;">${safeCountry}</td></tr>
+        <tr><td style="padding: 4px 8px 4px 0; color: #6B7280;">Subject</td><td style="padding: 4px 0; font-weight: bold;">${safeSubject}</td></tr>
+      </table>
+      <div style="margin: 20px 0; padding: 16px; border-radius: 12px; background: #F5F3FF; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #10131A;">${safeMessage}</div>
+      <p style="margin: 0; font-size: 12px; color: #6B7280;">Reply from the admin panel to respond to this request.</p>
+    </div>
+  `;
+
+  await sendEmail({ to, replyTo, subject: mailSubject, html, text });
+}
+
+async function sendContactReplyEmail({ to, replyTo, name, subject, body, fromAdmin }) {
+  if (!to) return;
+  const safeName = escapeHtml(name || "there");
+  const safeSubject = escapeHtml(subject || "(no subject)");
+  const safeBody = escapeHtml(body || "");
+
+  const mailSubject = fromAdmin
+    ? `Re: ${subject || "your support request"}`
+    : `New reply on: ${subject || "your support request"}`;
+  const text = [
+    `Hi ${name || "there"},`,
+    "",
+    fromAdmin
+      ? "Our support team replied to your request:"
+      : "A new reply was added to your support request:",
+    "",
+    body || "",
+    "",
+    "— UI Things Support",
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #10131A;">
+      <h2 style="margin: 0 0 12px; font-size: 20px;">${fromAdmin ? "Support replied" : "New reply"}</h2>
+      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #4B5563;">
+        Hi ${safeName}, ${fromAdmin ? "our support team replied to your request" : "a new reply was added to your request"}.
+      </p>
+      <p style="margin: 0 0 6px; font-size: 13px; color: #6B7280;">Subject: <strong>${safeSubject}</strong></p>
+      <div style="margin: 16px 0; padding: 16px; border-radius: 12px; background: #F5F3FF; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #10131A;">${safeBody}</div>
+      <p style="margin: 0; font-size: 12px; color: #6B7280;">You can read and reply to this conversation from your UI Things dashboard.</p>
+    </div>
+  `;
+
+  await sendEmail({ to, replyTo, subject: mailSubject, html, text });
+}
+
 async function sendOtpEmail({ to, name, otp, expiresInMinutes }) {
   const safeName = escapeHtml(name || "there");
   const expires = Number(expiresInMinutes) || 10;
@@ -468,6 +556,8 @@ async function sendOtpEmail({ to, name, otp, expiresInMinutes }) {
 module.exports = {
   getMailProvider,
   sendContactEmail,
+  sendNewContactRequestEmail,
+  sendContactReplyEmail,
   sendOtpEmail,
   sendEmail,
 };
