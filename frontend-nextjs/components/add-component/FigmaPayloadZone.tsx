@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Clipboard,
   CheckCircle2,
-  Trash2,
   MonitorSmartphone,
   Loader2,
   AlertCircle,
@@ -151,18 +150,10 @@ export function FigmaPayloadZone({
                   type="button"
                   onClick={() => onPayloadChange("")}
                   className="inline-flex items-center gap-1 rounded-md bg-white/10 hover:bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white transition cursor-pointer"
+                  title="Clear the box to paste a new Figma payload. The saved payload is kept until you paste a replacement."
                 >
                   <RefreshCw size={11} />
                   <span>Replace</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onPayloadChange("")}
-                  className="inline-flex items-center gap-1 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-2.5 py-1 text-[11px] font-medium transition cursor-pointer"
-                  title="Remove payload"
-                >
-                  <Trash2 size={11} />
-                  <span>Remove</span>
                 </button>
               </div>
             </div>

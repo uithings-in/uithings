@@ -83,6 +83,14 @@ export const componentsApi = {
     return response.data.data;
   },
 
+  // Owner/admin scoped fetch of the original payload. Unlike getComponentData
+  // this never consumes a subscription credit, so opening the editor never
+  // spends a download and never makes the stored payload look missing.
+  async getComponentFigma(id: string): Promise<{ figmaDataBase64: string }> {
+    const response = await apiClient.get(`/components/${id}/figma`);
+    return response.data.data;
+  },
+
   async recordDownload(id: string): Promise<{ componentId: string; downloadCount: number }> {
     const response = await apiClient.post(`/components/${id}/download`);
     return response.data.data;
@@ -124,3 +132,39 @@ export const componentsApi = {
     await apiClient.delete(`/components/${id}`);
   },
 };
+
+/**
+ * Loads a component for editing together with its original Figma payload.
+ *
+ * GET /components/:id omits the payload for Pro components, so the editor has to
+ * ask for it explicitly. The owner-scoped endpoint is used (instead of the
+ * download endpoint) because it neither consumes a subscription credit nor
+ * requires an active Pro subscription — without it the editor renders an empty
+ * payload box and any edit would overwrite the stored payload with whatever the
+ * user re-pasted.
+ *
+ * `figmaPayloadUnavailable` marks the case where the stored payload could not
+ * be retrieved. Callers must then treat the payload as unknown (and leave it
+ * untouched) rather than as "the user cleared it".
+ */
+export interface ComponentForEdit extends ComponentItem {
+  figmaPayloadUnavailable?: boolean;
+}
+
+export async function fetchComponentForEdit(id: string): Promise<ComponentForEdit> {
+  const component = (await componentsApi.getById(id)) as ComponentForEdit;
+
+  if (!component.figmaDataBase64) {
+    try {
+      const { figmaDataBase64 } = await componentsApi.getComponentFigma(id);
+      component.figmaDataBase64 = figmaDataBase64 || "";
+    } catch {
+      // The payload could not be retrieved. It is unknown rather than empty, so
+      // flag it — the stored payload is left untouched.
+      component.figmaDataBase64 = "";
+      component.figmaPayloadUnavailable = true;
+    }
+  }
+
+  return component;
+}

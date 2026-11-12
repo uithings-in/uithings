@@ -23,6 +23,10 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// MongoDB documents are capped at 16MB. The base64 payload is stored inline, so
+// reject anything that cannot fit instead of letting the write fail opaquely.
+const MAX_FIGMA_PAYLOAD_BYTES = 12 * 1024 * 1024;
+
 // ─── GET /api/components ──────────────────────────────────────────────────────
 const listComponents = asyncHandler(async (req, res) => {
   const {
@@ -547,6 +551,23 @@ const createComponent = asyncHandler(async (req, res) => {
     throw new Error("name, previewImageUrl, and figmaDataBase64 are required");
   }
 
+  if (typeof figmaDataBase64 !== "string") {
+    res.status(400);
+    throw new Error("figmaDataBase64 must be a string");
+  }
+
+  if (figmaDataBase64.trim().length === 0) {
+    res.status(400);
+    throw new Error("figmaDataBase64 cannot be empty");
+  }
+
+  if (figmaDataBase64.length > MAX_FIGMA_PAYLOAD_BYTES) {
+    res.status(413);
+    throw new Error(
+      "Figma payload is too large. Please copy a smaller selection from Figma.",
+    );
+  }
+
   // Fetch the user once: permissions + author details for the notification.
   const currentUser = await User.findById(req.user.userId).select(
     "role canUploadPro name email",
@@ -794,8 +815,38 @@ const getComponentData = asyncHandler(async (req, res) => {
   });
 });
 
-// ─── PATCH /api/components/:id ────────────────────────────────────────────────
-// POST /api/components/:id/download
+// ─── GET /api/components/:id/figma ────────────────────────────────────────────
+// Lets a component's owner (or an admin) load the original Figma payload for
+// editing. Unlike GET /:id/data this never consumes a subscription credit and
+// never requires an active Pro subscription — opening the editor must not cost
+// the user a download, and the editor needs the original bytes back so the
+// payload never has to be re-pasted (and therefore never silently replaced).
+const getComponentFigma = asyncHandler(async (req, res) => {
+  const component = await Component.findById(req.params.id);
+
+  if (!component) {
+    res.status(404);
+    throw new Error("Component not found");
+  }
+
+  const isOwner =
+    component.createdBy.toString() === req.user.userId.toString();
+  const isAdmin = req.user.role === "admin";
+
+  if (!isOwner && !isAdmin) {
+    res.status(403);
+    throw new Error("You can only load the Figma payload of your own components");
+  }
+
+  res.json({
+    success: true,
+    data: {
+      figmaDataBase64: component.figmaDataBase64,
+    },
+  });
+});
+
+// ─── POST /api/components/:id/download ─────────────────────────────────────────
 const recordComponentDownload = asyncHandler(async (req, res) => {
   const component = await Component.findByIdAndUpdate(
     req.params.id,
@@ -821,6 +872,7 @@ const recordComponentDownload = asyncHandler(async (req, res) => {
   });
 });
 
+// ─── PATCH /api/components/:id ────────────────────────────────────────────────
 const updateComponent = asyncHandler(async (req, res) => {
   const component = await Component.findById(req.params.id);
   if (!component) {
@@ -853,9 +905,27 @@ const updateComponent = asyncHandler(async (req, res) => {
     pricingType: req.body.pricingType ?? component.pricingType,
   };
 
-  // Only rewrite the (potentially multi-MB) Figma payload when it changed.
-  if (req.body.figmaDataBase64 !== undefined) {
-    updates.figmaDataBase64 = req.body.figmaDataBase64;
+  // Only rewrite the (potentially multi-MB) Figma payload when a new, valid one
+  // was supplied. An empty/whitespace/null payload means "no change" and must
+  // never wipe the payload the user already uploaded.
+  if (
+    req.body.figmaDataBase64 !== undefined &&
+    req.body.figmaDataBase64 !== null
+  ) {
+    if (typeof req.body.figmaDataBase64 !== "string") {
+      res.status(400);
+      throw new Error("figmaDataBase64 must be a string");
+    }
+    const nextPayload = req.body.figmaDataBase64.trim();
+    if (nextPayload.length > 0) {
+      if (nextPayload.length > MAX_FIGMA_PAYLOAD_BYTES) {
+        res.status(413);
+        throw new Error(
+          "Figma payload is too large. Please copy a smaller selection from Figma.",
+        );
+      }
+      updates.figmaDataBase64 = nextPayload;
+    }
   }
 
   if (req.body.darkPreviewImageUrl !== undefined) {
@@ -1098,6 +1168,7 @@ module.exports = {
   createComponent,
   getComponent,
   getComponentData,
+  getComponentFigma,
   recordComponentDownload,
   updateComponent,
   deleteComponent,

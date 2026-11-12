@@ -5,6 +5,7 @@ const {
   createComponent,
   getComponent,
   getComponentData,
+  getComponentFigma,
   recordComponentDownload,
   updateComponent,
   deleteComponent,
@@ -28,6 +29,8 @@ router.get("/tags", getApprovedTags);
 router.get("/count", getComponentsCount);
 router.get("/:id", getComponent);
 router.get("/:id/data", optionalProtect, getComponentData);
+// Owner/admin access to the original payload for editing — no credit consumed.
+router.get("/:id/figma", protect, getComponentFigma);
 router.post("/", protect, createComponent);
 router.post("/:id/download", recordComponentDownload);
 router.patch("/:id", protect, updateComponent);

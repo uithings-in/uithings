@@ -24,7 +24,7 @@ import {
   type CurrentSubscriptionData,
   type PurchasedSubscriptionRecord,
 } from "../../api/payments";
-import { componentsApi } from "../../api/components";
+import { componentsApi, fetchComponentForEdit } from "../../api/components";
 import { uploadApi } from "../../api/upload";
 import { contactApi } from "../../api/contact";
 import { copyToFigma } from "../../lib/clipboard";
@@ -580,12 +580,15 @@ function MyComponentsPanel({
     setCopyStatus("");
     setCopyingId(id);
     try {
+      // These are the user's own components, so the owner-scoped endpoint is
+      // used as the fallback — the public detail endpoint omits the payload for
+      // Pro components, which would otherwise fail with "No Figma payload found".
       const payload =
         figmaDataBase64 ||
         (
           await queryClient.fetchQuery({
             queryKey: ["components", "detail", id],
-            queryFn: () => componentsApi.getById(id),
+            queryFn: () => fetchComponentForEdit(id),
             staleTime: 10 * 60 * 1000,
           })
         ).figmaDataBase64;

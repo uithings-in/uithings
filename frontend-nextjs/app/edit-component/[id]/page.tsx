@@ -4,7 +4,7 @@ import { use, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, LockKeyhole } from "lucide-react";
-import { componentsApi } from "../../../api/components";
+import { componentsApi, fetchComponentForEdit } from "../../../api/components";
 import { uploadPreviewFile } from "../../../lib/previewUpload";
 import { broadcastComponentChange } from "../../../lib/events";
 import { useAuth } from "../../../context/AuthContext";
@@ -51,7 +51,9 @@ export default function EditComponentPage({
 
   const { data: componentData, isLoading } = useQuery({
     queryKey: ["components", id],
-    queryFn: () => componentsApi.getById(id),
+    // Loads the original Figma payload together with the component so editing
+    // never silently drops it.
+    queryFn: () => fetchComponentForEdit(id),
     enabled: !!id,
   });
 
@@ -85,14 +87,21 @@ export default function EditComponentPage({
         previewImageUrl = await uploadPreviewFile(input.previewFile);
       }
 
+      // Only send the payload when the user actually replaced it with a new,
+      // non-empty one. An untouched or cleared payload is omitted so the
+      // server keeps the original instead of wiping the user's asset.
+      const originalPayload = componentData?.figmaDataBase64 || "";
+      const payloadChanged =
+        input.figmaDataBase64.trim().length > 0 &&
+        input.figmaDataBase64 !== originalPayload &&
+        !componentData?.figmaPayloadUnavailable;
+
       return componentsApi.update(id, {
         name: input.name,
         description: input.description,
         tags: input.tags,
         ...(previewImageUrl ? { previewImageUrl } : {}),
-        ...(input.figmaDataBase64 !== (componentData?.figmaDataBase64 || "")
-          ? { figmaDataBase64: input.figmaDataBase64 }
-          : {}),
+        ...(payloadChanged ? { figmaDataBase64: input.figmaDataBase64 } : {}),
         designType: input.designType,
         pricingType: input.pricingType,
       });
@@ -107,7 +116,9 @@ export default function EditComponentPage({
   });
 
   async function handleSubmit(values: ComponentEditorValues) {
-    if (!values.figmaDataBase64.trim()) {
+    // A payload that could not be loaded is unknown rather than missing — the
+    // stored one is kept, so it must not block the rest of the edit.
+    if (!values.figmaDataBase64.trim() && !componentData?.figmaPayloadUnavailable) {
       setStatus("Paste a Figma component in the payload area first.");
       return;
     }

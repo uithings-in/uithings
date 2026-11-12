@@ -14,7 +14,7 @@ import {
   ChevronDown,
   Loader2,
 } from "lucide-react";
-import { componentsApi } from "../../api/components";
+import { componentsApi, fetchComponentForEdit } from "../../api/components";
 import { prefetchPreviewUploads, uploadPreviewFile } from "../../lib/previewUpload";
 import { broadcastComponentChange } from "../../lib/events";
 import { useAuth } from "../../context/AuthContext";
@@ -63,19 +63,10 @@ export function EditComponentView({
     error,
   } = useQuery({
     queryKey: ["components", "detail-edit", componentId],
-    queryFn: async () => {
-      if (!componentId) return null;
-      const comp = await componentsApi.getById(componentId);
-      if (!comp.figmaDataBase64) {
-        try {
-          const data = await componentsApi.getComponentData(componentId);
-          comp.figmaDataBase64 = data.figmaDataBase64;
-        } catch (err) {
-          console.error("Failed to load figma data:", err);
-        }
-      }
-      return comp;
-    },
+    // Always load the original payload alongside the component so the editor
+    // can tell "unchanged" apart from "cleared" and never overwrite a payload
+    // the user did not intend to replace.
+    queryFn: () => fetchComponentForEdit(componentId),
     enabled: !!componentId,
   });
 
@@ -105,6 +96,10 @@ export function EditComponentView({
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // True when the stored payload could not be loaded. The payload is then
+  // unknown (not empty), so the stored one is left untouched on save.
+  const payloadUnavailable = !!component?.figmaPayloadUnavailable;
 
   // Initialize form when component data arrives
   useEffect(() => {
@@ -212,7 +207,7 @@ export function EditComponentView({
     if (touched.name && !name.trim()) {
       errs.name = "Component name is required.";
     }
-    if (touched.figmaPayload && !figmaDataBase64.trim()) {
+    if (touched.figmaPayload && !figmaDataBase64.trim() && !payloadUnavailable) {
       errs.figmaPayload = "Figma component payload is required.";
     }
     if (
@@ -230,6 +225,7 @@ export function EditComponentView({
   }, [
     name,
     figmaDataBase64,
+    payloadUnavailable,
     lightPreviewUrl,
     darkPreviewUrl,
     wireframePreviewUrl,
@@ -242,7 +238,11 @@ export function EditComponentView({
   const missingFields = useMemo(() => {
     const missing: string[] = [];
     if (!name.trim()) missing.push("Component name");
-    if (!figmaDataBase64.trim()) missing.push("Figma payload");
+    // A payload that could not be loaded is unknown, not missing — the stored
+    // one is kept, so it must not block the rest of the edit.
+    if (!figmaDataBase64.trim() && !payloadUnavailable) {
+      missing.push("Figma payload");
+    }
     if (!designType) missing.push("Design type");
     if (
       !lightPreviewUrl &&
@@ -258,6 +258,7 @@ export function EditComponentView({
   }, [
     name,
     figmaDataBase64,
+    payloadUnavailable,
     designType,
     lightPreviewUrl,
     darkPreviewUrl,
@@ -311,7 +312,9 @@ export function EditComponentView({
       {
         id: "figma",
         label: "Figma component payload",
-        completed: !!figmaDataBase64.trim(),
+        // When the stored payload could not be loaded it is still on the
+        // server, so it counts as complete.
+        completed: !!figmaDataBase64.trim() || payloadUnavailable,
         required: true,
       },
       {
@@ -348,6 +351,7 @@ export function EditComponentView({
     ],
     [
       figmaDataBase64,
+      payloadUnavailable,
       darkPreviewUrl,
       lightPreviewUrl,
       darkPreviewFile,
@@ -368,7 +372,7 @@ export function EditComponentView({
         markTouched("name");
         throw new Error("Please provide a component name.");
       }
-      if (!figmaDataBase64.trim()) {
+      if (!figmaDataBase64.trim() && !payloadUnavailable) {
         markTouched("figmaPayload");
         throw new Error("Please paste your Figma component payload.");
       }
@@ -429,6 +433,15 @@ export function EditComponentView({
       );
 
       // 3. Update component API call
+      // The payload is only sent when the user actually replaced it with a new,
+      // non-empty one. An untouched (or cleared) payload is omitted so the
+      // server keeps the original instead of wiping the user's asset.
+      const originalPayload = component?.figmaDataBase64 || "";
+      const payloadChanged =
+        figmaDataBase64.trim().length > 0 &&
+        figmaDataBase64 !== originalPayload &&
+        !payloadUnavailable;
+
       return componentsApi.update(componentId, {
         name: name.trim(),
         description: description.trim(),
@@ -437,9 +450,7 @@ export function EditComponentView({
         lightPreviewImageUrl: finalLightUrl,
         darkPreviewImageUrl: finalDarkUrl,
         wireframePreviewImageUrl: finalWireframeUrl,
-        ...(figmaDataBase64 !== (component?.figmaDataBase64 || "")
-          ? { figmaDataBase64 }
-          : {}),
+        ...(payloadChanged ? { figmaDataBase64 } : {}),
         designType: (designType || "UI Design") as "UI Design" | "Wireframe" | "Both",
         pricingType,
       });
@@ -608,6 +619,19 @@ export function EditComponentView({
         <div className="lg:col-span-8 space-y-4">
           {/* 1. Figma Asset (Required) */}
           <section aria-label="Figma asset paste area">
+            {payloadUnavailable && (
+              <div
+                role="status"
+                className="mb-3 flex items-start gap-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-3 text-[11px] font-medium text-amber-900 dark:text-amber-200"
+              >
+                <AlertCircle size={13} className="mt-0.5 shrink-0" />
+                <span>
+                  We couldn&apos;t load your saved Figma payload. Your other
+                  changes will be saved and the existing payload will be kept as
+                  is — paste a new payload only if you want to replace it.
+                </span>
+              </div>
+            )}
             <FigmaPayloadZone
               payload={figmaDataBase64}
               onPayloadChange={setFigmaPayload}
