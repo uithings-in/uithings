@@ -3,16 +3,19 @@
 import React from "react";
 import { FileText, AlertCircle } from "lucide-react";
 import { TagSelector } from "./TagSelector";
+import { SubtagInput } from "./SubtagInput";
 
 interface DetailsCardProps {
   name: string;
   description: string;
   tags: string[];
+  subtags: string[];
   availableTags: string[];
   nameError?: string;
   onNameChange: (val: string) => void;
   onDescriptionChange: (val: string) => void;
   onTagsChange: (tags: string[]) => void;
+  onSubtagsChange: (subtags: string[]) => void;
   onNameBlur?: () => void;
 }
 
@@ -20,11 +23,13 @@ export function DetailsCard({
   name,
   description,
   tags,
+  subtags,
   availableTags,
   nameError,
   onNameChange,
   onDescriptionChange,
   onTagsChange,
+  onSubtagsChange,
   onNameBlur,
 }: DetailsCardProps) {
   return (
@@ -112,6 +117,9 @@ export function DetailsCard({
         onChange={onTagsChange}
         maxTags={3}
       />
+
+      {/* Subtags (free-form, comma separated, max 5) */}
+      <SubtagInput subtags={subtags} onChange={onSubtagsChange} maxSubtags={5} />
     </div>
   );
 }

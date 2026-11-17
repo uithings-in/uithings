@@ -15,6 +15,7 @@ interface SavedDraft {
   name: string;
   description: string;
   tags: string[];
+  subtags?: string[];
   figmaDataBase64: string;
   designType: DesignType;
   pricingType: PricingType;
@@ -49,6 +50,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
   const [name, setNameState] = useState("");
   const [description, setDescriptionState] = useState("");
   const [tags, setTagsState] = useState<string[]>([]);
+  const [subtags, setSubtagsState] = useState<string[]>([]);
   const [figmaDataBase64, setFigmaPayloadState] = useState("");
   const [previewFile, setPreviewFileState] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -85,6 +87,8 @@ export function useAddComponentForm(allowPro: boolean = false) {
         if (parsed.description) setDescriptionState(parsed.description);
         if (parsed.tags && Array.isArray(parsed.tags))
           setTagsState(parsed.tags);
+        if (parsed.subtags && Array.isArray(parsed.subtags))
+          setSubtagsState(parsed.subtags.slice(0, 5));
         if (parsed.figmaDataBase64)
           setFigmaPayloadState(parsed.figmaDataBase64);
         if (parsed.designType) setDesignTypeState(parsed.designType);
@@ -149,6 +153,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
       name.trim() ||
       description.trim() ||
       tags.length ||
+      subtags.length ||
       figmaDataBase64
     );
 
@@ -167,6 +172,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
           name,
           description,
           tags,
+          subtags,
           figmaDataBase64,
           designType,
           pricingType,
@@ -183,6 +189,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
     name,
     description,
     tags,
+    subtags,
     figmaDataBase64,
     designType,
     pricingType,
@@ -206,6 +213,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
       name.trim() ||
       description.trim() ||
       tags.length ||
+      subtags.length ||
       figmaDataBase64 ||
       lightPreviewFile ||
       darkPreviewFile ||
@@ -216,6 +224,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
     name,
     description,
     tags,
+    subtags,
     figmaDataBase64,
     lightPreviewFile,
     darkPreviewFile,
@@ -245,6 +254,10 @@ export function useAddComponentForm(allowPro: boolean = false) {
 
   const setTags = useCallback((val: string[]) => {
     setTagsState(val.slice(0, 3));
+  }, []);
+
+  const setSubtags = useCallback((val: string[]) => {
+    setSubtagsState(val.slice(0, 5));
   }, []);
 
   const setFigmaPayload = useCallback((val: string) => {
@@ -409,6 +422,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setNameState("");
     setDescriptionState("");
     setTagsState([]);
+    setSubtagsState([]);
     setFigmaPayloadState("");
     setPreviewFileState(null);
     setPreviewUrl("");
@@ -431,6 +445,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
     name,
     description,
     tags,
+    subtags,
     figmaDataBase64,
     previewFile: effectivePreviewFile,
     previewUrl: effectivePreviewUrl,
@@ -450,6 +465,7 @@ export function useAddComponentForm(allowPro: boolean = false) {
     setName,
     setDescription,
     setTags,
+    setSubtags,
     setFigmaPayload,
     setPreviewFile,
     setLightPreviewFile,

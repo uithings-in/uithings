@@ -100,6 +100,7 @@ export const componentsApi = {
     name: string;
     description: string;
     tags: string[];
+    subtags?: string[];
     previewImageUrl: string;
     lightPreviewImageUrl?: string;
     darkPreviewImageUrl?: string;
@@ -116,6 +117,7 @@ export const componentsApi = {
     name?: string;
     description?: string;
     tags?: string[];
+    subtags?: string[];
     previewImageUrl?: string;
     lightPreviewImageUrl?: string;
     darkPreviewImageUrl?: string;

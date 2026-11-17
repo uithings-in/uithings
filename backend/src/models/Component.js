@@ -19,6 +19,10 @@ const componentSchema = new mongoose.Schema(
       default: [],
       index: true,
     },
+    subtags: {
+      type: [String],
+      default: [],
+    },
     tagOrder: {
       type: Number,
       default: 999999,

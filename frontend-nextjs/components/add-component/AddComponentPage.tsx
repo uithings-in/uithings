@@ -50,6 +50,7 @@ export function AddComponentView({
     setName,
     setDescription,
     setTags,
+    setSubtags,
     setFigmaPayload,
     setPreviewFile,
     setLightPreviewFile,
@@ -165,6 +166,7 @@ export function AddComponentView({
         name: values.name.trim(),
         description: values.description.trim(),
         tags: cleanTags,
+        subtags: values.subtags,
         previewImageUrl: resolvedPreviewUrl,
         lightPreviewImageUrl: uploadedLightUrl || "",
         darkPreviewImageUrl: uploadedDarkUrl || "",
@@ -323,11 +325,13 @@ export function AddComponentView({
               name={values.name}
               description={values.description}
               tags={values.tags}
+              subtags={values.subtags}
               availableTags={availableTags}
               nameError={errors.name}
               onNameChange={setName}
               onDescriptionChange={setDescription}
               onTagsChange={setTags}
+              onSubtagsChange={setSubtags}
               onNameBlur={() => markTouched("name")}
             />
           </section>

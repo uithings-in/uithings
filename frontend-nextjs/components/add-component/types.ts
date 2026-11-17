@@ -6,6 +6,7 @@ export interface ComponentFormValues {
   name: string;
   description: string;
   tags: string[];
+  subtags: string[];
   figmaDataBase64: string;
   previewFile: File | null;
   previewUrl: string;

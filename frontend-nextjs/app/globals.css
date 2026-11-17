@@ -1032,6 +1032,12 @@ body:has(.dashboard-container) {
   color: #52525b !important;
 }
 
+/* Free-form subtag input blends with its card instead of using the default
+   dashboard input fill. */
+.dark .dashboard-container #component-subtags-input {
+  background-color: transparent !important;
+}
+
 .dark .dashboard-container .bg-gray-50,
 .dark .dashboard-container .bg-gray-100 {
   background-color: #161616 !important;

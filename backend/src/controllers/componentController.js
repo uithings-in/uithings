@@ -23,6 +23,27 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Free-form subtags are user defined and capped at five per component.
+const MAX_SUBTAGS = 5;
+const MAX_SUBTAG_LENGTH = 32;
+
+function sanitizeSubtags(value) {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set();
+  const result = [];
+  for (const item of value) {
+    if (typeof item !== "string") continue;
+    const clean = item.trim().replace(/\s+/g, " ").slice(0, MAX_SUBTAG_LENGTH);
+    if (!clean) continue;
+    const key = clean.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(clean);
+    if (result.length >= MAX_SUBTAGS) break;
+  }
+  return result;
+}
+
 // MongoDB documents are capped at 16MB. The base64 payload is stored inline, so
 // reject anything that cannot fit instead of letting the write fail opaquely.
 const MAX_FIGMA_PAYLOAD_BYTES = 12 * 1024 * 1024;
@@ -533,6 +554,7 @@ const createComponent = asyncHandler(async (req, res) => {
     name,
     description = "",
     tags = [],
+    subtags = [],
     previewImageUrl,
     lightPreviewImageUrl = "",
     darkPreviewImageUrl = "",
@@ -597,6 +619,7 @@ const createComponent = asyncHandler(async (req, res) => {
     name,
     description,
     tags: activeTags,
+    subtags: sanitizeSubtags(subtags),
     tagOrder,
     previewImageUrl: resolvedPreviewUrl,
     lightPreviewImageUrl: lightPreviewImageUrl || "",
@@ -945,6 +968,10 @@ const updateComponent = asyncHandler(async (req, res) => {
       matchedTags.length > 0
         ? Math.min(...matchedTags.map((t) => t.order))
         : 999999;
+  }
+
+  if (req.body.subtags !== undefined) {
+    updates.subtags = sanitizeSubtags(req.body.subtags);
   }
 
   const updated = await Component.findByIdAndUpdate(req.params.id, updates, {

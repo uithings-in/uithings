@@ -80,6 +80,7 @@ export function EditComponentView({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [subtags, setSubtags] = useState<string[]>([]);
   const [figmaDataBase64, setFigmaPayload] = useState("");
   const [lightPreviewFile, setLightPreviewFile] = useState<File | null>(null);
   const [lightPreviewUrl, setLightPreviewUrl] = useState("");
@@ -113,6 +114,9 @@ export function EditComponentView({
     setPlatformTag(isApp ? "app" : "web");
     setTags(
       existingTags.filter((t) => !["web", "app"].includes(t.toLowerCase())),
+    );
+    setSubtags(
+      Array.isArray(component.subtags) ? component.subtags.slice(0, 5) : [],
     );
 
     setFigmaPayload(component.figmaDataBase64 || "");
@@ -276,6 +280,7 @@ export function EditComponentView({
       name,
       description,
       tags,
+      subtags,
       figmaDataBase64,
       previewFile: null,
       previewUrl: lightPreviewUrl || darkPreviewUrl || wireframePreviewUrl,
@@ -293,6 +298,7 @@ export function EditComponentView({
       name,
       description,
       tags,
+      subtags,
       figmaDataBase64,
       lightPreviewFile,
       lightPreviewUrl,
@@ -446,6 +452,7 @@ export function EditComponentView({
         name: name.trim(),
         description: description.trim(),
         tags: cleanTags,
+        subtags,
         previewImageUrl: finalPreviewUrl,
         lightPreviewImageUrl: finalLightUrl,
         darkPreviewImageUrl: finalDarkUrl,
@@ -663,11 +670,13 @@ export function EditComponentView({
               name={name}
               description={description}
               tags={tags}
+              subtags={subtags}
               availableTags={availableTags}
               nameError={errors.name}
               onNameChange={setName}
               onDescriptionChange={setDescription}
               onTagsChange={setTags}
+              onSubtagsChange={setSubtags}
               onNameBlur={() => markTouched("name")}
             />
           </section>

@@ -20,6 +20,7 @@ export interface ComponentItem {
   name: string;
   description: string;
   tags: string[];
+  subtags?: string[];
   previewImageUrl: string;
   lightPreviewImageUrl?: string;
   darkPreviewImageUrl?: string;
