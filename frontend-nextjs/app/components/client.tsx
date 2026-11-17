@@ -43,6 +43,7 @@ import {
   ChevronRight,
   Sparkles,
   Clock,
+  Tag,
 } from "lucide-react";
 
 // ── icons (inline SVGs to avoid extra deps) ──────────────────────────────────
@@ -437,6 +438,27 @@ function PreviewModal({
             </button>
           </div>
         </div>
+
+        {/* Subtags */}
+        {item.subtags && item.subtags.length > 0 && (
+          <div className="px-4 sm:px-6 pb-2 sm:pb-2.5 shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="flex items-center gap-1 text-[0.62rem] sm:text-[0.66rem] font-bold uppercase tracking-[0.12em] text-gray-400">
+                <Tag size={10} className="text-blue-400" />
+                Subtags
+              </span>
+              <span className="h-3 w-px bg-gray-200 mx-0.5" aria-hidden="true" />
+              {item.subtags.map((subtag) => (
+                <span
+                  key={subtag}
+                  className="inline-flex items-center rounded-md border border-blue-500/15 bg-blue-500/[0.06] px-2 py-0.5 text-[0.68rem] sm:text-[0.72rem] font-semibold text-blue-600"
+                >
+                  {subtag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 pb-3.5 sm:pb-5 pt-2 shrink-0 border-t border-gray-50 sm:border-t-0">
