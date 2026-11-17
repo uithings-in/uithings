@@ -120,6 +120,7 @@ const listComponents = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: safeSearch, $options: "i" } },
       { tags: { $regex: safeSearch, $options: "i" } },
+      { subtags: { $regex: safeSearch, $options: "i" } },
     ];
   }
   if (tag) {
@@ -312,6 +313,7 @@ const listMyComponents = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: safeSearch, $options: "i" } },
       { tags: { $regex: safeSearch, $options: "i" } },
+      { subtags: { $regex: safeSearch, $options: "i" } },
     ];
   }
   if (tag) {
@@ -395,6 +397,7 @@ const listFavoriteComponents = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: safeSearch, $options: "i" } },
       { tags: { $regex: safeSearch, $options: "i" } },
+      { subtags: { $regex: safeSearch, $options: "i" } },
     ];
   }
 
@@ -518,6 +521,7 @@ const listComponentsAdmin = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: safeSearch, $options: "i" } },
       { tags: { $regex: safeSearch, $options: "i" } },
+      { subtags: { $regex: safeSearch, $options: "i" } },
       { description: { $regex: safeSearch, $options: "i" } },
       { designType: { $regex: safeSearch, $options: "i" } },
     ];

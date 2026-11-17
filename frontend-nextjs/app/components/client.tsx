@@ -443,15 +443,14 @@ function PreviewModal({
         {item.subtags && item.subtags.length > 0 && (
           <div className="px-4 sm:px-6 pb-2 sm:pb-2.5 shrink-0">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="flex items-center gap-1 text-[0.62rem] sm:text-[0.66rem] font-bold uppercase tracking-[0.12em] text-gray-400">
-                <Tag size={10} className="text-blue-400" />
-                Subtags
+              <span className="flex items-center text-[0.62rem] sm:text-[0.66rem] font-bold uppercase tracking-[0.12em] text-gray-400">
+                <Tag size={13} className="text-gray-400" />
               </span>
               <span className="h-3 w-px bg-gray-200 mx-0.5" aria-hidden="true" />
               {item.subtags.map((subtag) => (
                 <span
                   key={subtag}
-                  className="inline-flex items-center rounded-md border border-blue-500/15 bg-blue-500/[0.06] px-2 py-0.5 text-[0.68rem] sm:text-[0.72rem] font-semibold text-blue-600"
+                  className="inline-flex items-center rounded-[2px] border border-gray-200 bg-gray-100/80 px-2 py-0.5 text-[0.68rem] sm:text-[0.72rem] font-semibold text-gray-600"
                 >
                   {subtag}
                 </span>
